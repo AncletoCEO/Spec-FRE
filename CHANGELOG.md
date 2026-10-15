@@ -2,6 +2,15 @@
 
 Todas las versiones notables de `@ancleto/spec-fre`.
 
+## [0.1.1] - 2026-10-15
+
+### Changed
+
+- Publicación a npm vía **Trusted Publishing** (OIDC) en lugar de `NPM_TOKEN`.
+- Seed técnico regenerado para el fork; specs sincronizadas (`fre-orchestrator`,
+  `fre-core-inspectors`, `evidence-memory`, `fork-identity`, `npm-release`) y change
+  `fre-foundation` archivado.
+
 ## [0.1.0] - 2026-10-15
 
 ### Added
