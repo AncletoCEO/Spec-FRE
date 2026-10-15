@@ -145,11 +145,11 @@
   - Verificar acceso al scope `@ancleto` en npm y configurar el secreto `NPM_TOKEN` en el repo
     `AncletoCEO/Spec-FRE`
 
-- [ ] **T42**: Publicar la primera versión `0.1.0`
+- [x] **T42**: Publicar la primera versión `0.1.0`
   - Crear el paquete `@ancleto/spec-fre` desde cero (`npm publish --access public`) y crear el
     Release `v0.1.0`
 
-- [ ] **T43**: Verificar el artefacto publicado
+- [x] **T43**: Verificar el artefacto publicado
   - `npm view @ancleto/spec-fre version` responde `0.1.0`; `npm i -g @ancleto/spec-fre` y
     `ancleto-fre --version` devuelven `0.1.0`
   - El tag `v0.1.0`, la versión en `package.json` y el `CHANGELOG` coinciden
