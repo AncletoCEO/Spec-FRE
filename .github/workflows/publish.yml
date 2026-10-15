@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # crear el GitHub Release
+  id-token: write   # Trusted Publishing (OIDC) hacia npm — sin NPM_TOKEN
 
 jobs:
   publish:
@@ -21,7 +22,6 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
       - name: Resolve tag
@@ -42,15 +42,17 @@ jobs:
 
       - run: node --test test/*.test.js
 
-      - name: Publish to npm (skipped if the version already exists)
+      # Trusted Publishing: autentica por OIDC (id-token: write), sin NPM_TOKEN.
+      # Requisito: configurar el Trusted Publisher del paquete en npmjs.com →
+      #   Provider: GitHub Actions · Repository: AncletoCEO/Spec-FRE · Workflow: publish.yml
+      # `--provenance` emite la atestación de build.
+      - name: Publish to npm via Trusted Publishing (skipped if the version already exists)
         run: |
           if npm view "@ancleto/spec-fre@${PKG_VERSION}" version >/dev/null 2>&1; then
             echo "ya publicado: ${PKG_VERSION} — se omite npm publish"
           else
-            npm publish --access public
+            npm publish --access public --provenance
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release (skipped if it already exists)
         env:

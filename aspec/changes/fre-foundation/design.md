@@ -160,7 +160,8 @@ Se replica la mecánica del upstream (no se introducen herramientas de release):
 - **Publicación por tag**: `.github/workflows/publish.yml` dispara en `v*` (y
   `workflow_dispatch`), corre `npm ci` + `lint` + `test`, publica si la versión no existe, crea
   el GitHub Release y verifica el tarball con un canary apuntando al paquete nuevo.
-- **Acceso**: scope `@ancleto` en npm y secreto `NPM_TOKEN` en `AncletoCEO/Spec-FRE`.
+- **Acceso**: scope `@ancleto` en npm + **Trusted Publishing** (OIDC, `id-token: write`) con
+  `--provenance`; **sin** `NPM_TOKEN` de larga vida.
 
 **Razón**: el equipo ya conoce esta mecánica; heredarla reduce fricción y evita sumar
 dependencias de tooling, en línea con el principio auto-contenido del fork.

@@ -10,7 +10,8 @@ skillVersion: '2.3'
 # Integraciones y dependencias externas
 
 - **npm**: paquete `@ancleto/spec-fre` (scope `@ancleto`). Publicación por tag `v*` vía
-  `.github/workflows/publish.yml`; requiere el secreto `NPM_TOKEN` (valor omitido). `declarado`.
+  `.github/workflows/publish.yml` usando **Trusted Publishing** (OIDC, `id-token: write`) con
+  `--provenance`; **sin** `NPM_TOKEN`. `declarado`.
 - **GitHub**: repo `AncletoCEO/Spec-FRE` (`repository`/`homepage`/`bugs` en `package.json`).
 - **Repomix** (`npx repomix@1.18.0`): empaquetado del repo para el seed. Opcional. `observado`
   (`src/cli/index.js`).

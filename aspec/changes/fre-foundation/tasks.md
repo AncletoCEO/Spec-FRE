@@ -142,8 +142,9 @@
     de `@ancleto/spec-fre`
 
 - [ ] **T41**: Configurar el despliegue
-  - Verificar acceso al scope `@ancleto` en npm y configurar el secreto `NPM_TOKEN` en el repo
-    `AncletoCEO/Spec-FRE`
+  - Verificar acceso al scope `@ancleto` en npm (hecho: read-write ✓)
+  - Configurar **Trusted Publishing** del paquete en npmjs.com (Provider GitHub Actions · Repository
+    `AncletoCEO/Spec-FRE` · Workflow `publish.yml`). **Sin** `NPM_TOKEN` de larga vida
 
 - [x] **T42**: Publicar la primera versión `0.1.0`
   - Crear el paquete `@ancleto/spec-fre` desde cero (`npm publish --access public`) y crear el
