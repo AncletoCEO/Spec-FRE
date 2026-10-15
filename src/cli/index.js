@@ -13,6 +13,9 @@ import { adaptFrontmatter, parseFrontmatter } from '../core/adapters/frontmatter
 import { writeWorkingContext } from '../core/memory/working-context.js'
 import { memoryDoctor } from '../core/memory/doctor.js'
 import { serveMemoryMcp } from '../core/memory/mcp-server.js'
+import { inspectTarget } from '../fre/re-inventory.js'
+import { serveReMcp } from '../fre/mcp-re-server.js'
+import { route, OBJECTIVE_CAPABILITIES } from '../fre/router.js'
 import { writeDiscoveryMap } from '../core/discovery.js'
 import { showBanner, selectOption, selectMultiple, stopBanner } from './ui.js'
 
@@ -51,6 +54,11 @@ Uso:
   ancleto-fre discovery --check           Estado del seed (READY/STALE/PARTIAL/MISSING)
   ancleto-fre discovery [--compress] [--include G] [--ignore G] [--token-budget N]
                                    Empaca el repo con Repomix y guarda estado
+  ancleto-fre inspect <target> [--type <kind>] [--json]
+                                   Núcleo nativo de RE: inspecciona un artefacto (ELF/PE/Mach-O,
+                                   ZIP/APK/JAR, WASM, EVM, DEX, AXML, .NET, pcap, core, SQLite, Go, Rust)
+  ancleto-fre route <target> [--objective <o>] [--json]
+                                   FRE Router: clasifica el target y compone el plan de perfiles RE
   ancleto-fre specs check [--change <name>] [--json]
                                    Valida keywords canonicos (### Requirement:, WHEN, THEN)
                                    en aspec/specs y, con --change, en los deltas del change
@@ -510,15 +518,17 @@ function resolveBin(name, fallbacks = []) {
   return null
 }
 
-function resolveSelfCommand() {
-  return [process.execPath, join(__dirname, 'index.js'), 'mcp']
+function resolveSelfCommand(sub = 'mcp') {
+  return [process.execPath, join(__dirname, 'index.js'), sub]
 }
 
 function buildDefaultMcp({ withEngram = false } = {}) {
   const mcp = {}
 
   // Memoria propia del framework: SQLite (.ancleto-fre/memory.db) expuesta como tools MCP
-  mcp['ancleto-fre-memory'] = { type: 'local', enabled: true, command: resolveSelfCommand() }
+  mcp['ancleto-fre-memory'] = { type: 'local', enabled: true, command: resolveSelfCommand('mcp') }
+  // Núcleo nativo de ingeniería inversa: inspectores de artefactos como tools MCP.
+  mcp['ancleto-fre-re'] = { type: 'local', enabled: true, command: resolveSelfCommand('mcp-re') }
 
   if (withEngram) {
     const engramFallbacks = [
@@ -2740,6 +2750,94 @@ async function doctorCommand() {
   process.exit(fatal ? 1 : 0)
 }
 
+async function inspectCmd(rest) {
+  if (rest.length === 0 || rest.includes('--help') || rest.includes('-h')) {
+    console.log(`ancleto-fre inspect <target> [--type <kind>] [--json]
+
+  Inspecciona un artefacto de ingeniería inversa con el núcleo nativo (sin dependencias):
+  ELF, PE, Mach-O, ZIP/APK/JAR, WASM, EVM, DEX, AXML, .NET, pcap, core, SQLite, Go, Rust.`)
+    if (rest.length === 0) process.exit(1)
+    return
+  }
+  const asJson = rest.includes('--json')
+  const typeIdx = rest.indexOf('--type')
+  const type = typeIdx >= 0 ? rest[typeIdx + 1] : null
+  const target = rest.find((a, i) => !a.startsWith('-') && !(typeIdx >= 0 && i === typeIdx + 1))
+  if (!target) {
+    console.error('ancleto-fre: falta <target>')
+    process.exit(1)
+  }
+  if (!(await exists(target))) {
+    console.error(`ancleto-fre: no existe: ${target}`)
+    process.exit(1)
+  }
+  const result = inspectTarget(resolve(target), { type })
+  if (asJson) {
+    console.log(JSON.stringify(result, null, 2))
+    return
+  }
+  printInspection(result)
+}
+
+function printInspection(r) {
+  console.log(`ancleto-fre inspect: ${r.path}`)
+  console.log(`  tipo      ${r.magic.description} (${r.detectedKind})`)
+  console.log(`  tamaño    ${r.size} bytes   entropía ${r.entropy}`)
+  console.log(`  sha256    ${r.sha256}`)
+  const inv = r.inventory
+  if (inv) {
+    if (inv.header) console.log(`  header    ${JSON.stringify(inv.header)}`)
+    if (inv.neededLibraries) console.log(`  libs      ${inv.neededLibraries.slice(0, 8).join(', ')}`)
+    if (inv.importedDlls) console.log(`  dlls      ${inv.importedDlls.slice(0, 8).join(', ')}`)
+    if (inv.sectionNames) console.log(`  secciones ${inv.sectionNames.join(', ')}`)
+    if (inv.entryCount !== undefined) console.log(`  entradas  ${inv.entryCount}`)
+    if (inv.classCount !== undefined) console.log(`  clases    ${inv.classCount}   métodos ${inv.methodCount}`)
+    if (inv.tables) console.log(`  tablas    ${inv.tables.join(', ')}`)
+    if (inv.compilerVersion) console.log(`  go        ${inv.compilerVersion} (${inv.moduleCount} módulos)`)
+    if (inv.packageCount !== undefined && inv.kind === 'rust') console.log(`  rust      ${inv.packageCount} crates`)
+    if (inv.go) console.log(`  go        ${inv.go.compilerVersion} (${inv.go.moduleCount} módulos)`)
+    if (inv.rust) console.log(`  rust      ${inv.rust.packageCount} crates`)
+  }
+  if (r.error) console.log(`  error     ${r.error}`)
+  console.log(`  strings   ${r.strings.length} (usá --json para el inventario completo)`)
+}
+
+async function routeCmd(rest) {
+  if (rest.length === 0 || rest.includes('--help') || rest.includes('-h')) {
+    console.log(`ancleto-fre route <target> [--objective <o>] [--json]
+
+  Clasifica un artefacto y compone el plan de perfiles RE (target × objetivo), reportando
+  cobertura (native/bridge) y GAPs. Objetivos: ${Object.keys(OBJECTIVE_CAPABILITIES).join(', ')}.`)
+    if (rest.length === 0) process.exit(1)
+    return
+  }
+  const asJson = rest.includes('--json')
+  const oIdx = rest.indexOf('--objective')
+  const objective = oIdx >= 0 ? rest[oIdx + 1] : null
+  const target = rest.find((a, i) => !a.startsWith('-') && !(oIdx >= 0 && i === oIdx + 1))
+  if (!target) {
+    console.error('ancleto-fre: falta <target>')
+    process.exit(1)
+  }
+  if (!(await exists(target))) {
+    console.error(`ancleto-fre: no existe: ${target}`)
+    process.exit(1)
+  }
+  const plan = route(resolve(target), objective)
+  if (asJson) {
+    console.log(JSON.stringify(plan, null, 2))
+    return
+  }
+  console.log(`ancleto-fre route: ${plan.target}`)
+  console.log(`  target    ${plan.description} (${plan.kind})`)
+  console.log(`  objetivo  ${plan.objective || '—'}`)
+  console.log(`  perfiles  ${plan.matchedProfiles.join(', ') || 'ninguno'}`)
+  for (const c of plan.coverage) {
+    console.log(`  cap ${c.impl.padEnd(7)} ${c.id}${c.provider ? ` (${c.provider})` : ''}`)
+  }
+  if (plan.gaps.length) console.log(`  GAP       ${plan.gaps.join(', ')} → proponer change`)
+}
+
 const [cmd, ...rest] = process.argv.slice(2)
 
 switch (cmd) {
@@ -2790,6 +2888,15 @@ switch (cmd) {
     break
   case 'mcp':
     await serveMemoryMcp()
+    break
+  case 'mcp-re':
+    await serveReMcp()
+    break
+  case 'inspect':
+    await inspectCmd(rest)
+    break
+  case 'route':
+    await routeCmd(rest)
     break
   case '--version':
   case '-v':

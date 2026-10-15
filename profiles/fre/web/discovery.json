@@ -1,0 +1,5 @@
+{
+  "entry": "inspect",
+  "types": ["zip", "unknown"],
+  "note": "ASAR/JS empaquetado se detecta por contenedor y strings."
+}

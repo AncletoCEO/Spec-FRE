@@ -1,0 +1,18 @@
+{
+  "id": "native",
+  "description": "Binarios nativos: ELF/PE/Mach-O, Go/Rust y core dumps.",
+  "targetClasses": ["elf", "pe", "macho", "macho-fat", "core", "go", "rust"],
+  "capabilities": [
+    { "id": "file-magic", "impl": "native" },
+    { "id": "strings", "impl": "native" },
+    { "id": "entropy", "impl": "native" },
+    { "id": "elf-symbols", "impl": "native" },
+    { "id": "pe-imports", "impl": "native" },
+    { "id": "macho-load-commands", "impl": "native" },
+    { "id": "go-buildinfo", "impl": "native" },
+    { "id": "rust-deps", "impl": "native" },
+    { "id": "native-decompile", "impl": "bridge", "provider": "ghidra", "required": false },
+    { "id": "dynamic-instrumentation", "impl": "bridge", "provider": "frida", "required": false }
+  ],
+  "entryCommands": ["fre-router"]
+}

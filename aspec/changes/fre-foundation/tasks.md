@@ -68,34 +68,34 @@
 
 ## Fase 4 — Núcleo nativo (Medium)
 
-- [ ] **T16**: `src/fre/inspect/magic.js` + `strings.js` + `entropy.js` (detección de tipo, sin deps)
+- [x] **T16**: `src/fre/inspect/magic.js` + `strings.js` + `entropy.js` (detección de tipo, sin deps)
 
-- [ ] **T17**: Inspectores de contenedor y ejecutables: `zip.js`, `elf.js`, `pe.js`, `macho.js`
+- [x] **T17**: Inspectores de contenedor y ejecutables: `zip.js`, `elf.js`, `pe.js`, `macho.js`
 
-- [ ] **T18**: Metadatos de build: `go.js` (buildinfo), `rust.js` (cargo-auditable)
+- [x] **T18**: Metadatos de build: `go.js` (buildinfo), `rust.js` (cargo-auditable)
 
-- [ ] **T19**: ISAs cerradas: `wasm.js` (secciones + WAT), `evm.js` (opcodes + selectores)
+- [x] **T19**: ISAs cerradas: `wasm.js` (secciones + WAT), `evm.js` (opcodes + selectores)
 
-- [ ] **T20**: Móvil y managed: `dex.js` (disasm smali-ish), `axml.js`, `dotnet.js` (metadata + CIL)
+- [x] **T20**: Móvil y managed: `dex.js` (disasm smali-ish), `axml.js`, `dotnet.js` (metadata + CIL)
 
-- [ ] **T21**: `pcap.js`, `core.js` (notas ELF), `sqlite.js`
+- [x] **T21**: `pcap.js`, `core.js` (notas ELF), `sqlite.js`
 
-- [ ] **T22**: `src/fre/re-inventory.js` (entrypoint) y exposición por CLI (`ancleto-fre inspect`)
+- [x] **T22**: `src/fre/re-inventory.js` (entrypoint) y exposición por CLI (`ancleto-fre inspect`)
   y MCP (`ancleto-fre-re` → `inspect_target`)
 
 ## Fase 5 — Familia de perfiles RE
 
-- [ ] **T23**: Definir el schema `profile.json` (capabilities con `impl: native | bridge`)
+- [x] **T23**: Definir el schema `profile.json` (capabilities con `impl: native | bridge`)
 
-- [ ] **T24**: Implementar los perfiles MVP `native`, `mobile`, `web` (`profiles/fre/**`)
+- [x] **T24**: Implementar los perfiles MVP `native`, `mobile`, `web` (`profiles/fre/**`)
 
 ## Fase 6 — FRE Router
 
-- [ ] **T25**: `agents/re-router.md` (preclasificador + planner + GAP→change)
+- [x] **T25**: `agents/re-router.md` (preclasificador + planner + GAP→change)
 
-- [ ] **T26**: `skills/fre-router/SKILL.md` y `commands/fre-router.md` (`/fre-router`)
+- [x] **T26**: `skills/fre-router/SKILL.md` y `commands/fre-router.md` (`/fre-router`)
 
-- [ ] **T27**: Pipeline de composición target × objetivo → plan de perfiles; GAP emite un
+- [x] **T27**: Pipeline de composición target × objetivo → plan de perfiles; GAP emite un
   `aspec/changes/<name>/proposal.md` mínimo (no instala)
 
 ## Fase 7 — Memoria de evidencia

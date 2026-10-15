@@ -99,20 +99,16 @@ stores the seed state. The seed (under `docs/technical-discovery/`) is produced 
 `fre-technical-discovery` skill from the pack. `ancleto-fre discovery --check` reports
 `READY` / `STALE` / `PARTIAL` / `MISSING` and, when applicable, the change `impact`.
 
-## Reverse-engineering focus (roadmap)
+## Reverse-engineering focus
 
-The goal of the fork is an orchestrator that **identifies which RE profiles are needed** for a task
-(target × objective) and composes them. Status:
-
-- **Native core (planned)** — dependency-free inspectors (ELF/PE/Mach-O, Go/Rust, WASM, EVM,
-  DEX/AXML, .NET, pcap/HAR, SQLite) to inventory artifacts.
+- **Native core (available)** — dependency-free inspectors to inventory artifacts: ELF/PE/Mach-O,
+  ZIP/APK/JAR, Go/Rust, WASM, EVM, DEX, AXML, .NET, pcap, core dumps and SQLite. Used via CLI
+  (`ancleto-fre inspect <target> [--json]`) and via MCP (`ancleto-fre-re` → `inspect_target`).
 - **RE profiles (planned)** — bundles per target class (`native`, `mobile`, `web`, …).
 - **FRE Router (planned)** — native pre-classifier + planner that proposes profiles or a change
   when a capability is missing.
 - **Evidence memory (planned)** — a third node type (`finding`) with mandatory provenance,
   `confidence` and unknowns, bound to the artifact hash.
-
-None of this is implemented yet: today Spec-FRE is an SDD orchestrator with its own identity.
 
 ## CLI reference
 
@@ -123,6 +119,7 @@ ancleto-fre update [--global] · ancleto-fre upgrade [--agent <name>]
 ancleto-fre export [--tar <file>] · ancleto-fre import <bundle> [--repair]
 ancleto-fre check · ancleto-fre specs check [--change <name>]
 ancleto-fre discovery [--check] [--compress] [--include G] [--ignore G] [--token-budget N]
+ancleto-fre inspect <target> [--type <kind>] [--json]
 ancleto-fre memory context|list|doctor · ancleto-fre projects [list|scan|prune|info|update]
 ancleto-fre stats · ancleto-fre doctor
 ```

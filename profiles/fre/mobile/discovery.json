@@ -1,0 +1,5 @@
+{
+  "entry": "inspect",
+  "types": ["zip", "dex", "axml"],
+  "note": "Un APK es un ZIP con AndroidManifest.xml (AXML) y classes*.dex."
+}

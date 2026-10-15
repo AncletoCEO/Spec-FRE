@@ -1,0 +1,3 @@
+{
+  "findingTypes": ["activity", "permission", "api-call", "endpoint", "obfuscation"]
+}

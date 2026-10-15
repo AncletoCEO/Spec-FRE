@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spec-FRE reverse-engineering profile",
+  "type": "object",
+  "required": ["id", "targetClasses", "capabilities"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "description": { "type": "string" },
+    "targetClasses": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "impl"],
+        "properties": {
+          "id": { "type": "string" },
+          "impl": { "enum": ["native", "bridge"] },
+          "provider": { "type": "string" },
+          "required": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "entryCommands": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

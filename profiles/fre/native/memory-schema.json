@@ -1,0 +1,3 @@
+{
+  "findingTypes": ["function-behavior", "string-constant", "import-usage", "build-provenance", "crypto-constant"]
+}

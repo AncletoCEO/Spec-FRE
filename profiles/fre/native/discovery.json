@@ -1,0 +1,5 @@
+{
+  "entry": "inspect",
+  "types": ["elf", "pe", "macho", "macho-fat", "core", "go", "rust"],
+  "note": "El inventario se obtiene con el núcleo nativo (ancleto-fre inspect)."
+}

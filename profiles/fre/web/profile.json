@@ -1,0 +1,13 @@
+{
+  "id": "web",
+  "description": "JavaScript / Electron / sitios: ASAR, recursos empaquetados y strings.",
+  "targetClasses": ["zip", "unknown"],
+  "capabilities": [
+    { "id": "zip-container", "impl": "native" },
+    { "id": "strings", "impl": "native" },
+    { "id": "entropy", "impl": "native" },
+    { "id": "electron-asar", "impl": "native" },
+    { "id": "headless-browser", "impl": "bridge", "provider": "chrome", "required": false }
+  ],
+  "entryCommands": ["fre-router"]
+}

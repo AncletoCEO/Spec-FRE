@@ -136,6 +136,9 @@ Sin bases vectoriales: **SQLite nativo** con búsqueda full-text (FTS5) y rankin
 | `recordRule` | Guarda una regla o restricción permanente. |
 | `recordDecision` | Registra el *por qué* de una decisión. |
 
+El fork agrega además el MCP `ancleto-fre-re` (núcleo nativo de RE) con la herramienta
+`inspect_target`.
+
 La memoria **del repositorio** (esta) guarda reglas y decisiones del proyecto y se comparte con el
 equipo. Si tu runtime expone además una memoria **del agente** (p. ej. engram), esa guarda notas
 de sesión, no del repo: **una entrada vive en una sola memoria**.
@@ -179,20 +182,17 @@ El framework **no gestiona tu `.gitignore`**: es una decisión del proyecto. Ref
 | `.ancleto-fre/` | **Ignorar** | Base SQLite local (memoria del repo); cada integrante la regenera. |
 | `.ancleto-fre.rc` | Decisión del equipo | Versionarlo alinea la configuración del proyecto. |
 
-## Enfoque en ingeniería inversa (roadmap)
+## Enfoque en ingeniería inversa
 
-El objetivo del fork es un orquestador que **identifique qué perfiles de RE hacen falta** para
-una tarea (target × objetivo) y los componga. Estado:
-
-- **Núcleo nativo (planeado)** — inspectores sin dependencias (ELP/PE/Mach-O, Go/Rust, WASM, EVM,
-  DEX/AXML, .NET, pcap/HAR, SQLite) para inventariar artefactos.
+- **Núcleo nativo (disponible)** — inspectores sin dependencias para inventariar artefactos:
+  ELF/PE/Mach-O, ZIP/APK/JAR, Go/Rust, WASM, EVM, DEX, AXML, .NET, pcap, core dumps y SQLite.
+  Se usan por CLI (`ancleto-fre inspect <target> [--json]`) y por MCP (`ancleto-fre-re` →
+  `inspect_target`).
 - **Perfiles RE (planeado)** — bundles por clase de target (`native`, `mobile`, `web`, …).
 - **FRE Router (planeado)** — preclasificador nativo + planificador que propone perfiles o un
   change cuando falta una capacidad.
 - **Memoria de evidencia (planeado)** — un tercer tipo de nodo (`finding`) con provenance
   obligatoria, `confidence` y unknowns, atado al hash del artefacto.
-
-Nada de esto está implementado todavía: hoy Spec-FRE es un orquestador SDD con identidad propia.
 
 ## Referencia de comandos CLI
 
@@ -205,6 +205,7 @@ ancleto-fre export [--tar <archivo>] · ancleto-fre import <bundle> [--repair]
 ancleto-fre check                    # integridad de la instalación
 ancleto-fre specs check [--change <name>] [--json]
 ancleto-fre discovery [--check] [--compress] [--include G] [--ignore G] [--token-budget N]
+ancleto-fre inspect <target> [--type <kind>] [--json]
 ancleto-fre memory context|list|doctor
 ancleto-fre projects [list|scan|prune|info|update]
 ancleto-fre doctor

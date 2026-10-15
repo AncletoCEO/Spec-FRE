@@ -1,0 +1,3 @@
+{
+  "findingTypes": ["module-import", "ipc-channel", "route", "endpoint"]
+}

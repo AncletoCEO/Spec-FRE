@@ -1,0 +1,15 @@
+{
+  "id": "mobile",
+  "description": "Apps Android: APK (contenedor ZIP), DEX y AndroidManifest binario (AXML).",
+  "targetClasses": ["zip", "dex", "axml"],
+  "capabilities": [
+    { "id": "zip-container", "impl": "native" },
+    { "id": "apk-detection", "impl": "native" },
+    { "id": "dex-classes", "impl": "native" },
+    { "id": "axml-manifest", "impl": "native" },
+    { "id": "full-java-decompile", "impl": "bridge", "provider": "jadx", "required": false },
+    { "id": "dynamic-instrumentation", "impl": "bridge", "provider": "frida", "required": false },
+    { "id": "device-access", "impl": "bridge", "provider": "adb", "required": false }
+  ],
+  "entryCommands": ["fre-router"]
+}
