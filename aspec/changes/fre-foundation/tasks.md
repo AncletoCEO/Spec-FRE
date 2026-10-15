@@ -50,7 +50,7 @@
 - [x] **T10**: Reescribir la CI para el fork (§2-G)
   - `.github/workflows/publish.yml`: `@ancleto/spec` → `@ancleto/spec-fre` (URL del canary incluida)
 
-- [ ] **T11**: Regenerar metadatos y seed del fork
+- [x] **T11**: Regenerar metadatos y seed del fork
   - §2-H: regenerar `package-lock.json` tras el renombre
   - §2-A: regenerar `.discovery-map.json` y `docs/technical-discovery/**`
   - Verificar con `ancleto-fre discovery --check` → `READY` (nunca borrar sin regenerar)

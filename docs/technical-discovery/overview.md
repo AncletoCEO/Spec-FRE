@@ -1,125 +1,55 @@
 ---
 node: overview
-kind: overview
-read_when: "qué es el proyecto, cómo está armado, componentes y flujos principales"
-generatedAt: 2026-10-07T23:35:00Z
-pluginVersion: 0.12.0
+kind: architecture
+read_when: "qué es el proyecto, arquitectura, componentes y flujos principales"
+generatedAt: 2026-10-15T00:00:00Z
+pluginVersion: 0.1.0
 skillVersion: '2.3'
 ---
 
-# Overview
+# Overview — `@ancleto/spec-fre` (Spec-FRE)
 
 ## Propósito
 
-`@ancleto/spec-fre` (**Ancleto**, alias de CLI `aspec`) es un orquestador liviano para
-desarrollo asistido por IA bajo **Spec-Driven Development (SDD)**. Vive dentro del
-IDE del usuario y automatiza tres cosas: **especificar** (ciclo de changes),
-**descubrir** (mapa topológico + empaquetado de contexto) y **recordar** (reglas y
-decisiones del proyecto entre sesiones). Evidencia: `README.md`, `package.json`.
+`ancleto-fre` es un **orquestador SDD (Spec-Driven Development)** asistido por IA que vive dentro
+del IDE del usuario, orientado a **ingeniería inversa**. Es un fork de ANCLETO/aspec con identidad
+propia y, a diferencia del upstream, **no optimiza tokens** (sin tiers) y no integra Azure DevOps.
 
-Restricciones de diseño declaradas: **cero dependencias de runtime**, Node ≥ 24
-(usa el módulo nativo `node:sqlite`), y control explícito de costo por **tiers**
-(`normal`, `minimo`, `gratis`). El único uso de dependencias externas es de
-**desarrollo** (ESLint). Evidencia: `README.md`, `package.json`,
-`src/core/repomix-tier.js`, `eslint.config.js`.
+Tres funciones centrales: **especificar** (ciclo de changes `/fre-*`), **descubrir** (mapa
+topológico + empaquetado de contexto) y **recordar** (memoria persistente de reglas, decisiones y
+hallazgos).
 
-## Arquitectura (observado)
+## Arquitectura (capas)
 
-CLI monolítica en ESM, sin framework externo. Capas:
+1. **CLI** (`src/cli/index.js`, `src/cli/ui.js`): parsing de comandos, instalación por host,
+   discovery, memoria, projects, doctor, y los comandos RE `inspect`/`route`. Banner y menús TTY
+   propios, sin dependencias.
+2. **Núcleo nativo de RE** (`src/fre/**`): inspectores de artefactos zero-dep, `re-inventory`,
+   perfiles, router y puentes opcionales. Se consume por CLI y por el MCP `ancleto-fre-re`.
+3. **Motor de memoria** (`src/core/memory/**`): SQLite nativo (`node:sqlite`) + FTS5, con reglas,
+   decisiones y **findings** (evidencia). Expuesto al IDE como MCP `ancleto-fre-memory`.
+4. **Discovery** (`src/core/discovery.js`): topología `.discovery-map.json` + empaquetado Repomix;
+   el seed lo genera la skill `fre-technical-discovery`.
+5. **Adaptadores de host** (`src/core/adapters/frontmatter.js`): dueño único de la transformación de
+   frontmatter por host.
 
-| Capa | Ruta | Rol |
-|---|---|---|
-| CLI / orquestación | `src/cli/index.js` | Parsing de comandos, `init`/`install`/`update`/`upgrade`, instalación por host, perfiles, export/import, discovery, memoria y sus ops, projects, stats, doctor, MCP. |
-| UI de terminal | `src/cli/ui.js` | Banner ASCII animado y menús TTY (Raw Mode) sin librerías; helpers de color. |
-| Adaptación de frontmatter | `src/core/adapters/frontmatter.js` | **Módulo puro, dueño único** de la transformación de frontmatter por host/assetKind. |
-| Discovery | `src/core/discovery.js` | Mapa topológico `.discovery-map.json`. |
-| Empaquetado y tiers | `src/core/repomix-tier.js` | Args de Repomix, ignores por tier, `--compress`, token budget. |
-| Selección de modelos | `src/core/tier-models.js` | Modelos por tier, resolución de tier gratis (Muse Spark/probe/env). |
-| Memoria persistente | `src/core/memory/*.js` | SQLite nativo + FTS5: `database`, `engine` (search/record/export/import/gc), `tools`, `mcp-server`, `doctor`, `working-context`. |
-| Assets instalables | `agents/`, `commands/`, `skills/`, `templates/`, `profiles/` | Markdown que el CLI copia al IDE del usuario (10 agents, 16 commands, 21 skills, 2 templates + perfil `test`). |
-| Specs del propio repo | `aspec/` | `config.yaml` + `specs/` (16 capacidades, incluidas `artifact-update` y `commandcode-support`) + 1 change activo (`ancleto-fre-vscode-extension`, diferido) + `changes/archive/` (incluye `2026-10-06-fre-update`, `2026-10-05-memory-actor-provenance` y `2026-10-07-add-commandcode-support`). |
-| Lint | `eslint.config.js` | Flat config mínima (4 reglas) sobre `src/` y `test/`. |
-| Tests | `test/*.test.js` | Suite `node --test` (10 archivos; **413 tests / 86 suites medidos en verde** al cierre de `add-commandcode-support`; `BACKLOG.md` declaraba 331 antes de ese change). |
+## Componentes principales
 
-Entry point único: `src/cli/index.js` (`bin.ancleto-fre` y `bin.aspec`). No hay
-servidor ni base de datos propia más allá de `.ancleto-fre/memory.db`. Evidencia:
-`package.json`, pack Repomix (firmas de `src/**`), `BACKLOG.md`.
-
-## Componentes y responsabilidades
-
-- **CLI (`src/cli/index.js`)**: registra el proyecto en `~/.config/ancleto-fre/projects.json`,
-  resuelve el agente/IDE y el tier, materializa assets en el destino nativo del
-  host (`AGENT_TARGETS`) delegando la adaptación de frontmatter en
-  `src/core/adapters/frontmatter.js`, aplica el overlay del perfil `test`,
-  fusiona bloques `<!-- LOCKED -->`, configura MCP (propio + caveman; engram
-  opcional; `copilot-mcp.json`, `.agents/mcp_config.json` y `.mcp.json` según host)
-  y expone los subcomandos.
-- **Adaptador de frontmatter**: `adaptFrontmatter(content, host, assetKind, name)`
-  es una función pura sin E/S. `opencode` (y skills de cualquier host) es
-  identidad; `claude`, `vscode` y `copilot` dropean claves no portables;
-  `antigravity` y `commandcode` transforman a su convención; `cursor`/`roo` son
-  passthrough con aviso a stderr; host desconocido es passthrough con aviso.
-- **Discovery**: `--check` reporta estado del seed (`READY`/`STALE`/`PARTIAL`/
-  `MISSING`) con `impact` (`none`/`minor`/`material`) y `affectedDocs`; el pack
-  (Repomix) se genera on-demand.
-- **Memoria**: 3 tools (`searchMemory`, `recordRule`, `recordDecision`) sobre
-  SQLite + FTS5 con supersesión atómica por `memory_key`; expuesta como MCP stdio
-  (`ancleto-fre mcp`). Los subcomandos `memory export|import|gc` respaldan/restauran
-  nodos activos y purgan superseded. Cada escritura puede refrescar
-  `.ancleto-fre/working-context.md`.
-- **Ciclo SDD**: comandos `/fre-*` que consumen `aspec/changes/<name>/` y las
-  skills nativas; no requieren binario externo. Incluye `/fre-review` (calidad
-  interna del código), `/fre-update` (revisión de artifacts de un change ante
-  cambio de definición) y `/fre-transplant` (mudanza entre máquinas). Con
-  perfil `test`, el orchestrator rutea lo test-only al tester ampliado
-  (`fre-test-*`).
+- **Agentes (11)**: orchestrator, coder, tester, spec-writer, reviewer, documenter,
+  technical-discovery, technical-seed-writer, memory-keeper, context-resolver, **re-router**.
+- **Skills (22)** y **commands (17)** del ciclo SDD (`/fre-*`), más las auxiliares.
+- **Perfiles (2)**: `profiles/test` (overlay de test automation) y `profiles/fre` (perfiles RE:
+  `native`, `mobile`, `web`).
 
 ## Flujos principales
 
-1. **Alta de proyecto** — `ancleto-fre init` (wizard en TTY): escribe `.ancleto-fre.rc`,
-   scaffold `aspec/` (+ `testspec/` con `--profile test`), copia `AGENTS.md`/
-   `PRODUCT.md` preservando lo existente, importa `openspec/` si existe, instala
-   assets por host (+ overlay del perfil), aplica el tier a los agentes locales,
-   configura el MCP del host y materializa `.ancleto-fre/working-context.md`.
-   Evidencia: `src/cli/index.js`, `README.md`.
-2. **Instalación/actualización** — `ancleto-fre install|update|upgrade`: materializa
-   `agents/`, `commands/`, `skills/`, `templates/` en el destino del host,
-   adapta frontmatter, fusiona MCP de forma no destructiva, importa `openspec/`
-   y re-aplica bloques `LOCKED`. Evidencia: `src/cli/index.js`, `README.md`.
-3. **Descubrimiento** — `ancleto-fre discovery --check` (estado) y `ancleto-fre
-   discovery [--compress]` (pack Repomix con ignores del tier); el seed lo
-   redacta la skill `fre-technical-discovery`. Evidencia: `src/cli/index.js`,
-   `src/core/repomix-tier.js`.
-4. **Memoria entre sesiones** — el orquestador inyecta `<ProjectMemoryRules>` y
-   `<ProjectTopology>`; las reglas se recuperan proactivamente y las decisiones
-   vía `searchMemory`. `.ancleto-fre/working-context.md` se regenera en `init`,
-   `install --project`, `upgrade` y tras escrituras de memoria. Evidencia:
-   `agents/orchestrator.md`, `src/core/memory/working-context.js`.
-5. **Portabilidad de memoria** — `ancleto-fre memory export` (JSON sanitizado, solo
-   activos) e `import` (upsert por `memory_key`, idempotente); `memory gc` purga
-   superseded antiguos. Evidencia: `src/core/memory/engine.js`, `src/cli/index.js`,
-   `aspec/specs/memory-ops/spec.md`.
-6. **Ciclo de change** — `explore → new/propose/ff → continue* → update? →
-   apply → verify → archive` (router: `skills/fre-workflow/SKILL.md`). El
-   nodo `update?` aparece cuando cambia una definición: `fre-update`
-   clasifica el cambio (requisito, diseño, alcance, trabajo nuevo), pregunta el
-   modo (in-place vs `rev2`) y aplica un merge no destructivo
-   (`aspec/specs/artifact-update/spec.md`). Con perfil `test`, el orchestrator
-   rutea lo test-only al tester ampliado (`fre-test-*`). Evidencia:
-   `commands/`, `skills/`, `aspec/changes/archive/`.
-7. **Validación local** — `npm run lint` (ESLint) y `npm test` (`node --test`)
-   son el gate mínimo; CI corre lint antes de tests. Evidencia: `package.json`,
-   `.github/workflows/publish.yml`.
+- **Ciclo SDD**: `/fre-new` → `/fre-propose` → `/fre-apply` → `/fre-verify` → `/fre-archive`.
+- **Instalación**: `ancleto-fre init` / `install --project` materializan skills/agents/commands en
+  el layout del host, escriben `.ancleto-fre.rc` y configuran los MCP.
+- **RE**: `ancleto-fre inspect <target>` inventaría un artefacto con el núcleo nativo;
+  `ancleto-fre route <target> --objective <o>` compone el plan de perfiles y reporta cobertura
+  (native/bridge/missing) y GAPs. Los hallazgos se registran como `finding` (con provenance) vía el
+  MCP `ancleto-fre-re`.
 
-## Estado del repositorio
-
-Versión `0.12.0` en `package.json` (el `CHANGELOG.md` cubre hasta `0.12.0`;
-el change `add-commandcode-support` (2026-10-07, host `commandcode`) está
-archivado sin entrada propia todavía en el changelog). Dogfooding histórico:
-el framework fue inicializado sobre este repo; este checkout **sí materializa
-`.ancleto-fre.rc` y `.opencode/`** (ambos gitignored, no versionados) y persiste
-`AGENTS.md`, `PRODUCT.md`, `aspec/` y `.ancleto-fre/memory.db`. El tier resuelto es
-**`normal`** vía `.opencode/.ancleto-fre-tier`. `documentation/` ya no existe como
-área raíz; `package-lock.json` ahora aparece como archivo material del repo (track
-es filtrado por el tier). Evidencia: `.gitignore`, `.discovery-map.json`,
-`ancleto-fre discovery --check`.
+Paths clave: `src/cli/index.js`, `src/fre/re-inventory.js`, `src/fre/router.js`,
+`src/fre/profiles.js`, `src/core/memory/engine.js`, `src/core/discovery.js`.

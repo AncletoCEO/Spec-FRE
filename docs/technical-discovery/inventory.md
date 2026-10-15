@@ -1,89 +1,32 @@
 ---
 node: inventory
 kind: inventory
-read_when: "cobertura del repositorio por directorios y globs, y qué queda fuera"
-generatedAt: 2026-10-07T23:35:00Z
-pluginVersion: 0.12.0
+read_when: "cobertura por directorios/globs"
+generatedAt: 2026-10-15T00:00:00Z
+pluginVersion: 0.1.0
 skillVersion: '2.3'
 ---
 
 # Inventario (orientación)
 
-Cobertura por directorio/glob, no auditoría archivo por archivo. Conteos
-verificados por listado de la raíz en este checkout; cifras de detalle de
-los assets instaladas en `units/_map.md`.
+| Área | Contenido |
+|---|---|
+| `src/cli/**` | Entry point (`index.js`) y UI TTY (`ui.js`). |
+| `src/core/**` | `discovery.js`, `adapters/frontmatter.js`. |
+| `src/core/memory/**` | `database.js`, `engine.js`, `tools.js`, `mcp-server.js`, `doctor.js`, `working-context.js`. |
+| `src/fre/**` | `re-inventory.js`, `router.js`, `profiles.js`, `mcp-re-server.js`. |
+| `src/fre/inspect/**` | 17 inspectores: `magic`, `strings`, `entropy`, `zip`, `elf`, `pe`, `macho`, `go`, `rust`, `wasm`, `evm`, `dex`, `axml`, `dotnet`, `pcap`, `core`, `sqlite`. |
+| `src/fre/bridge/**` | `contract.js`, `reference.js`. |
+| `agents/**` | 11 subagentes `.md`. |
+| `commands/**` | 17 comandos `/fre-*`. |
+| `skills/**` | 22 skills (`SKILL.md` + `references/`). |
+| `profiles/test/**` | Overlay de test automation. |
+| `profiles/fre/**` | Perfiles RE (`schema`, `native`, `mobile`, `web`). |
+| `templates/**` | `AGENTS.md`, `PRODUCT.md`. |
+| `aspec/**` | `config.yaml`, `specs/**` (16), `changes/**` (activos + `archive/`). |
+| `docs/**` | `technical-discovery/**` (este seed), `readme/`, `memory-engine-design.md`. |
+| `test/**` | 13 archivos `node --test`. |
+| `.github/workflows/**` | `publish.yml`. |
+| Raíz | `package.json`, `CHANGELOG.md`, `README.md`, `PRODUCT.md`, `AGENTS.md`, `eslint.config.js`. |
 
-| Área | Contenido | Conteo |
-|---|---|---|
-| `src/cli/**` | `index.js` (entry point y todos los subcomandos), `ui.js` (wizard/menús). | 2 |
-| `src/core/**` | `discovery.js`, `repomix-tier.js`, `tier-models.js`, `adapters/frontmatter.js`, `memory/{database,engine,tools,mcp-server,doctor,working-context}.js`. | 12 |
-| `agents/*.md` | 10 subagentes instalables. | 10 |
-| `commands/*.md` | 16 comandos (`/fre-*` del ciclo + review/security + recall/pr + transplant + `fre-update`). | 16 |
-| `skills/*/SKILL.md` (+ references) | 21 skills nativas (incluye `fre-review`, `fre-technical-discovery` y **`fre-update`**). | 35+ |
-| `templates/` | `AGENTS.md`, `PRODUCT.md`. | 2 |
-| `profiles/test/` | Overlay del perfil test: tester/reviewer ampliados, 5 comandos `fre-test-*`, `AGENTS.md` con bloque LOCKED. | 8 |
-| `aspec/` | `config.yaml` + `specs/` (**16** capacidades, incluidas `artifact-update` y `commandcode-support`) + 1 change activo (`ancleto-fre-vscode-extension`, diferido) + `changes/archive/` (incluye `2026-10-07-add-commandcode-support`, `2026-10-06-fre-update`, `2026-10-05-memory-actor-provenance` y los 4 del 2026-10-02). | 90+ |
-| `test/**` | `adapters-frontmatter`, `cli`, `content-guards`, `discovery-tier`, `discovery-topology`, `linter-config`, `mcp`, `memory-engine`, `tier-models`, `working-context` (`.test.js`); **413 tests / 86 suites medidos en verde**. | 10 |
-| `docs/**` | Documentación del framework + relevamiento (`.md`) + este seed; **incluye `skill-fre-update.md`** (nueva). | 19+ |
-| `documentation/` | **Eliminada como área raíz** (registrada como "área raíz eliminada" por `materialReasons`); no se incluye en este seed. | — |
-| `.opencode/**` | Instalación local del host (incluye `.ancleto-fre-tier`); gitignored. | 64+ |
-| `.github/workflows/**` | `publish.yml` (publicación a npm + Release + gate de lint). | 1 |
-| `eslint.config.js` | Flat config del linter (4 reglas sobre `src/` y `test/`). | 1 |
-| Raíz | `package.json` (`0.12.0`), `README.md`, `CHANGELOG.md` (hasta `0.12.0`), `BACKLOG.md`, `DESIGN-memory-engine-v0.2.0.md`, `LICENSE` (MIT), `AGENTS.md`, `PRODUCT.md`, `.gitattributes`, `.gitignore`, `.discovery-map.json`, `.ancleto-fre.rc` (gitignored), **`package-lock.json`** (nuevo archivo material raíz). | 14 |
-
-## Fuera del árbol versionado (gitignored, puede no existir)
-
-`.ancleto-fre.rc`, `.opencode/**` (instalación local del host) y `.ancleto-fre/**`
-(memoria local) están en `.gitignore`. En este checkout `.ancleto-fre.rc`,
-`.opencode/` y `.ancleto-fre/` **sí existen**. El tier del proyecto vive en
-`.opencode/.ancleto-fre-tier` con valor `normal`.
-
-## Destinos por host (no presentes en este repo)
-
-`AGENT_TARGETS` define destinos que solo existen si el proyecto se instala
-con ese host: `.claude/**`, `.github/skills|agents|prompts/**`,
-`.agents/skills|agents/**` y `.agents/mcp_config.json` (antigravity),
-`.commandcode/skills|agents|commands/**` y `.mcp.json` (commandcode),
-`.cursor/skills`, `.roo/skills`. Detalle: `units/cli-install.md`.
-
-## Exclusiones efectivas del pack (tier `normal` resuelto)
-
-`node_modules`, `.git`, `dist` (siempre). El tier `normal` **no** aplica
-`--compress` ni los ignores extra de `minimo`/`gratis`
-(`test/**`, `docs/**`, `**/*.md`). El tier **no** excluye por sí mismo
-los lockfiles; sin embargo, Repomix respeta `.gitignore`, que ignora
-`package-lock.json`/`yarn.lock`/`pnpm-lock.yaml` (este repo tiene
-`package-lock.json` solo). Además, Repomix respeta `.gitignore`
-(`.opencode/`, `.ancleto-fre.rc`, `.ancleto-fre/`).
-
-## Cambios del catálogo desde el seed previo
-
-- **Skill nueva**: `skills/fre-update/SKILL.md` (comando
-  `/fre-update`) para revisión de artifacts de un change ante cambios
-  de definición. Routada por `skills/fre-workflow/SKILL.md` (que
-  ahora incluye `fre-update` en su tabla de routing).
-- **Command nuevo**: `commands/fre-update.md`.
-- **Spec nueva**: `aspec/specs/artifact-update/spec.md` (4
-  requirements: edición in-place, drift detection, elección de modo,
-  límites de alcance).
-- **Doc nueva**: `docs/skill-fre-update.md` (molde de
-  `skill-fre-upgrade.md`).
-- **Tests**: `test/content-guards.test.js` actualizado para incluir
-  `fre-update` en `ARTIFACT_SKILLS` y el conteo de comandos
-  `15 + 1`.
-- **Host nuevo**: `commandcode` (Command Code, CLI `cmd`) en
-  `SUPPORTED_AGENTS` + `AGENT_TARGETS` (`.commandcode/{skills,agents,commands}`),
-  adaptador `adaptCommandCodeFrontmatter` + `COMMANDCODE_TOOL_MAP`/
-  `COMMANDCODE_MCP_TOOL_MAP` y MCP de proyecto `.mcp.json`. Spec nueva:
-  `aspec/specs/commandcode-support/spec.md`; deltas en `agent-install-routing`
-  y `skill-frontmatter-adapters`; tests nuevos en `test/cli.test.js` (11) y
-  `test/adapters-frontmatter.test.js` (10).
-- **Área eliminada**: `documentation/` ya no aparece como área raíz.
-
-## Cobertura conceptual
-
-- Arquitectura y entry points: `overview.md`.
-- Flujos críticos: `units/memory-engine.md`, `units/discovery-engine.md`,
-  `units/cli-install.md`.
-- Reglas y riesgos: `decisions.md`.
-- Externos: `integrations.md`.
+El seed cubre decisiones y paths, no cada archivo.

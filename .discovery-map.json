@@ -1,18 +1,18 @@
 {
-  "last_updated": "2026-10-15T15:49:26.889Z",
-  "total_files": 235,
+  "last_updated": "2026-10-15T16:58:16.068Z",
+  "total_files": 277,
   "tree_summary": {
     ".ancleto": 3,
     ".github": 1,
-    "agents": 10,
+    "agents": 11,
     "aspec": 117,
-    "commands": 16,
-    "docs": 14,
-    "profiles": 8,
-    "skills": 35,
-    "src": 10,
+    "commands": 17,
+    "docs": 15,
+    "profiles": 18,
+    "skills": 36,
+    "src": 33,
     "templates": 2,
-    "test": 8
+    "test": 13
   },
   "root_files": [
     ".discovery-map.json",
