@@ -1,5 +1,11 @@
 # ANCLETO-FRE (Spec-FRE)
 
+[![npm version](https://img.shields.io/npm/v/@ancleto/spec-fre.svg)](https://www.npmjs.com/package/@ancleto/spec-fre)
+[![Node.js](https://img.shields.io/node/v/@ancleto/spec-fre.svg)](https://nodejs.org)
+[![dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
+[![license: MIT](https://img.shields.io/npm/l/@ancleto/spec-fre.svg)](LICENSE)
+[![focus: reverse engineering](https://img.shields.io/badge/focus-reverse%20engineering-blueviolet.svg)](#enfoque-en-ingeniería-inversa)
+
 **Español** · [English](docs/readme/README_en.md)
 
 **Spec For Reverse Engineering** — orquestador SDD (Spec-Driven Development) para ingeniería
@@ -21,7 +27,8 @@ inversa, fork de [ANCLETO/aspec](https://github.com/damianarganaras/spec).
 - [Hosts soportados](#hosts-soportados)
 - [Motor de memoria persistente](#motor-de-memoria-persistente)
 - [Descubrimiento técnico](#descubrimiento-técnico)
-- [Enfoque en ingeniería inversa (roadmap)](#enfoque-en-ingeniería-inversa-roadmap)
+- [Enfoque en ingeniería inversa](#enfoque-en-ingeniería-inversa)
+- [Ejemplo: ingeniería inversa en acción](#ejemplo-ingeniería-inversa-en-acción)
 - [Referencia de comandos CLI](#referencia-de-comandos-cli)
 - [Licencia](#licencia)
 
@@ -197,6 +204,67 @@ El framework **no gestiona tu `.gitignore`**: es una decisión del proyecto. Ref
   `tool`), `confidence` y `unknowns`, atado al hash del artefacto (`target_ref`) con invalidación a
   `stale`; se registra y busca vía el MCP `ancleto-fre-re` (`record_finding` / `search_findings`).
 
+## Ejemplo: ingeniería inversa en acción
+
+Supongamos que querés entender cómo un binario arma y firma sus requests HTTP.
+
+### 1. Inventariar el artefacto (sin dependencias externas)
+
+```bash
+$ ancleto-fre inspect ./target.bin
+ancleto-fre inspect: /ruta/target.bin
+  tipo      ELF 64-bit x86-64 shared (elf)
+  tamaño    56610216 bytes   entropía 6.4924
+  sha256    6653fedf35f885fbf9ea870a5bcb78b88644cac410532efb13b0e21d8ea8e5b9
+  header    {"bits":64,"endian":"little","type":"shared","machine":"x86-64","entry":2009264}
+  libs      libz.so.1, libuv.so.1, libcares.so.2, libnghttp2.so.14
+  strings   100 (usá --json para el inventario completo)
+```
+
+### 2. Clasificar el target y planificar los perfiles (FRE Router)
+
+```bash
+$ ancleto-fre route ./target.bin --objective extract-protocol
+ancleto-fre route: /ruta/target.bin
+  target    ELF 64-bit x86-64 shared (elf)
+  objetivo  extract-protocol
+  perfiles  native
+  cap native  file-magic
+  cap native  strings
+  cap native  pe-imports
+```
+
+Cada capacidad se reporta como `native` (núcleo), `bridge` (requiere un engine externo opcional) o
+`missing`. Ante un `GAP`, el router **propone un change** — nunca instala engines por su cuenta.
+
+### 3. Registrar hallazgos con evidencia
+
+En el IDE, el agente usa el MCP `ancleto-fre-re`:
+
+```
+record_finding({
+  memory_key: "http/signing",
+  claim: "los requests firman el body con HMAC-SHA256",
+  claim_type: "inference",
+  source: "libhttp.so:0x1a2b",
+  tool: "elf-inspector",
+  confidence: 0.7,
+  unknowns: ["clave embebida o derivada"],
+  target_ref: "6653fedf…"
+})
+```
+
+La provenance (`source` + `tool`) es **obligatoria** y el hallazgo queda atado al hash del artefacto:
+si el binario cambia, se marca `stale`. Se busca con `search_findings` (por texto o por `target_ref`).
+
+### 4. Especificar la reconstrucción
+
+Desde el IDE, `/fre-new` abre un change aspec para reconstruir el comportamiento observado;
+`/fre-propose` diseña el plan, `/fre-apply` implementa y `/fre-verify` valida contra los hallazgos.
+
+> Todo esto también lo orquesta el agente con `/fre-router` (agente `re-router`): hace los pasos 1–3
+> por vos y devuelve el plan de perfiles con su cobertura.
+
 ## Referencia de comandos CLI
 
 ```
@@ -208,9 +276,17 @@ ancleto-fre export [--tar <archivo>] · ancleto-fre import <bundle> [--repair]
 ancleto-fre check                    # integridad de la instalación
 ancleto-fre specs check [--change <name>] [--json]
 ancleto-fre discovery [--check] [--compress] [--include G] [--ignore G] [--token-budget N]
-ancleto-fre inspect <target> [--type <kind>] [--json]
-ancleto-fre memory context|list|doctor
+
+# Ingeniería inversa
+ancleto-fre inspect <target> [--type <kind>] [--json]   # inventario del artefacto
+ancleto-fre route <target> [--objective <o>] [--json]   # plan de perfiles + cobertura
+
+# Memoria y servicios
+ancleto-fre memory context|list|doctor|export|import|gc
 ancleto-fre projects [list|scan|prune|info|update]
+ancleto-fre mcp                      # servidor MCP de memoria (stdio)
+ancleto-fre mcp-re                   # servidor MCP de RE (stdio)
+ancleto-fre stats [--all] [--session <id>]
 ancleto-fre doctor
 ```
 

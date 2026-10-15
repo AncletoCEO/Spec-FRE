@@ -1,5 +1,11 @@
 # ANCLETO-FRE (Spec-FRE)
 
+[![npm version](https://img.shields.io/npm/v/@ancleto/spec-fre.svg)](https://www.npmjs.com/package/@ancleto/spec-fre)
+[![Node.js](https://img.shields.io/node/v/@ancleto/spec-fre.svg)](https://nodejs.org)
+[![dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](../../package.json)
+[![license: MIT](https://img.shields.io/npm/l/@ancleto/spec-fre.svg)](../../LICENSE)
+[![focus: reverse engineering](https://img.shields.io/badge/focus-reverse%20engineering-blueviolet.svg)](#reverse-engineering-focus)
+
 [Español](../../README.md) · **English**
 
 **Spec For Reverse Engineering** — an SDD (Spec-Driven Development) orchestrator for reverse
@@ -21,7 +27,8 @@ engineering, a fork of [ANCLETO/aspec](https://github.com/damianarganaras/spec).
 - [Supported hosts](#supported-hosts)
 - [Persistent memory engine](#persistent-memory-engine)
 - [Technical discovery](#technical-discovery)
-- [Reverse-engineering focus (roadmap)](#reverse-engineering-focus-roadmap)
+- [Reverse-engineering focus](#reverse-engineering-focus)
+- [Example: reverse engineering in action](#example-reverse-engineering-in-action)
 - [CLI reference](#cli-reference)
 - [License](#license)
 
@@ -113,6 +120,67 @@ stores the seed state. The seed (under `docs/technical-discovery/`) is produced 
   `confidence` and `unknowns`, bound to the artifact hash (`target_ref`) with `stale` invalidation;
   recorded and searched via the `ancleto-fre-re` MCP (`record_finding` / `search_findings`).
 
+## Example: reverse engineering in action
+
+Say you want to understand how a binary builds and signs its HTTP requests.
+
+### 1. Inventory the artifact (no external dependencies)
+
+```bash
+$ ancleto-fre inspect ./target.bin
+ancleto-fre inspect: /path/target.bin
+  tipo      ELF 64-bit x86-64 shared (elf)
+  tamaño    56610216 bytes   entropía 6.4924
+  sha256    6653fedf35f885fbf9ea870a5bcb78b88644cac410532efb13b0e21d8ea8e5b9
+  header    {"bits":64,"endian":"little","type":"shared","machine":"x86-64","entry":2009264}
+  libs      libz.so.1, libuv.so.1, libcares.so.2, libnghttp2.so.14
+  strings   100 (use --json for the full inventory)
+```
+
+### 2. Classify the target and plan the profiles (FRE Router)
+
+```bash
+$ ancleto-fre route ./target.bin --objective extract-protocol
+ancleto-fre route: /path/target.bin
+  target    ELF 64-bit x86-64 shared (elf)
+  objetivo  extract-protocol
+  perfiles  native
+  cap native  file-magic
+  cap native  strings
+  cap native  pe-imports
+```
+
+Each capability is reported as `native` (core), `bridge` (needs an optional external engine) or
+`missing`. On a `GAP`, the router **proposes a change** — it never installs engines on its own.
+
+### 3. Record findings with evidence
+
+In the IDE, the agent uses the `ancleto-fre-re` MCP:
+
+```
+record_finding({
+  memory_key: "http/signing",
+  claim: "requests sign the body with HMAC-SHA256",
+  claim_type: "inference",
+  source: "libhttp.so:0x1a2b",
+  tool: "elf-inspector",
+  confidence: 0.7,
+  unknowns: ["embedded or derived key"],
+  target_ref: "6653fedf…"
+})
+```
+
+Provenance (`source` + `tool`) is **mandatory**, and the finding is bound to the artifact hash: if
+the binary changes, it is marked `stale`. Search with `search_findings` (by text or `target_ref`).
+
+### 4. Specify the reconstruction
+
+From the IDE, `/fre-new` opens an aspec change to reconstruct the observed behavior; `/fre-propose`
+designs the plan, `/fre-apply` implements it and `/fre-verify` validates against the findings.
+
+> All of this can also be orchestrated by the agent with `/fre-router` (agent `re-router`): it runs
+> steps 1–3 for you and returns the profile plan with its coverage.
+
 ## CLI reference
 
 ```
@@ -122,9 +190,16 @@ ancleto-fre update [--global] · ancleto-fre upgrade [--agent <name>]
 ancleto-fre export [--tar <file>] · ancleto-fre import <bundle> [--repair]
 ancleto-fre check · ancleto-fre specs check [--change <name>]
 ancleto-fre discovery [--check] [--compress] [--include G] [--ignore G] [--token-budget N]
-ancleto-fre inspect <target> [--type <kind>] [--json]
-ancleto-fre memory context|list|doctor · ancleto-fre projects [list|scan|prune|info|update]
-ancleto-fre stats · ancleto-fre doctor
+
+# Reverse engineering
+ancleto-fre inspect <target> [--type <kind>] [--json]   # artifact inventory
+ancleto-fre route <target> [--objective <o>] [--json]   # profile plan + coverage
+
+# Memory and services
+ancleto-fre memory context|list|doctor|export|import|gc
+ancleto-fre projects [list|scan|prune|info|update]
+ancleto-fre mcp · ancleto-fre mcp-re
+ancleto-fre stats [--all] [--session <id>] · ancleto-fre doctor
 ```
 
 ## License
