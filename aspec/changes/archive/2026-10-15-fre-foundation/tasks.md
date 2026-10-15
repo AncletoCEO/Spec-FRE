@@ -141,10 +141,11 @@
     `npm publish` si la versión no existe, GitHub Release del tag, y canary apuntando al tarball
     de `@ancleto/spec-fre`
 
-- [ ] **T41**: Configurar el despliegue
-  - Verificar acceso al scope `@ancleto` en npm (hecho: read-write ✓)
+- [x] **T41**: Configurar el despliegue
+  - Verificar acceso al scope `@ancleto` en npm (read-write ✓)
   - Configurar **Trusted Publishing** del paquete en npmjs.com (Provider GitHub Actions · Repository
     `AncletoCEO/Spec-FRE` · Workflow `publish.yml`). **Sin** `NPM_TOKEN` de larga vida
+  - Validado: el publish de `0.1.1` por OIDC desde GitHub Actions completó (con provenance/attestation)
 
 - [x] **T42**: Publicar la primera versión `0.1.0`
   - Crear el paquete `@ancleto/spec-fre` desde cero (`npm publish --access public`) y crear el
