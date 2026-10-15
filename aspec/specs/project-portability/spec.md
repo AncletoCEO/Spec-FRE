@@ -9,7 +9,8 @@ The system SHALL generar un bundle portable cuyo manifiesto no contenga paths ab
 #### Scenario: Export en máquina origen
 
 - **WHEN** se ejecuta `ancleto-fre export`
-- **THEN** se genera el bundle con `manifest.json` (versión, agente, tier, idioma, flags, MCP por nombre+tipo)
+- **THEN** se genera el bundle con `manifest.json` (versión, agente, idioma, flags, MCP por nombre+tipo)
+- **AND** el manifiesto NO contiene el campo `tier` (el eje no existe en el fork)
 - **AND** el manifiesto no contiene paths absolutos, credenciales ni datos de sesión
 
 ### Requirement: Import regenera MCP locales

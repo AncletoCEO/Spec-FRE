@@ -23,9 +23,11 @@ The system SHALL regenerar los prompts en `upgrade` sin pisar contenido custom d
 
 ### Requirement: Documentación de la limitación de modelos
 
-The system SHALL documentar que en Copilot el tier no selecciona modelos.
+The system SHALL documentar que en Copilot el modelo se elige en el picker del host, y que el
+sistema NO posee un mecanismo de tiers.
 
-#### Scenario: Usuario consulta tiers con Copilot
+#### Scenario: Usuario consulta la elección de modelo con Copilot
 
-- **WHEN** el usuario usa `--tier` junto a `--agent copilot`
-- **THEN** la guía explica que el modelo se elige en el picker y el tier se traduce a nivel de esfuerzo/pasos
+- **WHEN** el usuario instala con `--agent copilot`
+- **THEN** la guía explica que el modelo se elige en el picker del host
+- **AND** no se menciona ningún tier ni el flag `--tier`

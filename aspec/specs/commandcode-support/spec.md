@@ -157,9 +157,9 @@ avisarse sin sobrescribirse. Sin `--project` (instalación global) el CLI NO SHA
 
 ### Requirement: Nota de modelo de `commandcode`
 
-El CLI SHALL anexar al agent `orchestrator` instalado para `commandcode` una nota que indique que los
-tiers de ancleto-fre no reescriben modelos en este host (el `model` se hereda de la sesión) y que el
-modelo se elige con `/model`. La nota NO SHALL aplicarse a otros agents ni a otros hosts.
+El CLI SHALL anexar al agent `orchestrator` instalado para `commandcode` una nota que indique que
+en este host el `model` se hereda de la sesión y se elige con `/model`. La nota NO SHALL
+aplicarse a otros agents ni a otros hosts.
 
 #### Scenario: El orchestrator de `commandcode` lleva la nota
 
