@@ -109,9 +109,9 @@
 
 ## Fase 8 — Puentes opcionales
 
-- [ ] **T31**: `src/fre/bridge/contract.js` (`detect`/`available`/`invoke`) + modo degradado
+- [x] **T31**: `src/fre/bridge/contract.js` (`detect`/`available`/`invoke`) + modo degradado
 
-- [ ] **T32**: Un puente de referencia con `invoke` no-op documentado y su test
+- [x] **T32**: Un puente de referencia con `invoke` no-op documentado y su test
 
 ## Fase 9 — Testing y validación
 

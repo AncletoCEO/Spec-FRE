@@ -3,6 +3,9 @@
 
 import { inspectTarget } from './re-inventory.js'
 import { createMemoryEngine, defaultMemoryDbPath } from '../core/memory/engine.js'
+import { registerReferenceBridge } from './bridge/reference.js'
+
+registerReferenceBridge()
 
 const PROTOCOL_VERSION = '2024-11-05'
 const SERVER_INFO = { name: 'ancleto-fre-re', version: '0.1.0' }
