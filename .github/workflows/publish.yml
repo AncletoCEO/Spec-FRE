@@ -42,6 +42,12 @@ jobs:
 
       - run: node --test test/*.test.js
 
+      - name: Debug OIDC claims (temporal)
+        run: |
+          RESP=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm")
+          JWT=$(echo "$RESP" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).value))")
+          echo "$JWT" | cut -d. -f2 | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const b=s.trim();const p=JSON.parse(Buffer.from(b,'base64url').toString('utf8'));console.log('OIDC_CLAIMS '+JSON.stringify({sub:p.sub,repository:p.repository,repository_owner:p.repository_owner,job_workflow_ref:p.job_workflow_ref,workflow_ref:p.workflow_ref,ref:p.ref,event_name:p.event_name,aud:p.aud}))})"
+
       # Trusted Publishing: autentica por OIDC (id-token: write), sin NPM_TOKEN.
       # Requisito: configurar el Trusted Publisher del paquete en npmjs.com →
       #   Provider: GitHub Actions · Repository: AncletoCEO/Spec-FRE · Workflow: publish.yml
