@@ -115,28 +115,28 @@
 
 ## Fase 9 — Testing y validación
 
-- [ ] **T33**: Tests unitarios por inspector nativo (fixtures mínimos por formato)
+- [x] **T33**: Tests unitarios por inspector nativo (fixtures mínimos por formato)
 
-- [ ] **T34**: Tests del router (plan esperado; GAP como change, no instalación)
+- [x] **T34**: Tests del router (plan esperado; GAP como change, no instalación)
 
-- [ ] **T35**: Tests de memoria de evidencia (provenance obligatoria, filtro por `target_ref`,
+- [x] **T35**: Tests de memoria de evidencia (provenance obligatoria, filtro por `target_ref`,
   invalidación por hash)
 
-- [ ] **T36**: Tests de instalación simplificada (sin preguntas de tier/Azure; model ids = `normal`)
+- [x] **T36**: Tests de instalación simplificada (sin preguntas de tier/Azure; model ids = `normal`)
 
-- [ ] **T37**: Correr `npm run lint` y `npm test` y verificar que todo pasa sin referencias colgantes
+- [x] **T37**: Correr `npm run lint` y `npm test` y verificar que todo pasa sin referencias colgantes
 
 ## Fase 10 — Deploy a NPM (crear de cero + versionado)
 
-- [ ] **T38**: Preparar la identidad de publicación en `package.json`
+- [x] **T38**: Preparar la identidad de publicación en `package.json`
   - `name: @ancleto/spec-fre`, `publishConfig.access: public`, `files` acotado, `engines.node >= 24`,
     `license: MIT`, `repository`/`homepage`/`bugs` a `AncletoCEO/Spec-FRE`
 
-- [ ] **T39**: Definir el versionado con paridad al upstream (SemVer manual, sin release tooling)
+- [x] **T39**: Definir el versionado con paridad al upstream (SemVer manual, sin release tooling)
   - `package.json.version` es la fuente; un tag `vX.Y.Z` por release; `CHANGELOG.md` actualizado por
     release. Inicio en `0.1.0` (paquete nuevo; NO continúa la numeración `0.13.x` del upstream)
 
-- [ ] **T40**: Reescribir `.github/workflows/publish.yml` para el paquete nuevo
+- [x] **T40**: Reescribir `.github/workflows/publish.yml` para el paquete nuevo
   - Trigger en `v*` (y `workflow_dispatch`): `npm ci`, `npm run lint`, `node --test`,
     `npm publish` si la versión no existe, GitHub Release del tag, y canary apuntando al tarball
     de `@ancleto/spec-fre`
