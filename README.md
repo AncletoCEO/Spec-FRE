@@ -188,11 +188,14 @@ El framework **no gestiona tu `.gitignore`**: es una decisión del proyecto. Ref
   ELF/PE/Mach-O, ZIP/APK/JAR, Go/Rust, WASM, EVM, DEX, AXML, .NET, pcap, core dumps y SQLite.
   Se usan por CLI (`ancleto-fre inspect <target> [--json]`) y por MCP (`ancleto-fre-re` →
   `inspect_target`).
-- **Perfiles RE (planeado)** — bundles por clase de target (`native`, `mobile`, `web`, …).
-- **FRE Router (planeado)** — preclasificador nativo + planificador que propone perfiles o un
-  change cuando falta una capacidad.
-- **Memoria de evidencia (planeado)** — un tercer tipo de nodo (`finding`) con provenance
-  obligatoria, `confidence` y unknowns, atado al hash del artefacto.
+- **Perfiles RE (disponible)** — bundles por clase de target (`native`, `mobile`, `web`) con
+  `profile.json` (capacidades `impl: native | bridge`) en `profiles/fre/`.
+- **FRE Router (disponible)** — preclasificador nativo + planificador: `ancleto-fre route <target>
+  [--objective <o>]` compone el plan de perfiles, reporta cobertura (native/bridge/missing) y
+  propone un change ante un GAP (agente `re-router`, skill/comando `fre-router`).
+- **Memoria de evidencia (disponible)** — nodo `finding` con provenance obligatoria (`source` +
+  `tool`), `confidence` y `unknowns`, atado al hash del artefacto (`target_ref`) con invalidación a
+  `stale`; se registra y busca vía el MCP `ancleto-fre-re` (`record_finding` / `search_findings`).
 
 ## Referencia de comandos CLI
 

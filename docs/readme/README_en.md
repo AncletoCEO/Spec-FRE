@@ -104,11 +104,14 @@ stores the seed state. The seed (under `docs/technical-discovery/`) is produced 
 - **Native core (available)** — dependency-free inspectors to inventory artifacts: ELF/PE/Mach-O,
   ZIP/APK/JAR, Go/Rust, WASM, EVM, DEX, AXML, .NET, pcap, core dumps and SQLite. Used via CLI
   (`ancleto-fre inspect <target> [--json]`) and via MCP (`ancleto-fre-re` → `inspect_target`).
-- **RE profiles (planned)** — bundles per target class (`native`, `mobile`, `web`, …).
-- **FRE Router (planned)** — native pre-classifier + planner that proposes profiles or a change
-  when a capability is missing.
-- **Evidence memory (planned)** — a third node type (`finding`) with mandatory provenance,
-  `confidence` and unknowns, bound to the artifact hash.
+- **RE profiles (available)** — bundles per target class (`native`, `mobile`, `web`) with a
+  `profile.json` (capabilities `impl: native | bridge`) under `profiles/fre/`.
+- **FRE Router (available)** — native pre-classifier + planner: `ancleto-fre route <target>
+  [--objective <o>]` composes the profile plan, reports coverage (native/bridge/missing) and
+  proposes a change on a GAP (agent `re-router`, skill/command `fre-router`).
+- **Evidence memory (available)** — a `finding` node with mandatory provenance (`source` + `tool`),
+  `confidence` and `unknowns`, bound to the artifact hash (`target_ref`) with `stale` invalidation;
+  recorded and searched via the `ancleto-fre-re` MCP (`record_finding` / `search_findings`).
 
 ## CLI reference
 
