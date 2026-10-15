@@ -100,12 +100,12 @@
 
 ## Fase 7 — Memoria de evidencia
 
-- [ ] **T28**: Tabla `findings` + `findings_fts` (migración aditiva, sin tocar `memory_nodes`)
+- [x] **T28**: Tabla `findings` + `findings_fts` (migración aditiva, sin tocar `memory_nodes`)
 
-- [ ] **T29**: `recordFinding()` con provenance obligatoria (`source`+`tool`) y `searchFindings()`
+- [x] **T29**: `recordFinding()` con provenance obligatoria (`source`+`tool`) y `searchFindings()`
   con filtro por `target_ref`
 
-- [ ] **T30**: Invalidación por hash de `target_ref` (marca `stale`); promoción finding → rule/decision
+- [x] **T30**: Invalidación por hash de `target_ref` (marca `stale`); promoción finding → rule/decision
 
 ## Fase 8 — Puentes opcionales
 

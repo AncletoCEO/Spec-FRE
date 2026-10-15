@@ -32,6 +32,15 @@ function sanitizePaths(text) {
   return out
 }
 
+function parseUnknowns(text) {
+  try {
+    const v = JSON.parse(text)
+    return Array.isArray(v) ? v : []
+  } catch {
+    return []
+  }
+}
+
 const STOPWORDS = new Set([
   'como', 'cómo', 'the', 'a', 'an', 'de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas',
   'en', 'y', 'o', 'que', 'qué', 'por', 'para', 'con', 'sin', 'sobre', 'al', 'se', 'su', 'sus',
@@ -114,6 +123,14 @@ function buildEngine(db) {
   const gcDelete = db.prepare(
     `DELETE FROM memory_nodes WHERE status = 'superseded' AND created_at < strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-' || ? || ' days')`
   )
+  const insertFinding = db.prepare(
+    `INSERT INTO findings (memory_key, claim, claim_type, source, tool, confidence, unknowns, target_ref, scope, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)`
+  )
+  const lastFindingId = db.prepare('SELECT last_insert_rowid() AS id')
+  const findingsByKey = db.prepare(`SELECT id, target_ref FROM findings WHERE memory_key = ? AND status = 'active'`)
+  const markFindingStale = db.prepare(`UPDATE findings SET status = 'stale' WHERE id = ?`)
+  const getFinding = db.prepare(`SELECT * FROM findings WHERE id = ?`)
 
   function buildWorkingContext(scope, maxTokens = MAX_TOKENS, cwd = process.cwd()) {
     const scopes = SCOPE_HIERARCHY[scope] || [scope]
@@ -368,6 +385,103 @@ function buildEngine(db) {
     return { dryRun: false, days, removed }
   }
 
+  // ===== Findings (memoria de evidencia) =====
+  // A diferencia de memory_nodes, `source` y `tool` son PROVENANCE provista por el
+  // caller (de donde salió la evidencia) y son OBLIGATORIAS: sin ellas no se guarda.
+  const CLAIM_TYPES = new Set(['observation', 'inference', 'hypothesis'])
+
+  function publicFinding(row) {
+    return {
+      id: row.id,
+      memory_key: row.memory_key,
+      claim: row.claim,
+      claim_type: row.claim_type,
+      source: row.source,
+      tool: row.tool,
+      confidence: row.confidence,
+      unknowns: parseUnknowns(row.unknowns),
+      target_ref: row.target_ref,
+      scope: row.scope,
+      status: row.status,
+      created_at: row.created_at
+    }
+  }
+
+  function recordFinding(input = {}) {
+    const memory_key = String(input.memory_key || '').trim()
+    const claim = String(input.claim || '').trim()
+    const claim_type = String(input.claim_type || 'observation')
+    const source = String(input.source || '').trim()
+    const tool = String(input.tool || '').trim()
+    const target_ref = String(input.target_ref || '').trim()
+    if (!memory_key) throw new Error('memory_key es obligatorio')
+    if (!claim) throw new Error('claim es obligatorio')
+    if (!CLAIM_TYPES.has(claim_type)) throw new Error(`claim_type invalido: ${claim_type}`)
+    if (!source) throw new Error('source es obligatorio (provenance)')
+    if (!tool) throw new Error('tool es obligatorio (provenance)')
+    if (!target_ref) throw new Error('target_ref es obligatorio')
+    const confidence = Math.min(Math.max(Number(input.confidence ?? 0.5), 0), 1)
+    const unknowns = JSON.stringify(Array.isArray(input.unknowns) ? input.unknowns : [])
+    const scope = String(input.scope || 'project')
+    const created_at = String(input.createdAt || new Date().toISOString())
+    insertFinding.run(memory_key, claim, claim_type, source, tool, confidence, unknowns, target_ref, scope, created_at)
+    const id = lastFindingId.get().id
+    return { id, finding: publicFinding(getFinding.get(id)) }
+  }
+
+  function searchFindings({ query, targetRef, status = 'active', limit } = {}) {
+    const lim = Math.min(Math.max(Number(limit) || 10, 1), 50)
+    if (query) {
+      let rows = []
+      try {
+        rows = db.prepare(
+          `SELECT fn.* FROM findings_fts ft JOIN findings fn ON fn.id = ft.rowid
+           WHERE findings_fts MATCH ? ORDER BY rank, fn.id LIMIT ?`
+        ).all(ftsQuery(query), lim * 5)
+      } catch {
+        rows = []
+      }
+      return rows
+        .filter((r) => (!targetRef || r.target_ref === targetRef) && (!status || r.status === status))
+        .slice(0, lim)
+        .map(publicFinding)
+    }
+    const where = []
+    const params = []
+    if (targetRef) { where.push('target_ref = ?'); params.push(targetRef) }
+    if (status) { where.push('status = ?'); params.push(status) }
+    const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
+    const rows = db.prepare(`SELECT * FROM findings ${clause} ORDER BY created_at DESC, id DESC LIMIT ?`).all(...params, lim)
+    return rows.map(publicFinding)
+  }
+
+  // Invalidacion por hash: si el artefacto asociado a un `memory_key` cambió de
+  // hash, los findings activos con un `target_ref` distinto pasan a `stale`.
+  function markStaleFindings(memory_key, currentTargetRef) {
+    const rows = findingsByKey.all(String(memory_key))
+    let stale = 0
+    for (const r of rows) {
+      if (r.target_ref !== String(currentTargetRef)) { markFindingStale.run(r.id); stale++ }
+    }
+    return { stale }
+  }
+
+  // Promociona un finding a rule/decision reusando el registro existente.
+  function promoteFinding(id, { type, justification, scope } = {}) {
+    const row = getFinding.get(Number(id))
+    if (!row) throw new Error(`finding inexistente: ${id}`)
+    return recordNode(
+      {
+        memory_key: row.memory_key,
+        type,
+        content: row.claim,
+        justification: justification || `Promovido de finding #${row.id} (${row.tool}, ${row.source})`,
+        scope: scope || row.scope
+      },
+      { source: 'finding-promotion', confidence: row.confidence }
+    )
+  }
+
   function checkpoint() {
     return checkpointDatabase(db)
   }
@@ -376,5 +490,5 @@ function buildEngine(db) {
     db.close()
   }
 
-  return { buildWorkingContext, searchMemory, recordNode, listNodes, exportActive, importNodes, gcSuperseded, checkpoint, close }
+  return { buildWorkingContext, searchMemory, recordNode, listNodes, exportActive, importNodes, gcSuperseded, recordFinding, searchFindings, markStaleFindings, promoteFinding, checkpoint, close }
 }

@@ -35,6 +35,39 @@ const MIGRATIONS = [
   `CREATE TRIGGER IF NOT EXISTS memory_fts_au AFTER UPDATE ON memory_nodes BEGIN
     INSERT INTO memory_fts(memory_fts, rowid, content) VALUES ('delete', old.rowid, old.content);
     INSERT INTO memory_fts(rowid, content) VALUES (new.rowid, new.content);
+  END`,
+  `CREATE TABLE IF NOT EXISTS findings (
+    id INTEGER PRIMARY KEY,
+    memory_key TEXT NOT NULL,
+    claim TEXT NOT NULL,
+    claim_type TEXT NOT NULL CHECK (claim_type IN ('observation', 'inference', 'hypothesis')),
+    source TEXT NOT NULL,
+    tool TEXT NOT NULL,
+    confidence REAL NOT NULL,
+    unknowns TEXT NOT NULL DEFAULT '[]',
+    target_ref TEXT NOT NULL,
+    scope TEXT NOT NULL DEFAULT 'project',
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'stale')),
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_findings_target ON findings(target_ref, status)`,
+  `CREATE INDEX IF NOT EXISTS idx_findings_key ON findings(memory_key, status)`,
+  `CREATE VIRTUAL TABLE IF NOT EXISTS findings_fts USING fts5(
+    claim,
+    memory_key,
+    content = 'findings',
+    content_rowid = 'id',
+    tokenize = 'unicode61 remove_diacritics 1'
+  )`,
+  `CREATE TRIGGER IF NOT EXISTS findings_fts_ai AFTER INSERT ON findings BEGIN
+    INSERT INTO findings_fts(rowid, claim, memory_key) VALUES (new.id, new.claim, new.memory_key);
+  END`,
+  `CREATE TRIGGER IF NOT EXISTS findings_fts_ad AFTER DELETE ON findings BEGIN
+    INSERT INTO findings_fts(findings_fts, rowid, claim, memory_key) VALUES ('delete', old.id, old.claim, old.memory_key);
+  END`,
+  `CREATE TRIGGER IF NOT EXISTS findings_fts_au AFTER UPDATE ON findings BEGIN
+    INSERT INTO findings_fts(findings_fts, rowid, claim, memory_key) VALUES ('delete', old.id, old.claim, old.memory_key);
+    INSERT INTO findings_fts(rowid, claim, memory_key) VALUES (new.id, new.claim, new.memory_key);
   END`
 ]
 

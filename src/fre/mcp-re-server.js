@@ -1,7 +1,8 @@
-// Servidor MCP de ingeniería inversa (núcleo nativo). Expone `inspect_target`.
-// Node puro, protocolo JSON-RPC por stdio (una línea por mensaje).
+// Servidor MCP de ingeniería inversa: inspectores nativos + memoria de evidencia.
+// Node puro, JSON-RPC por stdio (una línea por mensaje).
 
 import { inspectTarget } from './re-inventory.js'
+import { createMemoryEngine, defaultMemoryDbPath } from '../core/memory/engine.js'
 
 const PROTOCOL_VERSION = '2024-11-05'
 const SERVER_INFO = { name: 'ancleto-fre-re', version: '0.1.0' }
@@ -19,10 +20,49 @@ export const reTools = [
       },
       required: ['path']
     }
+  },
+  {
+    name: 'record_finding',
+    description:
+      'Registra un hallazgo de ingeniería inversa con provenance OBLIGATORIA (source + tool). Los hallazgos quedan atados al hash del artefacto (target_ref).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        memory_key: { type: 'string', description: 'Clave conceptual estable (ej. "apk/token-signing").' },
+        claim: { type: 'string', description: 'El hallazgo.' },
+        claim_type: { type: 'string', enum: ['observation', 'inference', 'hypothesis'] },
+        source: { type: 'string', description: 'De dónde salió (file:offset, símbolo, tool-call). Obligatorio.' },
+        tool: { type: 'string', description: 'Herramienta que lo produjo (ej. elf-inspector). Obligatorio.' },
+        confidence: { type: 'number', minimum: 0, maximum: 1 },
+        unknowns: { type: 'array', items: { type: 'string' }, description: 'Lo que NO se pudo determinar.' },
+        target_ref: { type: 'string', description: 'Hash del artefacto analizado. Obligatorio.' },
+        scope: { type: 'string', enum: ['project', 'feature', 'task'] }
+      },
+      required: ['memory_key', 'claim', 'source', 'tool', 'target_ref']
+    }
+  },
+  {
+    name: 'search_findings',
+    description: 'Busca hallazgos de RE por texto y/o por target_ref. Excluye los stale por defecto.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string' },
+        targetRef: { type: 'string' },
+        status: { type: 'string', enum: ['active', 'stale'] },
+        limit: { type: 'integer', minimum: 1, maximum: 50 }
+      }
+    }
   }
 ]
 
-export function createReServer() {
+export function createReServer({ dbPath = defaultMemoryDbPath() } = {}) {
+  let engine = null
+  const toolkit = () => {
+    if (!engine) engine = createMemoryEngine(dbPath)
+    return engine
+  }
+
   const respond = (id, result) => ({ jsonrpc: '2.0', id, result })
   const fail = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } })
 
@@ -42,9 +82,12 @@ export function createReServer() {
       case 'tools/call': {
         const name = params && params.name
         const args = (params && params.arguments) || {}
-        if (name !== 'inspect_target') return fail(id, -32602, `tool desconocida: ${name}`)
         try {
-          const result = inspectTarget(args.path, { type: args.type || null })
+          let result
+          if (name === 'inspect_target') result = inspectTarget(args.path, { type: args.type || null })
+          else if (name === 'record_finding') result = toolkit().recordFinding(args)
+          else if (name === 'search_findings') result = toolkit().searchFindings(args)
+          else return fail(id, -32602, `tool desconocida: ${name}`)
           return respond(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] })
         } catch (err) {
           return respond(id, { content: [{ type: 'text', text: `Error: ${err.message}` }], isError: true })
@@ -55,11 +98,15 @@ export function createReServer() {
     }
   }
 
-  return { handle }
+  function close() {
+    if (engine) { engine.checkpoint(); engine.close(); engine = null }
+  }
+
+  return { handle, close, dbPath }
 }
 
-export async function serveReMcp({ input = process.stdin, output = process.stdout } = {}) {
-  const server = createReServer()
+export async function serveReMcp({ dbPath = defaultMemoryDbPath(), input = process.stdin, output = process.stdout } = {}) {
+  const server = createReServer({ dbPath })
   const write = (obj) => output.write(JSON.stringify(obj) + '\n')
 
   input.setEncoding('utf8')
@@ -82,4 +129,5 @@ export async function serveReMcp({ input = process.stdin, output = process.stdou
       if (response) write(response)
     }
   })
+  input.on('end', () => server.close())
 }
