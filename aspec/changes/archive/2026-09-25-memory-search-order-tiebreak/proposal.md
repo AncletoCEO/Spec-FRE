@@ -47,4 +47,4 @@ Out of scope (no-goals):
 
 Contexto provisto con rutas citadas del repositorio; el comportamiento real se confirmó contra
 el código en `src/core/memory/engine.js` antes de escribir esta spec. No hay Work Item asociado
-(Azure DevOps deshabilitado en `.ancletorc`).
+(Azure DevOps deshabilitado en `.ancleto-fre.rc`).

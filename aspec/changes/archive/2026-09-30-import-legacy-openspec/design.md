@@ -10,7 +10,7 @@ con archivos, o `AGENTS.md` con firma OpenSpec) del legacy ya cubierto; ante un
 externo, prompt interactivo "Detecté un proyecto OpenSpec. ¿Importar a aspec/?"
 (Sí/No/ver detalle, default No) y, si acepta, importación semilla (specs archivadas +
 changes activos + tratamiento del `AGENTS.md`). (2) **install --project**: pasa por el
-mismo helper de detección antes de `scaffoldAspec`. (3) **upgrade sin `.ancletorc`**:
+mismo helper de detección antes de `scaffoldAspec`. (3) **upgrade sin `.ancleto-fre.rc`**:
 en lugar de exigir `init` primero, ofrece migración directa cuando detecta
 `openspec/`. Todo es no destructivo: `openspec/` siempre se conserva como backup.
 
@@ -39,5 +39,5 @@ initProject / install --project / upgradeCmd
 - Tests con fixture de proyecto OpenSpec externo: `init` importa `aspec/specs` + `aspec/changes`, conserva `openspec/` intacto y escribe el marcador.
 - `aspec/` pre-existente con contenido → no pisa (test de guarda).
 - `install --project` sobre fixture externo ejecuta la detección (test que hoy falla).
-- `upgrade` sin `.ancletorc` sobre fixture externo migra en lugar de exigir `init`.
+- `upgrade` sin `.ancleto-fre.rc` sobre fixture externo migra en lugar de exigir `init`.
 - Suite completa `node --test` en verde, sin regresión en los tests del change archivado.

@@ -10,7 +10,7 @@
 
 - [x] Implementar importación (specs archivadas + changes activos + `AGENTS.md` con aviso, sin pisar `aspec/` real) + marcador.
 - [x] Cablear detección en `install --project` antes de `scaffoldAspec`.
-- [x] Permitir `upgrade` migratorio sin `.ancletorc` ante `openspec/` detectado.
+- [x] Permitir `upgrade` migratorio sin `.ancleto-fre.rc` ante `openspec/` detectado.
 - [x] Tests: import conserva backup + marcador; `aspec/` real no se pisa; `install --project` detecta; `upgrade` sin rc migra.
 
 ## Fase 3 — Cierre

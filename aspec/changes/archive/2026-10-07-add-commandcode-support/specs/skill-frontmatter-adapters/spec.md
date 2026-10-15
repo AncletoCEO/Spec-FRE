@@ -82,7 +82,7 @@ El mapeo de `tools` SHALL usar **sólo** ids verificados en la documentación de
 `glob`→`glob`, `webfetch`→`web_fetch`, `websearch`→`web_search`, `todowrite`→`todo_write`. Sólo se
 mapean claves con valor `true`. Las claves de memoria del framework (`searchMemory`, `recordRule`,
 `recordDecision`) SHALL emitirse como tools MCP con la convención documentada
-`mcp__ancleto-memory__<tool>`. Toda clave de `tools` sin id verificado (`skill`, `task`, `patch`,
+`mcp__ancleto-fre-memory__<tool>`. Toda clave de `tools` sin id verificado (`skill`, `task`, `patch`,
 `multiedit`, `todoread` u otra) SHALL omitirse con aviso a stderr de forma no bloqueante (exit code sin
 cambios): nunca en silencio. Cuando el agent no declare `tools`, el transformador SHALL emitir
 `tools: "*"` (preserva el default "todas" de opencode; el default de Command Code es "ninguna"). Cuando

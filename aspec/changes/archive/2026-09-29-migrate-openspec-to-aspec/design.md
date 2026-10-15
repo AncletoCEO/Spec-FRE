@@ -8,7 +8,7 @@ Estado actual confirmado contra el código:
 - `scaffoldAspec(projectDir)` (`:770-777`) crea `aspec/changes/` y, sólo si no existe, escribe
   `aspec/config.yaml` (nunca pisa un config previo).
 - Migración legacy **sólo en `upgradeCmd`** (`:986-993`): `rename(openspec → aspec)` si `aspec/` no
-  existe; si ambas existen, advierte y no migra. `upgrade` exige `.ancletorc` (`:981-985`).
+  existe; si ambas existen, advierte y no migra. `upgrade` exige `.ancleto-fre.rc` (`:981-985`).
 - `initProject` llama `scaffoldAspec` en `:1087`, **después** de `copyTemplates` y sin detección
   legacy.
 - `install --project` también llama `scaffoldAspec` (`:930-933`), fuera de scope.
@@ -53,10 +53,10 @@ pisar intención del usuario.
 
 1. Sin `openspec/` → no-op silencioso.
 2. `openspec/` existe y `aspec/` no tiene contenido real → copia (D2) + reporte:
-   `ancleto: contenido migrado de openspec/ a aspec/ (openspec/ se conserva como backup)`.
+   `ancleto-fre: contenido migrado de openspec/ a aspec/ (openspec/ se conserva como backup)`.
 3. `openspec/` existe, `aspec/` tiene contenido real **y no existe el marcador
    `aspec/.migrated-from-openspec`** → no tocar nada + `console.warn`:
-   `ancleto: aspec/ ya tiene contenido real — no se migro openspec/ (revisar manualmente; openspec/ se conserva)`.
+   `ancleto-fre: aspec/ ya tiene contenido real — no se migro openspec/ (revisar manualmente; openspec/ se conserva)`.
 4. Existe el marcador `aspec/.migrated-from-openspec` → no-op silencioso (ver D5).
 
 Luego corre `scaffoldAspec` como siempre (idempotente; no pisa config existente).
@@ -108,7 +108,7 @@ Reescribir/ampliar `test/cli.test.js:434-462`:
 
 - Sin comando separado de migración.
 - Sin tocar `install --project`, `CHANGES_ROOT`, `scaffoldAspec` ni el layout de `aspec/`.
-- Sin migrar `.ancleto/` ni memoria; sólo la carpeta legacy `openspec/`.
+- Sin migrar `.ancleto-fre/` ni memoria; sólo la carpeta legacy `openspec/`.
 - O2 (alcance a `install --project`) se registra en BACKLOG, no se resuelve en esta iteración.
 
 ## Nota sobre el contexto de origen

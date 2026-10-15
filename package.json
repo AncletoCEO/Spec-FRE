@@ -1,11 +1,10 @@
 {
-  "name": "@ancleto/spec",
-  "version": "0.12.1",
-  "description": "Orquestador SDD liviano con subagentes optimizados para costo/tokens",
+  "name": "@ancleto/spec-fre",
+  "version": "0.1.0",
+  "description": "Spec For Reverse Engineering — orquestador SDD para ingeniería inversa",
   "type": "module",
   "bin": {
-    "ancleto": "src/cli/index.js",
-    "aspec": "src/cli/index.js"
+    "ancleto-fre": "src/cli/index.js"
   },
   "files": [
     "agents",
@@ -20,12 +19,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/damianarganaras/spec.git"
+    "url": "git+https://github.com/AncletoCEO/Spec-FRE.git"
   },
   "bugs": {
-    "url": "https://github.com/damianarganaras/spec/issues"
+    "url": "https://github.com/AncletoCEO/Spec-FRE/issues"
   },
-  "homepage": "https://github.com/damianarganaras/spec#readme",
+  "homepage": "https://github.com/AncletoCEO/Spec-FRE#readme",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -36,7 +35,7 @@
   },
   "keywords": [
     "opencode",
-    "aspec",
+    "reverse-engineering",
     "sdd",
     "ai",
     "agents",

@@ -17,7 +17,7 @@ Estado confirmado contra `src/cli/index.js` (mecanismo introducido por el change
 - `installedExtFor` (`:872-878`) y `checkCommand` (`:1688-1742`): derivan la convención de nombre del mismo
   modelo; `check` compara contra `ROOT/<cat>`.
 - `registerProject` (`:154-174`), `projectStatus` (`:227-244`), `checkTierOrphan` (`:1746-1761`): acoplados
-  a `.opencode/agents` y `.opencode/.ancleto-tier`.
+  a `.opencode/agents` y `.opencode/.ancleto-fre-tier`.
 - Cero dependencias: parser propio con `node:*`.
 
 Este documento traduce la evidencia en decisiones. No es un volcado de la matriz.
@@ -48,9 +48,9 @@ en lugar de un camino de escritura paralelo.
 Antigravity entra al pipeline de adaptación (`AGENT_ADAPTER_HOSTS`) pero con **transformación propia**, no
 la de Claude/VS Code (que elimina `tools`). El adaptador para Antigravity produce:
 
-| Origen (ancleto/opencode) | Destino (Antigravity) | Regla |
+| Origen (ancleto-fre/opencode) | Destino (Antigravity) | Regla |
 |---|---|---|
-| (nombre del archivo) | `name: <n>` | **inyectado**; Antigravity lo exige y ancleto no lo declara |
+| (nombre del archivo) | `name: <n>` | **inyectado**; Antigravity lo exige y ancleto-fre no lo declara |
 | `description` | `description` | preservado (portable, verificado) |
 | `tools` (mapa) | `tools: string[]` | derivado: sólo claves con valor `true`, mapeadas **sólo** por la columna (A) de D3 |
 | `skill` (dentro del mapa `tools`) | campo `skills: [...]` | **no es tool**: se traduce al campo `skills` cuando el agent declara skills conocidas; si no, se omite (OQ2) |
@@ -78,7 +78,7 @@ emitible**.
 
 ### (A) Confirmado en el frontmatter de subagents — únicos ids emitibles
 
-| ancleto | Antigravity frontmatter |
+| ancleto-fre | Antigravity frontmatter |
 |---|---|
 | `read` | `view_file` |
 | `edit` | `replace_file_content` |
@@ -119,7 +119,7 @@ Ninguno de estos es un id del frontmatter `tools` de un subagente; **NO se emite
 
 ### Filas no-tool (fuera del mapeo `tools`)
 
-| ancleto | Resolución |
+| ancleto-fre | Resolución |
 |---|---|
 | `skill` | **no es tool** → campo `skills: [...]` del frontmatter (OQ2); si no, se omite |
 | uso de MCP | **no es tool** → campo `mcpServers` (agent-level) y/o `.agents/mcp_config.json` de workspace (D6) |
@@ -142,15 +142,15 @@ emite un id de (B), (C) ni (D). Un id no verificado **cuelga** el subagent (Know
 ## D4 — `commands` materializados como skills
 
 Antigravity no tiene directorio de commands de proyecto; su equivalente (Workflows) está deprecado a favor
-de Agent Skills. Decisión: los `commands/cleto-*.md` se materializan como skills en `.agents/skills/`:
+de Agent Skills. Decisión: los `commands/fre-*.md` se materializan como skills en `.agents/skills/`:
 
 - Destino: `.agents/skills/<command>/SKILL.md`.
 - Frontmatter de origen (`description`) se transforma a skill: `name: <command>` + `description`.
-- Body: conservado verbatim (invoca la skill `ancleto-*` correspondiente).
+- Body: conservado verbatim (invoca la skill `ancleto-fre-*` correspondiente).
 
-Racional: deja los `/cleto-*` disponibles como slash commands en Antigravity sin generar Workflows
-deprecados y sin duplicar el workflow real (que vive en las skills `ancleto-*`). Los nombres `cleto-*` y
-`ancleto-*` no colisionan.
+Racional: deja los `/fre-*` disponibles como slash commands en Antigravity sin generar Workflows
+deprecados y sin duplicar el workflow real (que vive en las skills `ancleto-fre-*`). Los nombres `fre-*` y
+`ancleto-fre-*` no colisionan.
 
 **Manifiesto**: Antigravity no tiene un directorio de commands físico; los command-skills viven dentro de
 `.agents/skills`. Por eso `installedPaths.commands` queda vacío para Antigravity y los command-skills son
@@ -172,7 +172,7 @@ Regla única, coherente con la política de `skill-frontmatter-adapters`:
   `list_directory`, `search_directory`, `create_file`, `ask_question`, `finish`, `generate_image`,
   `start_subagent`), (C) comunidad (`write_to_file`, `multi_replace_file_content`, `list_dir`,
   `send_message`) y (D) delegación (`invoke_subagent`, `define_subagent`), además de `write`, `glob`, `task`,
-  `webfetch` y `websearch` del mapa de ancleto.
+  `webfetch` y `websearch` del mapa de ancleto-fre.
 - `skill`: **no es una tool**; se traduce al campo `skills: [...]` del frontmatter cuando el agent declara
   skills conocidas (OQ2) y, si no, se omite. No cae en el aviso de "tool sin mapear".
 - **MCP**: el **mecanismo** de MCP (`mcpServers` agent-level y/o `.agents/mcp_config.json` de workspace; D6)
@@ -205,7 +205,7 @@ Regla **no destructiva**: si `.agents/mcp_config.json` existe, se preservan sus 
 top-level; sólo se agregan los servidores faltantes. Un servidor homónimo preexistente **no** se pisa. Si el
 archivo existe pero no es JSON parseable, se avisa y **no** se escribe.
 
-Servidores por defecto (mismo `buildDefaultMcp({})` que `install`): `ancleto-memory`
+Servidores por defecto (mismo `buildDefaultMcp({})` que `install`): `ancleto-fre-memory`
 (`[process.execPath, <index.js>, 'mcp']` → `{ command: process.execPath, args: [<index.js>, 'mcp'] }`) y
 `caveman` si está en `PATH`.
 

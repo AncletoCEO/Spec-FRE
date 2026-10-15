@@ -29,10 +29,10 @@ cuya garantía es falsa por una operación que el change no introduce.
 generada. `install --project` → `copyTemplates` (`src/cli/index.js:867-883`, invocado `:964`) →
 `copyAssets(dest = .opencode)` (`:728-733`) copia los assets `ASSETS = ['agents', 'commands',
 'skills']` (`:22`), y `applyTier` reescribe el modelo de cada agente (`:985`). El manifiesto registra
-`.opencode/agents` como path instalado (`.ancletorc:9-11`). Se verificó que
+`.opencode/agents` como path instalado (`.ancleto-fre.rc:9-11`). Se verificó que
 `.opencode/agents/reviewer.md` difiere de `agents/reviewer.md` **solo** en la línea `model:`. Por lo
-tanto la edición pertenece a `agents/`; `.opencode/agents/` se regenera con `ancleto upgrade` o
-`ancleto install --project` y **no** se edita a mano. Los content guards leen `agents/` vía
+tanto la edición pertenece a `agents/`; `.opencode/agents/` se regenera con `ancleto-fre upgrade` o
+`ancleto-fre install --project` y **no** se edita a mano. Los content guards leen `agents/` vía
 `ROOT/agents` (`test/content-guards.test.js:35`, `:40`, `:131`), así que la suite valida la fuente.
 
 **Frontera del cambio.** Requiere editar **ambos** agentes: el reviewer (mandato, señal, salida) y el
@@ -203,7 +203,7 @@ typecheck/lint/format en este repo).
 - **Confusión con `SPEC UPDATE RECOMMENDED`.** Mitigación: naturaleza distinta; `SPEC UPDATE
   RECOMMENDED` sigue limitado a `direct-implementation`; se documentan por separado.
 - **Copia generada desactualizada** (`.opencode/agents/` derivada de `agents/`). Mitigación: la
-  edición va en la fuente `agents/`; la copia local se refresca con `ancleto upgrade`/`install
+  edición va en la fuente `agents/`; la copia local se refresca con `ancleto-fre upgrade`/`install
   --project` (fuera del alcance de este change, que no toca el runtime). Riesgo de dogfooding tardío,
   no de corrección de la fuente.
 - **Extracción de la garantía desde texto libre** (ver OPEN QUESTION). Es el riesgo principal no

@@ -1,6 +1,9 @@
 node_modules/
 *.log
 .DS_Store
+.ancleto-fre.rc
+.ancleto-fre/
+# Legado del upstream (pre-fork): storage con el nombre viejo.
 .ancletorc
 .ancleto/
 .opencode/

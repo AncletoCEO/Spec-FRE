@@ -51,13 +51,13 @@ export const COMMANDCODE_TOOL_MAP = {
 }
 
 // Tools de la memoria propia del framework. Command Code expone los servers MCP
-// con la convencion documentada `mcp__<server>__<tool>`; `ancleto-memory` es el
+// con la convencion documentada `mcp__<server>__<tool>`; `ancleto-fre-memory` es el
 // server que registra `buildDefaultMcp`. Estas claves del mapa `tools` de opencode
 // son sus tools, asi que se emiten con el nombre MCP completo.
 export const COMMANDCODE_MCP_TOOL_MAP = {
-  searchMemory: 'mcp__ancleto-memory__searchMemory',
-  recordRule: 'mcp__ancleto-memory__recordRule',
-  recordDecision: 'mcp__ancleto-memory__recordDecision'
+  searchMemory: 'mcp__ancleto-fre-memory__searchMemory',
+  recordRule: 'mcp__ancleto-fre-memory__recordRule',
+  recordDecision: 'mcp__ancleto-fre-memory__recordDecision'
 }
 
 // Parser propio sin dependencias. Cada entrada conserva su clave y sus lineas

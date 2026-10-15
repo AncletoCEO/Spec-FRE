@@ -11,7 +11,7 @@
 - [x] **1.1** Crear `src/core/memory/working-context.js` como módulo core del invariante
   "memoria activa → `working-context.md`" (render + persistencia del artefacto derivado).
   Ref: Design "Ubicación del invariante".
-- [x] **1.2** Implementar `workingContextPath(projectRoot)` → `join(projectRoot, '.ancleto',
+- [x] **1.2** Implementar `workingContextPath(projectRoot)` → `join(projectRoot, '.ancleto-fre',
   'working-context.md')`.
   Ref: Requirement "Raíz de proyecto del refresh disparado por MCP" / Scenario "Topología y salida
   desde la raíz del proyecto".
@@ -30,11 +30,11 @@
   cross-type/cross-scope que supersede una regla de proyecto refresca" y "Una escritura de decisión
   que no supersede no dispara refresh".
 - [x] **1.5** Implementar `resolveMemoryProjectRoot(dbPath)`: candidato
-  `dirname(dirname(dbPath))`; walk-up buscando el primer directorio con `.ancletorc`; si no lo
-  encuentra, fallback al candidato derivado de `dbPath` mientras exista el layout `.ancleto/`;
+  `dirname(dirname(dbPath))`; walk-up buscando el primer directorio con `.ancleto-fre.rc`; si no lo
+  encuentra, fallback al candidato derivado de `dbPath` mientras exista el layout `.ancleto-fre/`;
   `null` si no puede determinar raíz (el refresh se omite, best-effort).
   Ref: Requirement "Raíz de proyecto del refresh disparado por MCP" / Design "Resolución de
-  project-root vía `.ancletorc`" y "Fallback de raíz sin `.ancletorc` (decidido)".
+  project-root vía `.ancleto-fre.rc`" y "Fallback de raíz sin `.ancleto-fre.rc` (decidido)".
 
 ## 2. Engine sin cambios
 
@@ -113,8 +113,8 @@
   con `superseded = 0` → `false`; **cualquier** nodo (incl. `decision` y `rule` de scope
   `feature`/`task`) con `superseded > 0` → `true`.
   Ref: Requirement "Frescura del working-context tras escrituras MCP".
-- [x] **6.2** Unit de `resolveMemoryProjectRoot` — (a) con `.ancletorc` en la raíz; (b) con DB
-  anidada; (c) sin `.ancletorc` → fallback derivado de `dbPath`; (d) sin layout `.ancleto/` →
+- [x] **6.2** Unit de `resolveMemoryProjectRoot` — (a) con `.ancleto-fre.rc` en la raíz; (b) con DB
+  anidada; (c) sin `.ancleto-fre.rc` → fallback derivado de `dbPath`; (d) sin layout `.ancleto-fre/` →
   omitir (`null`).
   Ref: Requirement "Raíz de proyecto del refresh disparado por MCP".
 - [x] **6.3** Integración trigger positivo — `recordRule` scope `project` vía handler actualiza
@@ -137,10 +137,10 @@
   idénticos (el conjunto activo del bloque no cambió).
   Ref: Scenario "Refresh repetido es idempotente" / Design "Over-refresh".
 - [x] **6.8** Raíz vs `cwd` — con `.discovery-map.json` sembrado en la raíz y el server resuelto
-  desde otra raíz de DB, `<ProjectTopology>` refleja el mapa de la raíz detectada por `.ancletorc`.
+  desde otra raíz de DB, `<ProjectTopology>` refleja el mapa de la raíz detectada por `.ancleto-fre.rc`.
   Ref: Scenario "Topología y salida desde la raíz del proyecto".
 - [x] **6.9** Sin recursión ni corrupción — el proceso no recursa ni queda en deadlock y
-  `.ancleto/memory.db` permanece íntegra (índice FTS5 consistente).
+  `.ancleto-fre/memory.db` permanece íntegra (índice FTS5 consistente).
   Ref: Scenario "Sin recursión ni corrupción".
 - [x] **6.10** Integración trigger positivo por **supersesión cross-type/cross-scope** — un
   `recordDecision` (o un `recordRule` de scope `feature`/`task`) con la misma `memory_key` que una

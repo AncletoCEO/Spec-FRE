@@ -81,7 +81,7 @@ function formatTopologyBlock(topo) {
 }
 
 export function defaultMemoryDbPath(cwd = process.cwd()) {
-  return join(cwd, '.ancleto', 'memory.db')
+  return join(cwd, '.ancleto-fre', 'memory.db')
 }
 
 export function createMemoryEngine(dbPath = defaultMemoryDbPath()) {
@@ -142,7 +142,7 @@ function buildEngine(db) {
     const omitted = rows.length - includedCount
     if (omitted > 0) {
       block += `\n<ContextOverflowWarning>Context truncated due to size limits. ${omitted} rules omitted. Use the 'searchMemory' tool to query historical architectural decisions if you lack specific context.</ContextOverflowWarning>`
-      console.warn(`ancleto: ${omitted} reglas omitidas por limite de tamano (scope "${scope}")`)
+      console.warn(`ancleto-fre: ${omitted} reglas omitidas por limite de tamano (scope "${scope}")`)
     }
     const memoryBlock = `${block}\n</ProjectMemoryRules>`
     return topoBlock ? `${topoBlock}\n${memoryBlock}` : memoryBlock
@@ -185,7 +185,7 @@ function buildEngine(db) {
   // Procedencia de escritura (runtime-owned, solo auditoria): `source` se resuelve
   // exclusivamente desde `context.source || 'runtime'` y NUNCA desde `input` (un
   // `source` forjado en los args del caller se ignora, igual que `id`/`status`/
-  // `confidence`). Vocabulario: `mcp:ancleto-memory` (tools MCP), `cli:import`
+  // `confidence`). Vocabulario: `mcp:ancleto-fre-memory` (tools MCP), `cli:import`
   // (import del CLI), `runtime` (default programatico), `agent:<rol>` (solo si el
   // runtime confiable lo provee, nunca el caller). Frontera: la procedencia es
   // descriptiva; el motor NO la usa para autorizar ni denegar escrituras (sin

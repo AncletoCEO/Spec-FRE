@@ -10,7 +10,7 @@ Estado confirmado contra el código (`src/cli/index.js`):
 - `copyTemplates` (`:867-883`) copia **todos** los assets a `.opencode/` fijo; `copyAssets` (`:728-733`).
 - Manifiesto: hardcode `.opencode/agents`/`.opencode/commands` en `install` (`:976-978`) y `upgrade`
   (`:1029-1031`).
-- `ancleto check` recorre `installedPaths.{agents,commands,skills}`.
+- `ancleto-fre check` recorre `installedPaths.{agents,commands,skills}`.
 - `mergeMcp` (`:693-726`) escribe sólo en `opencode.json`/`opencode.jsonc`.
 - Frontmatter de `agents/*.md`: `description`, `mode`, `model` (`opencode-go/*`), `color`,
   `temperature`, `tools` (mapa), `permission`. `commands/*.md`: sólo `description`.
@@ -220,7 +220,7 @@ reflejaba el aviso. Decisión:
   sigue siendo exitosa).
 - **Granularidad**: **una línea por asset omitido**, con formato estable:
   `skip agents: not supported by host 'antigravity'` (asset en plural + host entre comillas simples).
-- **Manifiesto**: el aviso **NO** se registra en `.ancletorc`. Es consistente con D10: `installedPaths`
+- **Manifiesto**: el aviso **NO** se registra en `.ancleto-fre.rc`. Es consistente con D10: `installedPaths`
   es la unión de destinos **realmente escritos**; un asset omitido no produjo archivo.
 
 Racional: el usuario debe poder distinguir "instalé todo" de "omití lo no soportado" sin que la omisión

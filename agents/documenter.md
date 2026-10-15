@@ -105,7 +105,7 @@ Do not treat archive as a blind file move.
    - `tasks.md`
    - `specs/` when the change includes delta specs
 3. Determine whether the change includes spec deltas that must be reflected in `aspec/specs/`
-4. When deltas exist, run `ancleto specs check --change {change-name} --json` before merging. If a delta spec or its target source-of-truth spec is non-canonical (translated keywords), stop and report it instead of merging into it
+4. When deltas exist, run `ancleto-fre specs check --change {change-name} --json` before merging. If a delta spec or its target source-of-truth spec is non-canonical (translated keywords), stop and report it instead of merging into it
 5. If needed, update the relevant source-of-truth specs so they reflect the completed change
 6. If the change is not ready for archive, stop and report the inconsistency clearly
 7. If the change is ready, archive it to `aspec/changes/archive/{YYYY-MM-DD}-{change-name}/`
@@ -117,7 +117,7 @@ Do not treat archive as a blind file move.
 
 When a completed change modifies behavior through aspec deltas, `aspec/specs/` must reflect that completed behavior before the change is archived.
 
-**Language**: write spec content in the user's conversation language (or the project's configured `language` in `.ancletorc`). The requirement/scenario keywords (`Requirement`, `Scenario`, `SHALL`, `WHEN`/`THEN`/`AND`, `ADDED/MODIFIED/REMOVED/RENAMED Requirements`) are literal and MUST NOT be translated. Paths, file names, and identifiers stay unchanged.
+**Language**: write spec content in the user's conversation language (or the project's configured `language` in `.ancleto-fre.rc`). The requirement/scenario keywords (`Requirement`, `Scenario`, `SHALL`, `WHEN`/`THEN`/`AND`, `ADDED/MODIFIED/REMOVED/RENAMED Requirements`) are literal and MUST NOT be translated. Paths, file names, and identifiers stay unchanged.
 
 Handle these delta sections carefully:
 

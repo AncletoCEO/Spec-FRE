@@ -22,36 +22,36 @@ Evidencia: `README.md`, pack Repomix.
 ## Recorrido relevante
 
 1. `buildTopologyMap(rootDir)` recorre la raíz y produce el árbol/totales.
-2. `ancleto discovery --check` (state-only) compara hashes y clasifica
+2. `ancleto-fre discovery --check` (state-only) compara hashes y clasifica
    `impact`.
-3. `ancleto discovery [--compress]` genera el pack Repomix con los ignores
+3. `ancleto-fre discovery [--compress]` genera el pack Repomix con los ignores
    del tier.
-4. La skill `ancleto-technical-discovery` redacta el seed a partir del
+4. La skill `fre-technical-discovery` redacta el seed a partir del
    pack.
 
 ## Topología — `src/core/discovery.js`
 
 - `buildTopologyMap(rootDir)`: recorre la raíz ignorando `node_modules`,
-  `.git`, `.ancleto`, `dist`, `build`, `coverage`
+  `.git`, `.ancleto-fre`, `dist`, `build`, `coverage`
   (`TOPOLOGY_IGNORED_DIRS`); produce `last_updated`, `total_files`,
   `tree_summary` (conteo por directorio de primer nivel) y `root_files`.
 - `writeDiscoveryMap(rootDir)`: escribe `.discovery-map.json` en la raíz
   del repo.
 - `readTopologySummary(cwd)`: valida y lee el resumen para inyectarlo en
   el working context.
-- El mapa se regenera al correr `ancleto discovery` (no en `--check`).
+- El mapa se regenera al correr `ancleto-fre discovery` (no en `--check`).
 
 ## Empaquetado — `src/core/repomix-tier.js`
 
 - `TIER_PACK_CONFIG`: `normal` (sin ignores extra, sin compresión, sin
   budget), `minimo` (+`test/**`, `docs/**`, `**/*.md`; `--compress`),
   `gratis` (igual que `minimo` + budget 50000).
-- `readProjectTier(cwd)`: lee `.ancleto-tier` en la raíz o en
+- `readProjectTier(cwd)`: lee `.ancleto-fre-tier` en la raíz o en
   `.opencode/`; default `gratis`. **En este checkout existe
-  `.opencode/.ancleto-tier` con valor `normal`, por lo que el tier
+  `.opencode/.ancleto-fre-tier` con valor `normal`, por lo que el tier
   resuelto es `normal`** (corrige al seed previo, que decía `gratis`).
 - `buildRepomixArgs(flags, tier, exclude)`: fusiona `exclude`
-  (`.ancletorc`) + ignores del tier + `--ignore` del usuario, y agrega
+  (`.ancleto-fre.rc`) + ignores del tier + `--ignore` del usuario, y agrega
   `--compress` si el tier o el flag lo piden. No permite reemplazar los
   ignores por un `--ignore` vacío.
 - `tierTokenBudget(tier)`: budget de tokens; el CLI falla si el pack lo
@@ -63,8 +63,8 @@ Evidencia: `README.md`, pack Repomix.
   `envGratisModel()`, `isKnownGratisModel(model)`, `detectMuseSpark()`.
 - Tier `gratis`: prefiere Muse Spark 1.3 Free
   (`opencode/muse-spark-1.3-contributor-free`) si la cuenta lo habilita;
-  si no, `opencode/big-pickle`. `ANCLETO_MUSE_SPARK=1|0` fuerza la
-  elección y tiene prioridad sobre lo persistido en `.ancletorc`.
+  si no, `opencode/big-pickle`. `ANCLETO_FRE_MUSE_SPARK=1|0` fuerza la
+  elección y tiene prioridad sobre lo persistido en `.ancleto-fre.rc`.
 - Tier `minimo`: un único modelo `opencode-go/deepseek-v4.1-flash` para
   los 10 agents.
 
@@ -101,13 +101,13 @@ Evidencia: `README.md`, pack Repomix.
   `package-lock.json` como nuevo archivo raíz, `documentation/` como
   área raíz eliminada. Esto explica el `impact: material` y dispara la
   oferta de regenerar.
-- El tier resuelto (`.opencode/.ancleto-tier`) pasó de `gratis` a
+- El tier resuelto (`.opencode/.ancleto-fre-tier`) pasó de `gratis` a
   `normal`; afecta el comportamiento de `--ignore`/`--compress` en futuras
   corridas pero no los archivos del seed.
-- Nuevos assets de skill: `skills/ancleto-update/SKILL.md`,
-  `commands/cleto-update.md`, `docs/skill-ancleto-update.md`,
+- Nuevos assets de skill: `skills/fre-update/SKILL.md`,
+  `commands/fre-update.md`, `docs/skill-fre-update.md`,
   `aspec/specs/artifact-update/spec.md`. Cambios `test/content-guards.test.js`
-  para incluir `ancleto-update` en `ARTIFACT_SKILLS` y el conteo de
+  para incluir `fre-update` en `ARTIFACT_SKILLS` y el conteo de
   comandos `15 + 1`. Esto sube el catálogo a 21 skills y 16 commands.
 
 ## Paths clave
@@ -119,4 +119,4 @@ Evidencia: `README.md`, pack Repomix.
 | `src/core/tier-models.js` | Modelos por tier y resolución gratis. |
 | `src/cli/index.js` | `checkDiscovery`, `runRepomix`, `packDiscovery`, `computeImpact`, `readSeedMap`. |
 | `test/discovery-topology.test.js`, `test/discovery-tier.test.js`, `test/tier-models.test.js` | Guardas de topología, tiers y modelos. |
-| `ancleto discovery --check` | Reporta `state` + `impact` + `affectedDocs` + `config` (fuente única consumida por la skill). |
+| `ancleto-fre discovery --check` | Reporta `state` + `impact` + `affectedDocs` + `config` (fuente única consumida por la skill). |

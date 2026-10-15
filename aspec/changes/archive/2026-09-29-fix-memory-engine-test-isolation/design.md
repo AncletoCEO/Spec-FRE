@@ -180,4 +180,4 @@ Contexto producido con rutas citadas y precedente de memoria del repo
 (`memory-engine-test-fallos-aislamiento-cwd`); el comportamiento real se confirmó contra
 `src/core/memory/engine.js`, `src/core/discovery.js` y `test/memory-engine.test.js`. Los conteos de
 fallos provienen de ejecuciones reales del runner. Sin Work Item asociado (Azure DevOps deshabilitado en
-`.ancletorc`).
+`.ancleto-fre.rc`).

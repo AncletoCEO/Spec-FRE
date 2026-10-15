@@ -65,7 +65,7 @@ import { adaptFrontmatter } from '../core/adapters/frontmatter.js'
 El flujo no cambia: `copyDirTransformed` y `installAssetFiles` ya llaman a `adaptFrontmatter`; solo
 cambia el origen de la función.
 
-#### `ancleto check` (src/cli/index.js)
+#### `ancleto-fre check` (src/cli/index.js)
 
 Después de validar presencia de archivos, para cada archivo `.md` instalado en directorios de agents:
 
@@ -81,7 +81,7 @@ para algún host.
 **No bloqueante:** la divergencia de frontmatter se reporta como warning (⚠), no como faltante (✖).
 Exit code no cambia por divergencias de frontmatter (solo por faltantes).
 
-#### `ancleto upgrade`
+#### `ancleto-fre upgrade`
 
 Ya re-aplica el adaptador vía `installAgentAssets` → `adaptFrontmatter`. Sin cambios necesarios: la
 extracción al módulo es transparente para upgrade.

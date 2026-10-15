@@ -2,7 +2,7 @@
 
 ### Requirement: Resolución de scope declarado por el usuario
 
-The system SHALL resolver el scope que el usuario declara tras `/cleto-review` a una lista concreta de archivos y líneas a revisar.
+The system SHALL resolver el scope que el usuario declara tras `/fre-review` a una lista concreta de archivos y líneas a revisar.
 
 #### Scenario: Scope por ticket en mensaje de commit
 

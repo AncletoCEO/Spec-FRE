@@ -25,12 +25,12 @@ Los **commands** se copian verbatim (el body es el prompt); no se reescriben las
 - **Adaptador**: nueva rama explícita en el dispatch de `adaptFrontmatter`; `commandcode` entra en
   `KNOWN_HOSTS` y en `TRANSFORM_AGENTS`. Usa `parseToolFlags` (ya existente) para leer el mapa.
 - **`name`**: se inyecta desde el nombre del archivo (el host lo requiere; determinista y sin
-  sanitización necesaria para los nombres kebab de ancleto).
+  sanitización necesaria para los nombres kebab de ancleto-fre).
 - **`model`**: se omite → `inherit` (no se mapea el catálogo `opencode-go/*`).
 - **`tools` ausente** en el origen → `tools: "*"` (preserva el default "todas" de opencode).
   **`tools` presente** → lista mapeada (solo claves `true`); si queda vacía, `tools: []`.
 - **Tools MCP de memoria**: `searchMemory`/`recordRule`/`recordDecision` se emiten como
-  `mcp__ancleto-memory__<tool>` (convención documentada; servidor propio registrado por
+  `mcp__ancleto-fre-memory__<tool>` (convención documentada; servidor propio registrado por
   `buildDefaultMcp`).
 - **MCP**: `mergeCommandCodeMcp` escribe `.mcp.json` con `{ mcpServers: { [name]: { transport:
   'stdio', command, args, env? } } }`; no pisa un servidor homónimo; JSON inválido → aviso sin
@@ -60,15 +60,15 @@ src/core/adapters/frontmatter.js
 ├── KNOWN_HOSTS      += 'commandcode'
 ├── TRANSFORM_AGENTS += 'commandcode'
 ├── COMMANDCODE_TOOL_MAP  (ids verificados, tabla cerrada)
-├── COMMANDCODE_MCP_TOOL_MAP (mcp__ancleto-memory__*)
+├── COMMANDCODE_MCP_TOOL_MAP (mcp__ancleto-fre-memory__*)
 └── adaptCommandCodeFrontmatter(content, name)
 
 .commandcode/
 ├── skills/<n>/SKILL.md     # Agent Skills estándar (identity)
 ├── agents/<n>.md           # name, description, tools: [...] (adaptado)
 └── commands/<n>.md         # body = prompt (verbatim)
-.mcp.json                   # { mcpServers: { ancleto-memory: { transport: stdio, ... } } }
-AGENTS.md                   # memoria/instrucciones (ya lo instala ancleto)
+.mcp.json                   # { mcpServers: { ancleto-fre-memory: { transport: stdio, ... } } }
+AGENTS.md                   # memoria/instrucciones (ya lo instala ancleto-fre)
 ```
 
 Derivación del frontmatter (opencode → Command Code):
@@ -81,18 +81,18 @@ model: opencode-go/*   → ✗ omite            (host hereda el modelo de sesió
 tools (mapa)           → tools: [ids]       (mapa verificado; no mapeables → omit+warn)
     read→read_file  write→write_file  edit→edit_file  bash→shell_command
     grep→grep  glob→glob  webfetch→web_fetch  websearch→web_search  todowrite→todo_write
-    searchMemory/recordRule/recordDecision → mcp__ancleto-memory__*
+    searchMemory/recordRule/recordDecision → mcp__ancleto-fre-memory__*
     skill/task/patch/... → ✗ omit+warn (sin id verificado)
 ```
 
 ## Validation
 
 - Tests con fixture: `install --project --agent commandcode` crea `.commandcode/{skills,agents,commands}`
-  y `.mcp.json` con `ancleto-memory` (`transport: stdio`, rutas válidas)
+  y `.mcp.json` con `ancleto-fre-memory` (`transport: stdio`, rutas válidas)
 - Test del adaptador: `mode`/`color`/`temperature`/`permission` ausentes, `model` ausente, `tools`
   mapeado, clave desconocida omitida con aviso a stderr, agent sin `tools` → `tools: "*"`
 - Test de MCP: no pisa servidor homónimo ni claves preexistentes; JSON inválido → aviso
-- `ancleto check` sobre el layout `commandcode` sin divergencias ni faltantes
+- `ancleto-fre check` sobre el layout `commandcode` sin divergencias ni faltantes
 - `node --test test/*.test.js` en verde
 - Verificación manual documentada: en una sesión `cmd` aparecen las skills, los subagentes y los
-  `/cleto-*`, y el MCP de memoria responde
+  `/fre-*`, y el MCP de memoria responde

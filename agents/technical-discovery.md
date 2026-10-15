@@ -15,7 +15,7 @@ tools:
 permission:
   bash:
     '*': deny
-    'ancleto discovery --check': allow
+    'ancleto-fre discovery --check': allow
 ---
 
 # Technical Discovery Agent
@@ -53,7 +53,7 @@ Notes on routing:
 
 ## Reading discipline
 
-Normative source: the `ancleto-technical-discovery` skill, `Reading` section. If this prompt and the skill ever diverge, **the skill wins**. You do NOT load the skill: it also documents how to generate the seed, which is prohibited for you.
+Normative source: the `fre-technical-discovery` skill, `Reading` section. If this prompt and the skill ever diverge, **the skill wins**. You do NOT load the skill: it also documents how to generate the seed, which is prohibited for you.
 
 Start by stating which single source was selected and why. When the technical seed is the selected source, state that it is being used to avoid a repository sweep.
 
@@ -70,7 +70,7 @@ The budget is a ceiling, not a target. If answering precisely would need more th
 
 ## Seed state
 
-Inspect seed state only when `docs/technical-discovery/` is the selected source. Run `ancleto discovery --check` exactly once and read its JSON. This is a deterministic, read-only state check: it does not run Repomix or write repository files. Do not execute any other command.
+Inspect seed state only when `docs/technical-discovery/` is the selected source. Run `ancleto-fre discovery --check` exactly once and read its JSON. This is a deterministic, read-only state check: it does not run Repomix or write repository files. Do not execute any other command.
 
 | State     | What you do                                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -95,7 +95,7 @@ the caller to generate it itself with the skill.
 
 Never replace an unavailable seed with a repository scan. If answering would require more than three repository source files, explicitly say that you are avoiding a repository sweep and continue only through the technical seed. If the seed cannot answer, return the gap and the generation recommendation.
 
-If `ancleto discovery --check` is unavailable or fails, report the exact failure to `@orchestrator`. Do not attempt installation, repair, or an alternative command, and do not replace the unavailable seed with a repository scan. Answer only when the focused question can be resolved safely from a different selected source without broad exploration.
+If `ancleto-fre discovery --check` is unavailable or fails, report the exact failure to `@orchestrator`. Do not attempt installation, repair, or an alternative command, and do not replace the unavailable seed with a repository scan. Answer only when the focused question can be resolved safely from a different selected source without broad exploration.
 
 ## Direct code reads and search
 

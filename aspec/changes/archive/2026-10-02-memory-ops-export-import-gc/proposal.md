@@ -2,7 +2,7 @@
 
 ## Problem
 
-El motor de memoria (`src/core/memory/`) almacena reglas y decisiones en `.ancleto/memory.db`
+El motor de memoria (`src/core/memory/`) almacena reglas y decisiones en `.ancleto-fre/memory.db`
 pero no ofrece forma de:
 
 1. **Backup o compartición** de reglas/decisiones activas entre máquinas o entre miembros del
@@ -14,14 +14,14 @@ pero no ofrece forma de:
 ## Proposed change
 
 Agregar tres operaciones al motor de memoria, expuestas como subcomandos del grupo
-`ancleto memory`:
+`ancleto-fre memory`:
 
-- **`ancleto memory export [--out <file>]`**: exporta nodos activos (rules + decisions) a JSON
+- **`ancleto-fre memory export [--out <file>]`**: exporta nodos activos (rules + decisions) a JSON
   sanitizado (sin paths absolutos, sin secretos). Formato: array de
   `{memory_key, type, content, justification, scope, createdAt}`.
-- **`ancleto memory import <file>`**: importa desde JSON, haciendo upsert por `memory_key`
+- **`ancleto-fre memory import <file>`**: importa desde JSON, haciendo upsert por `memory_key`
   (el nodo más reciente gana). Idempotente: re-importar el mismo archivo es no-op.
-- **`ancleto memory gc [--dry-run]`**: purga nodos con `status='superseded'` y antigüedad
+- **`ancleto-fre memory gc [--dry-run]`**: purga nodos con `status='superseded'` y antigüedad
   mayor a 30 días (umbral configurable), luego ejecuta `VACUUM` + `REINDEX`. Con `--dry-run`
   solo reporta cantidad de nodos y tamaño estimado a liberar.
 

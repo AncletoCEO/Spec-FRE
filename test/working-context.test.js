@@ -17,7 +17,7 @@ import {
 // Patron de test/memory-engine.test.js: node:test + mkdtempSync + DB temporal.
 // La raiz de proyecto se pasa SIEMPRE explicita para no depender del cwd del repo.
 function withProject(fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'ancleto-wctx-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-wctx-'))
   try {
     return fn(dir)
   } finally {
@@ -56,33 +56,33 @@ describe('working-context — shouldRefreshWorkingContext (6.1)', () => {
 })
 
 describe('working-context — resolveMemoryProjectRoot (6.2)', () => {
-  it('detecta la raiz por la presencia de .ancletorc', () => {
+  it('detecta la raiz por la presencia de .ancleto-fre.rc', () => {
     withProject((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), '{}\n')
-      assert.equal(resolveMemoryProjectRoot(join(dir, '.ancleto', 'memory.db')), dir)
+      writeFileSync(join(dir, '.ancleto-fre.rc'), '{}\n')
+      assert.equal(resolveMemoryProjectRoot(join(dir, '.ancleto-fre', 'memory.db')), dir)
     })
   })
 
-  it('sube desde una DB anidada hasta el .ancletorc (gana sobre el fallback)', () => {
+  it('sube desde una DB anidada hasta el .ancleto-fre.rc (gana sobre el fallback)', () => {
     withProject((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), '{}\n')
-      // el candidato derivado de la DB tiene layout .ancleto/: si el walk-up fallara,
+      writeFileSync(join(dir, '.ancleto-fre.rc'), '{}\n')
+      // el candidato derivado de la DB tiene layout .ancleto-fre/: si el walk-up fallara,
       // el fallback devolveria este subdirectorio en lugar de la raiz.
-      mkdirSync(join(dir, 'packages', 'app', '.ancleto'), { recursive: true })
-      const dbPath = join(dir, 'packages', 'app', '.ancleto', 'memory.db')
+      mkdirSync(join(dir, 'packages', 'app', '.ancleto-fre'), { recursive: true })
+      const dbPath = join(dir, 'packages', 'app', '.ancleto-fre', 'memory.db')
       assert.equal(resolveMemoryProjectRoot(dbPath), dir)
     })
   })
 
-  it('sin .ancletorc usa el fallback derivado de dbPath si existe layout .ancleto/', () => {
+  it('sin .ancleto-fre.rc usa el fallback derivado de dbPath si existe layout .ancleto-fre/', () => {
     withProject((dir) => {
-      mkdirSync(join(dir, '.ancleto'), { recursive: true })
-      writeFileSync(join(dir, '.ancleto', 'memory.db'), '')
-      assert.equal(resolveMemoryProjectRoot(join(dir, '.ancleto', 'memory.db')), dir)
+      mkdirSync(join(dir, '.ancleto-fre'), { recursive: true })
+      writeFileSync(join(dir, '.ancleto-fre', 'memory.db'), '')
+      assert.equal(resolveMemoryProjectRoot(join(dir, '.ancleto-fre', 'memory.db')), dir)
     })
   })
 
-  it('sin .ancletorc ni layout .ancleto/ devuelve null', () => {
+  it('sin .ancleto-fre.rc ni layout .ancleto-fre/ devuelve null', () => {
     withProject((dir) => {
       assert.equal(resolveMemoryProjectRoot(join(dir, 'nested', 'deep', 'memory.db')), null)
       assert.equal(resolveMemoryProjectRoot(null), null)
@@ -94,7 +94,7 @@ describe('working-context — resolveMemoryProjectRoot (6.2)', () => {
 describe('working-context — writeWorkingContext', () => {
   it('escribe el bloque con salto final y devuelve el path escrito', () => {
     withProject((dir) => {
-      const engine = createMemoryEngine(join(dir, '.ancleto', 'memory.db'))
+      const engine = createMemoryEngine(join(dir, '.ancleto-fre', 'memory.db'))
       try {
         engine.recordNode({ memory_key: 'wc-w', type: 'rule', scope: 'project', content: 'regla a persistir' })
         const ret = writeWorkingContext(engine, dir)
@@ -109,7 +109,7 @@ describe('working-context — writeWorkingContext', () => {
 
   it('sin bloque escribe vacio y devuelve null (paridad CLI), y sin raiz no escribe', () => {
     withProject((dir) => {
-      const engine = createMemoryEngine(join(dir, '.ancleto', 'memory.db'))
+      const engine = createMemoryEngine(join(dir, '.ancleto-fre', 'memory.db'))
       try {
         assert.equal(writeWorkingContext(engine, null), null)
         assert.equal(writeWorkingContext(engine, dir), null)
@@ -124,7 +124,7 @@ describe('working-context — writeWorkingContext', () => {
 describe('working-context — refresh en handlers MCP', () => {
   it('recordRule scope project refresca el working-context (6.3)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         const result = toolkit.handlers.recordRule({ memory_key: 'wc-pos', content: 'regla fresca de proyecto', scope: 'project' })
@@ -147,7 +147,7 @@ describe('working-context — refresh en handlers MCP', () => {
 
   it('decisiones y reglas feature/task que NO superseden no crean el working-context (6.4)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         const decision = toolkit.handlers.recordDecision({ memory_key: 'wc-dec', content: 'decision de proyecto', scope: 'project' })
@@ -168,11 +168,11 @@ describe('working-context — refresh en handlers MCP', () => {
   it('decisiones y reglas feature/task que NO superseden conservan el contenido previo (6.4)', () => {
     withProject((dir) => {
       const out = workingContextPath(dir)
-      mkdirSync(join(dir, '.ancleto'), { recursive: true })
+      mkdirSync(join(dir, '.ancleto-fre'), { recursive: true })
       const sentinel = 'CONTENIDO PREVIO QUE NO ES UN BLOQUE VALIDO\n'
       writeFileSync(out, sentinel)
 
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         const decision = toolkit.handlers.recordDecision({ memory_key: 'wc-dec', content: 'decision de proyecto', scope: 'project' })
@@ -190,7 +190,7 @@ describe('working-context — refresh en handlers MCP', () => {
 
   it('supersesion de una rule project refresca con el contenido nuevo (6.5)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         toolkit.handlers.recordRule({ memory_key: 'wc-sup', content: 'version uno', scope: 'project' })
@@ -211,7 +211,7 @@ describe('working-context — refresh en handlers MCP', () => {
 
   it('supersesion cross-type (decision) de una rule project refresca y retira la rule (6.10)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         toolkit.handlers.recordRule({ memory_key: 'wc-cross-d', content: 'regla original', scope: 'project' })
@@ -233,7 +233,7 @@ describe('working-context — refresh en handlers MCP', () => {
 
   it('supersesion cross-scope (rule feature) de una rule project refresca y retira la rule (6.10)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         toolkit.handlers.recordRule({ memory_key: 'wc-cross-f', content: 'regla project original', scope: 'project' })
@@ -256,7 +256,7 @@ describe('working-context — refresh en handlers MCP', () => {
 
   it('una falla del refresh no pierde la escritura, conserva el archivo y avisa por stderr (6.6)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         toolkit.handlers.recordRule({ memory_key: 'wc-seed', content: 'contenido previo', scope: 'project' })
@@ -303,7 +303,7 @@ describe('working-context — refresh en handlers MCP', () => {
 describe('working-context — idempotencia (6.7)', () => {
   it('dos refreshes sin escrituras de memoria son byte-identicos (no filtra timestamps)', () => {
     withProject((dir) => {
-      const engine = createMemoryEngine(join(dir, '.ancleto', 'memory.db'))
+      const engine = createMemoryEngine(join(dir, '.ancleto-fre', 'memory.db'))
       try {
         engine.recordNode({ memory_key: 'wc-idem', type: 'rule', scope: 'project', content: 'regla idempotente' })
         const mapPath = join(dir, '.discovery-map.json')
@@ -337,7 +337,7 @@ describe('working-context — idempotencia (6.7)', () => {
 
   it('over-refresh intencional: decision -> decision misma key dispara pero deja bytes identicos (6.7)', () => {
     withProject((dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         // una rule project garantiza que el archivo exista con un bloque no vacio
@@ -364,9 +364,9 @@ describe('working-context — idempotencia (6.7)', () => {
 })
 
 describe('working-context — raiz del server MCP (6.8)', () => {
-  it('escribe bajo la raiz detectada por .ancletorc y usa su topologia, no el cwd', () => {
+  it('escribe bajo la raiz detectada por .ancleto-fre.rc y usa su topologia, no el cwd', () => {
     withProject((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), '{}\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), '{}\n')
       writeFileSync(join(dir, '.discovery-map.json'), JSON.stringify({
         last_updated: '2020-01-01T00:00:00.000Z',
         total_files: 11,
@@ -374,7 +374,7 @@ describe('working-context — raiz del server MCP (6.8)', () => {
         root_files: []
       }, null, 2) + '\n')
 
-      const server = createMemoryServer({ dbPath: join(dir, '.ancleto', 'memory.db') })
+      const server = createMemoryServer({ dbPath: join(dir, '.ancleto-fre', 'memory.db') })
       try {
         const res = server.handle({
           jsonrpc: '2.0',
@@ -385,7 +385,7 @@ describe('working-context — raiz del server MCP (6.8)', () => {
         assert.equal(res.result.isError, undefined)
 
         const out = workingContextPath(dir)
-        assert.ok(existsSync(out), 'se escribe bajo la raiz detectada por .ancletorc')
+        assert.ok(existsSync(out), 'se escribe bajo la raiz detectada por .ancleto-fre.rc')
         const content = readFileSync(out, 'utf8')
         assert.match(content, /<ProjectTopology>/)
         assert.match(content, /Total files: 11/)
@@ -401,8 +401,8 @@ describe('working-context — raiz del server MCP (6.8)', () => {
 describe('working-context — sin recursion ni corrupcion (6.9)', () => {
   it('varios refreshes no recursan, no dejan deadlock y mantienen la DB integra', { timeout: 15000 }, () => {
     withProject((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), '{}\n')
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), '{}\n')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const toolkit = createMemoryToolkit(dbPath, { source: 'test', projectRoot: dir })
       try {
         // cada recordRule project dispara el refresh; si recursara o se colgara, el test no termina

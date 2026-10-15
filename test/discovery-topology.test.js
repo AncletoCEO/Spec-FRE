@@ -19,7 +19,7 @@ function run(args, cwd, env = {}) {
 }
 
 function withDir(fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'ancleto-topo-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-topo-'))
   try {
     return fn(dir)
   } finally {
@@ -39,7 +39,7 @@ function seedFixture(dir) {
   writeFileSync(join(dir, 'src', 'sub', 'b.js'), '2\n')
   mkdirSync(join(dir, 'docs'), { recursive: true })
   writeFileSync(join(dir, 'docs', 'guide.md'), 'g\n')
-  for (const d of ['node_modules/dep', '.git', '.ancleto', 'dist', 'build', 'coverage']) {
+  for (const d of ['node_modules/dep', '.git', '.ancleto-fre', 'dist', 'build', 'coverage']) {
     mkdirSync(join(dir, d), { recursive: true })
     writeFileSync(join(dir, d, 'junk.txt'), 'x\n')
   }
@@ -60,7 +60,7 @@ describe('Discovery topología (D1)', () => {
     })
   })
 
-  it('ancleto discovery --check NO modifica .discovery-map.json (read-only)', () => {
+  it('ancleto-fre discovery --check NO modifica .discovery-map.json (read-only)', () => {
     withDir((dir) => {
       seedFixture(dir)
       const mapPath = join(dir, '.discovery-map.json')
@@ -76,7 +76,7 @@ describe('Discovery topología (D1)', () => {
     })
   })
 
-  it('ancleto discovery --check NO crea el mapa si no existe', () => {
+  it('ancleto-fre discovery --check NO crea el mapa si no existe', () => {
     withDir((dir) => {
       seedFixture(dir)
       const mapPath = join(dir, '.discovery-map.json')

@@ -2,7 +2,7 @@
 
 ## Problem
 
-`ancleto` instala skills para `opencode`, `vscode`, `antigravity`, `cursor` y `roo`
+`ancleto-fre` instala skills para `opencode`, `vscode`, `antigravity`, `cursor` y `roo`
 (`SUPPORTED_AGENTS` en `src/cli/index.js:593`), pero no existe el agente `copilot`.
 Los usuarios con suscripción a GitHub Copilot (VS Code o Visual Studio 2022+) no pueden
 usar el orchestrador ni los subagentes en su IDE: `installAgentSkills` no sabe dónde
@@ -14,7 +14,7 @@ para Copilot.
 
 Agregar `copilot` como agente soportado: convertir `agents/*.md` y `commands/*.md` a
 prompt agents de Copilot en `.github/prompts/*.prompt.md`, configurar el MCP
-(`engram`, `caveman`, `ancleto-memory`) en `copilot-mcp.json` con el mismo merge no
+(`engram`, `caveman`, `ancleto-fre-memory`) en `copilot-mcp.json` con el mismo merge no
 destructivo de `opencode.json`, y documentar la limitación real de modelos (en Copilot
 el modelo lo elige el usuario en el picker; los tiers se traducen a nivel de
 esfuerzo/pasos, no a IDs de modelo).

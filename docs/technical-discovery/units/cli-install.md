@@ -14,7 +14,7 @@ skillVersion: '2.3'
 
 ## Propósito
 
-`src/cli/index.js` es el **único entry point** (`bin.ancleto`/`bin.aspec`):
+`src/cli/index.js` es el **único entry point** (`bin.ancleto-fre`/`bin.aspec`):
 parseo de comandos, instalación de assets por host, resolución de agente/IDE,
 gestión de tiers, MCP, discovery, memoria, registro de proyectos y
 diagnósticos. La adaptación de frontmatter es un módulo aparte
@@ -38,7 +38,7 @@ importación openspec). Evidencia: `src/cli/index.js`, `README.md`.
 (`ext`); `null` = asset no soportado por ese host. `SUPPORTED_AGENTS =
 ['opencode','claude','vscode','antigravity','cursor','roo','copilot','commandcode']`;
 default `opencode`. `scanAgentFlag` valida `--agent` y `resolveAgent`
-prioriza flag → `.ancletorc` (`agent`) → wizard TTY → default. Evidencia:
+prioriza flag → `.ancleto-fre.rc` (`agent`) → wizard TTY → default. Evidencia:
 `src/cli/index.js`.
 
 | Host | Skills | Agents | Commands |
@@ -52,7 +52,7 @@ prioriza flag → `.ancletorc` (`agent`) → wizard TTY → default. Evidencia:
 | `copilot` | — (no soportado) | `.github/prompts/<n>.prompt.md` | `.github/prompts/<n>.prompt.md` |
 | `commandcode` | `.commandcode/skills` | `.commandcode/agents/<n>.md` | `.commandcode/commands/<n>.md` |
 
-- **Antigravity no tiene directorio de commands**: sus `/cleto-*` se
+- **Antigravity no tiene directorio de commands**: sus `/fre-*` se
   materializan como **command-skills** dentro de `.agents/skills/<n>/SKILL.md`
   (`package: 'skill-dir'`).
 - **Cursor y Roo: solo skills** (D3/D7). `.agents/skills` es punto de lectura
@@ -150,7 +150,7 @@ id `opencode-go/*`).
 `read→read_file`, `write→write_file`, `edit→edit_file`, `bash→shell_command`,
 `grep→grep`, `glob→glob`, `webfetch→web_fetch`, `websearch→web_search`,
 `todowrite→todo_write`. Las claves de memoria (`searchMemory`, `recordRule`,
-`recordDecision`) se emiten como tools MCP `mcp__ancleto-memory__<tool>`
+`recordDecision`) se emiten como tools MCP `mcp__ancleto-fre-memory__<tool>`
 (`COMMANDCODE_MCP_TOOL_MAP`). Toda clave sin id verificado se omite con aviso
 `skip tool '<k>': no verified Command Code id for agent '<n>'`. **Diferencia
 clave**: en Command Code `tools` omitido significa "ninguna tool", por eso un
@@ -160,7 +160,7 @@ origen sin `tools` emite `tools: "*"` (el default de opencode es "todas") y un
 `test/adapters-frontmatter.test.js`,
 `aspec/specs/commandcode-support/spec.md`.
 
-## Validación de frontmatter en `ancleto check`
+## Validación de frontmatter en `ancleto-fre check`
 T3 del delta `frontmatter-adapters`: `checkAgentsFrontmatter` recorre cada
 `.md` de un directorio de agents instalado, lee el origen y el instalado,
 aplica `adaptFrontmatter(origen, host, 'agents', name)` y compara. En
@@ -199,14 +199,14 @@ dentro del layout de skills. Evidencia: `src/cli/index.js`.
   `.opencode` del proyecto o config global).
 - **`init` configura MCP** igual que `install`, con el mismo dueño y sin
   rama especial por host; `--no-mcp` es el escape en ambos. Defaults:
-  `ancleto-memory` (stdio) y `caveman` si está en `PATH`; `engram` solo con
+  `ancleto-fre-memory` (stdio) y `caveman` si está en `PATH`; `engram` solo con
   `--with-engram`; `azure-devops` si `azure.enabled: true`. Evidencia:
   `src/cli/index.js`.
 
 ## Perfil `test` (overlay, `installProfileOverlay`)
 
 Con `profile: test` (`--profile`, `test:playwright` como alias;
-`SUPPORTED_PROFILES = general|test`; persistido en `.ancletorc`),
+`SUPPORTED_PROFILES = general|test`; persistido en `.ancleto-fre.rc`),
 `installProfileOverlay` reinstala `profiles/test/agents` + `commands` sobre
 los destinos nativos del host (misma `ext` y mismo adapter que la base;
 funciona con opencode, claude y copilot), `copyTemplates` lee
@@ -217,16 +217,16 @@ base queda intacto y el tier sigue ortogonal. Evidencia: `src/cli/index.js`,
 
 ## Portabilidad entre máquinas (`export` / `import`)
 
-`exportCmd` agrupa portables (`.ancletorc`, templates, `aspec/`,
+`exportCmd` agrupa portables (`.ancleto-fre.rc`, templates, `aspec/`,
 `.opencode/{agents,commands,skills}`) + `manifest.json` (`format:
-ancleto-export/1`; MCP como intención nombre+tipo, nunca rutas; aborta si
+ancleto-fre-export/1`; MCP como intención nombre+tipo, nunca rutas; aborta si
 hay absolutos) a directorio o `--tar`. Excluye `opencode.json`,
-`.ancleto-tier`, `memory.db`, `service.json` y global (la memoria tiene su
+`.ancleto-fre-tier`, `memory.db`, `service.json` y global (la memoria tiene su
 propio `memory export`). `importCmd` aplica portables, reinstala assets del
 host, re-aplica el tier y **regenera** el MCP local (`mcpCommandBroken` +
 `repairProjectMcp`: solo rotas/ausentes, nunca sanas), cerrando con
 `doctor`. `import --repair` repara in place sin bundle. Wrapper
-`/cleto-transplant`. Evidencia: `src/cli/index.js`.
+`/fre-transplant`. Evidencia: `src/cli/index.js`.
 
 ## `check` / tier / `projects` host-aware
 
@@ -241,7 +241,7 @@ host, re-aplica el tier y **regenera** el MCP local (`mcpCommandBroken` +
   contra el adaptador (ver arriba).
 - **`installedExtFor`**: deriva la convención de nombre del host del mismo
   modelo de destino.
-- **Tier resuelto en este checkout**: `normal` vía `.opencode/.ancleto-tier`
+- **Tier resuelto en este checkout**: `normal` vía `.opencode/.ancleto-fre-tier`
   (no `gratis` como declaraba el seed previo).
   Evidencia: `src/cli/index.js`.
 
@@ -264,15 +264,15 @@ host, re-aplica el tier y **regenera** el MCP local (`mcpCommandBroken` +
 5. `scaffoldAspec` (+ `scaffoldTestspec` con perfil `test`) crean
    estructura sin pisar.
 6. `applyTier` reescribe la línea `model:` de cada agente; resuelve
-   `gratisModel` y lo guarda en `.ancletorc`. Paridad `init`/`install` en
+   `gratisModel` y lo guarda en `.ancleto-fre.rc`. Paridad `init`/`install` en
    el tier guardado (v0.6.36/v0.6.37).
 7. `setupHostMcp` configura el MCP del host de forma **no destructiva**.
-   `upgrade` sin `.ancletorc` migra `openspec/` si lo hay en lugar de
+   `upgrade` sin `.ancleto-fre.rc` migra `openspec/` si lo hay en lugar de
    exigir `init`.
-8. `writeManifest` actualiza `.ancletorc` y `registerProject` anota el
-   repo en `~/.config/ancleto/projects.json` (override:
-   `ANCLETO_PROJECTS_FILE`).
-9. `refreshWorkingContext` regenera `.ancleto/working-context.md` desde la
+8. `writeManifest` actualiza `.ancleto-fre.rc` y `registerProject` anota el
+   repo en `~/.config/ancleto-fre/projects.json` (override:
+   `ANCLETO_FRE_PROJECTS_FILE`).
+9. `refreshWorkingContext` regenera `.ancleto-fre/working-context.md` desde la
    memoria.
 
 ## Migración/importación `openspec/` → `aspec/`
@@ -302,9 +302,9 @@ host, re-aplica el tier y **regenera** el MCP local (`mcpCommandBroken` +
 - **Errores no bloqueantes**: binarios ausentes (MCP/git/gh/az), assets
   no soportados y divergencias de frontmatter se omiten con warning a
   stderr.
-- `ancleto --version` lee `package.json` en runtime (no hardcodeado).
-- **No confundir** `ancleto update` (CLI, reinstala el paquete) con
-  `/cleto-update` (skill, revisa artifacts de un change con merge no
+- `ancleto-fre --version` lee `package.json` en runtime (no hardcodeado).
+- **No confundir** `ancleto-fre update` (CLI, reinstala el paquete) con
+  `/fre-update` (skill, revisa artifacts de un change con merge no
   destructivo — ver `aspec/specs/artifact-update/spec.md`).
 
 ## Paths clave
@@ -315,7 +315,7 @@ host, re-aplica el tier y **regenera** el MCP local (`mcpCommandBroken` +
 | `src/core/adapters/frontmatter.js` | `adaptFrontmatter`, `parseFrontmatter`, `serializeFrontmatter`, `AGENT_ADAPTER_DROP`, `ANTIGRAVITY_TOOL_MAP`, `COMMANDCODE_TOOL_MAP`, `COMMANDCODE_MCP_TOOL_MAP`; dueño único de la transformación. |
 | `src/cli/ui.js` | Banner y menús TTY (`selectOption`, `selectMultiple`). |
 | `templates/AGENTS.md`, `templates/PRODUCT.md` | Templates con bloques LOCKED/EXTENSIBLE. |
-| `skills/*/SKILL.md` | Catálogo instalable (21 skills, incluye `ancleto-update`); en agents el frontmatter se adapta por host, en skills se copia. |
-| `commands/*.md` | 16 comandos `/cleto-*`; en antigravity se empaquetan como skills. |
+| `skills/*/SKILL.md` | Catálogo instalable (21 skills, incluye `fre-update`); en agents el frontmatter se adapta por host, en skills se copia. |
+| `commands/*.md` | 16 comandos `/fre-*`; en antigravity se empaquetan como skills. |
 | `test/cli.test.js`, `test/adapters-frontmatter.test.js`, `test/content-guards.test.js` | Guardas del CLI, del adaptador y de contenido. |
 | `README.md`, `BACKLOG.md` | Contrato operativo y backlog. |

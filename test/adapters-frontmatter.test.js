@@ -56,7 +56,7 @@ describe('adaptFrontmatter — opencode (default)', () => {
   })
   it('commands: identity byte-a-byte', () => {
     const c = SAMPLE()
-    assert.equal(adaptFrontmatter(c, 'opencode', 'commands', 'cleto-new'), c)
+    assert.equal(adaptFrontmatter(c, 'opencode', 'commands', 'fre-new'), c)
   })
 })
 
@@ -87,7 +87,7 @@ describe('adaptFrontmatter — claude/vscode/copilot (drop keys)', () => {
 
     it(`${host} commands: identity (no adapta commands)`, () => {
       const c = SAMPLE()
-      assert.equal(adaptFrontmatter(c, host, 'commands', 'cleto-new'), c)
+      assert.equal(adaptFrontmatter(c, host, 'commands', 'fre-new'), c)
     })
 
     it(`${host}: sin frontmatter → retorna el contenido sin cambios`, () => {
@@ -234,7 +234,7 @@ describe('adaptFrontmatter — commandcode (transformación)', () => {
   it('las tools de memoria se emiten como tools MCP de Command Code', () => {
     const extra = ['searchMemory: true', 'recordRule: true', 'recordDecision: true'].map((k) => `  ${k}`).join('\n') + '\n'
     const out = adaptFrontmatter(SAMPLE(extra), 'commandcode', 'agents', 'memory-keeper')
-    assert.match(out, /^tools: \[read_file, edit_file, shell_command, mcp__ancleto-memory__searchMemory, mcp__ancleto-memory__recordRule, mcp__ancleto-memory__recordDecision\]$/m)
+    assert.match(out, /^tools: \[read_file, edit_file, shell_command, mcp__ancleto-fre-memory__searchMemory, mcp__ancleto-fre-memory__recordRule, mcp__ancleto-fre-memory__recordDecision\]$/m)
   })
 
   it('una clave sin id verificado se omite con aviso a stderr', () => {
@@ -265,7 +265,7 @@ describe('adaptFrontmatter — commandcode (transformación)', () => {
   it('skills/commands: identity (no adapta skills ni commands)', () => {
     const c = SAMPLE()
     assert.equal(adaptFrontmatter(c, 'commandcode', 'skills', 'triage-clarifier'), c)
-    assert.equal(adaptFrontmatter(c, 'commandcode', 'commands', 'cleto-new'), c)
+    assert.equal(adaptFrontmatter(c, 'commandcode', 'commands', 'fre-new'), c)
   })
 
   it('sin frontmatter → contenido sin cambios', () => {
@@ -286,9 +286,9 @@ describe('adaptFrontmatter — commandcode (transformación)', () => {
       todowrite: 'todo_write'
     })
     assert.deepEqual(COMMANDCODE_MCP_TOOL_MAP, {
-      searchMemory: 'mcp__ancleto-memory__searchMemory',
-      recordRule: 'mcp__ancleto-memory__recordRule',
-      recordDecision: 'mcp__ancleto-memory__recordDecision'
+      searchMemory: 'mcp__ancleto-fre-memory__searchMemory',
+      recordRule: 'mcp__ancleto-fre-memory__recordRule',
+      recordDecision: 'mcp__ancleto-fre-memory__recordDecision'
     })
   })
 })
@@ -306,7 +306,7 @@ describe('adaptFrontmatter — cursor y roo (passthrough con aviso)', () => {
 
     it(`${host} commands: identity (los hosts no soportan, pero si llegara: identity + aviso)`, () => {
       const c = SAMPLE()
-      assert.equal(adaptFrontmatter(c, host, 'commands', 'cleto-new'), c)
+      assert.equal(adaptFrontmatter(c, host, 'commands', 'fre-new'), c)
       assert.ok(
         stderrLines.some((l) => l === `no documented frontmatter adaptation for host '${host}'`),
         `debe emitir aviso a stderr para ${host}`
@@ -328,7 +328,7 @@ describe('adaptFrontmatter — host desconocido', () => {
     const c = SAMPLE()
     assert.equal(adaptFrontmatter(c, 'unknown-host', 'agents', 'coder'), c)
     assert.equal(adaptFrontmatter(c, 'unknown-host', 'skills', 'triage-clarifier'), c)
-    assert.equal(adaptFrontmatter(c, 'unknown-host', 'commands', 'cleto-new'), c)
+    assert.equal(adaptFrontmatter(c, 'unknown-host', 'commands', 'fre-new'), c)
     assert.ok(
       stderrLines.filter((l) => l === `unknown agent 'unknown-host', passthrough`).length === 3,
       'debe emitir un aviso por cada asset procesado'

@@ -21,8 +21,8 @@ Superficies de escritura confiables y su valor de procedencia:
 ```text
 escritura                                  source (runtime-owned)
 ─────────────────────────────────────────  ────────────────────────────
-tools MCP (recordRule/recordDecision)  ->  mcp:ancleto-memory
-ancleto memory import                  ->  cli:import
+tools MCP (recordRule/recordDecision)  ->  mcp:ancleto-fre-memory
+ancleto-fre memory import                  ->  cli:import
 toolkit programático sin source        ->  tool:recordRule | tool:recordDecision
 engine.recordNode() directo (default)  ->  runtime
 contexto de runtime que aporta un rol  ->  agent:<rol>   (si el runtime lo provee)
@@ -38,7 +38,7 @@ caller (LLM) ──args──▶ tools MCP ──▶ handlers ──contexto de 
                                                             INSERT memory_nodes.source
                                                                      │
                         publicNode() ────────────────▶ searchMemory (LLM): SIN source
-                        listNodes() ─────────────────▶ ancleto memory list: CON source (auditoría)
+                        listNodes() ─────────────────▶ ancleto-fre memory list: CON source (auditoría)
 ```
 
 Puntos de diseño:
@@ -84,7 +84,7 @@ futuro tenga una base observable, sin construir hoy extensiones especulativas.
 | Extender `source`, no crear columna `actor` | `ALTER TABLE ... ADD COLUMN actor` | La columna ya existe y es runtime-owned; el backlog pide extender `source`, no crear estructura nueva |
 | Provenance = superficie de escritura | Identidad de rol del LLM | El rol no es autenticable en MCP stdio; registrarlo sería insostenible |
 | Exponer en `listNodes`, no en `searchMemory` | Incluir `source` en el read model del LLM | Respeta el invariante "no expone campos del runtime" y el encapsulamiento de firmas MCP |
-| Normalizar import a `cli:import` | Dejar `'import'` | Vocabulario namespaced y consistente con `mcp:ancleto-memory`; sin contrato que lo fije |
+| Normalizar import a `cli:import` | Dejar `'import'` | Vocabulario namespaced y consistente con `mcp:ancleto-fre-memory`; sin contrato que lo fije |
 | Auditoría ahora, enforcement diferido | Enforcement con actor auto-declarado | Separa lo descriptivo de lo verificable; no promete propiedad inexistente |
 
 ## Validation
@@ -95,10 +95,10 @@ futuro tenga una base observable, sin construir hoy extensiones especulativas.
   - `listNodes` incluye `source`; `searchMemory` NO lo incluye (preserva `:171-175`).
   - Las firmas MCP siguen sin exponer `source` (`:367-373`).
 - Tests de integración en `test/mcp.test.js`:
-  - Un nodo escrito por MCP persiste `source = 'mcp:ancleto-memory'` y aparece en
+  - Un nodo escrito por MCP persiste `source = 'mcp:ancleto-fre-memory'` y aparece en
     `memory list --json`.
   - Un `source` forjado en los args de la tool no altera la procedencia persistida.
 - Gates del repo: `npm run typecheck`, `npm run lint`, `npm test` (acotar con rutas explícitas
   por la regla `node-test-scope-explicit-paths`).
 - No hay migración de schema: los nodos existentes conservan su `source` previo (datos
-  históricos, posiblemente `mcp:ancleto-memory`); el vocabulario aplica a escrituras nuevas.
+  históricos, posiblemente `mcp:ancleto-fre-memory`); el vocabulario aplica a escrituras nuevas.

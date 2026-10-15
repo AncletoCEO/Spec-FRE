@@ -3,7 +3,7 @@ import { memoryTools, createMemoryToolHandlers } from './tools.js'
 import { resolveMemoryProjectRoot } from './working-context.js'
 
 const PROTOCOL_VERSION = '2024-11-05'
-const SERVER_INFO = { name: 'ancleto-memory', version: '1.0.0' }
+const SERVER_INFO = { name: 'ancleto-fre-memory', version: '1.0.0' }
 
 export function createMemoryServer({ dbPath = defaultMemoryDbPath() } = {}) {
   let engine = null
@@ -13,7 +13,7 @@ export function createMemoryServer({ dbPath = defaultMemoryDbPath() } = {}) {
   function toolkit() {
     if (!engine) {
       engine = createMemoryEngine(dbPath)
-      handlers = createMemoryToolHandlers(engine, { source: 'mcp:ancleto-memory', projectRoot })
+      handlers = createMemoryToolHandlers(engine, { source: 'mcp:ancleto-fre-memory', projectRoot })
     }
     return handlers
   }

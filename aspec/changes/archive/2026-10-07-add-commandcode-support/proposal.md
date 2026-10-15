@@ -2,10 +2,10 @@
 
 ## Problem
 
-`ancleto` soporta los hosts `opencode`, `claude`, `vscode`, `antigravity`, `cursor`, `roo` y
+`ancleto-fre` soporta los hosts `opencode`, `claude`, `vscode`, `antigravity`, `cursor`, `roo` y
 `copilot` (modelo `AGENT_TARGETS` en `src/cli/index.js`). Command Code (CLI `cmd`, de
 CommandCodeAI) no está soportado: un usuario que trabaja con `cmd` no puede instalar el catálogo
-de skills, los subagentes ni los comandos `/cleto-*` en su layout nativo.
+de skills, los subagentes ni los comandos `/fre-*` en su layout nativo.
 
 Command Code tiene un modelo de configuración propio que no coincide con ningún host existente:
 
@@ -17,7 +17,7 @@ Command Code tiene un modelo de configuración propio que no coincide con ningú
   `tools` deja a los subagentes sin capacidad.
 - El MCP de proyecto vive en `.mcp.json` (scope `project`), con esquema `mcpServers` /
   `transport: stdio` / `command` / `args` / `env`.
-- Lee `AGENTS.md` como memoria/instrucciones del proyecto (ancleto ya lo instala).
+- Lee `AGENTS.md` como memoria/instrucciones del proyecto (ancleto-fre ya lo instala).
 
 ## Proposed change
 
@@ -37,7 +37,7 @@ Agregar `commandcode` como host nativo de primera clase:
 4. **Nota de modelo** en el orchestrator: los tiers no reescriben modelos para este host (el
    `model` se hereda); la nota indica elegir con `/model`.
 5. **Alta del host**: `SUPPORTED_AGENTS`, wizard, `--agent commandcode`, persistencia en
-   `.ancletorc`.
+   `.ancleto-fre.rc`.
 
 ## Scope
 
@@ -65,7 +65,7 @@ Out of scope:
 - **Agents sin tools**: mitigado con el mapa verificado y `tools: "*"` cuando el origen no declara
   `tools`; nunca se emite un id inventado (política de `skill-frontmatter-adapters`).
 - **Tools MCP de memoria**: `memory-keeper` declara `searchMemory`/`recordRule`/`recordDecision`.
-  Se emiten como `mcp__ancleto-memory__<tool>` (convención documentada `mcp__<server>__<tool>`,
+  Se emiten como `mcp__ancleto-fre-memory__<tool>` (convención documentada `mcp__<server>__<tool>`,
   servidor propio y conocido) Y se mergea `.mcp.json`; si el usuario corre `--no-mcp`, esas tools
   quedan referenciando un servidor ausente.
 - **Commands verbatim**: el body dice "invoke the X skill"; en Command Code el equivalente es

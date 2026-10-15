@@ -1,21 +1,21 @@
-# Design: Extensión de VS Code para ancleto
+# Design: Extensión de VS Code para ancleto-fre
 
 ## Approach
 
-Mantener un único núcleo (`src/`, `agents/`, `commands/`, `skills/`, `templates/`) donde npm es la fuente de verdad, y dos envoltorios de distribución: (1) paquete npm actual `@ancleto/spec`, (2) extensión VS Code generada por un build que transforma ese mismo código npm al formato `.vsix`. Cada cambio nuevo en npm se propaga al `.vsix` ejecutando el build, sin edición manual duplicada ni fork. La extensión no reimplementa lógica: invoca el núcleo existente vía host Node de VS Code o terminal integrado, exponiendo los comandos como Command Palette + vista de actividad. El deploy a Marketplace se dispara desde GitHub Actions, en el mismo tag `v*` que publica a npm.
+Mantener un único núcleo (`src/`, `agents/`, `commands/`, `skills/`, `templates/`) donde npm es la fuente de verdad, y dos envoltorios de distribución: (1) paquete npm actual `@ancleto/spec-fre`, (2) extensión VS Code generada por un build que transforma ese mismo código npm al formato `.vsix`. Cada cambio nuevo en npm se propaga al `.vsix` ejecutando el build, sin edición manual duplicada ni fork. La extensión no reimplementa lógica: invoca el núcleo existente vía host Node de VS Code o terminal integrado, exponiendo los comandos como Command Palette + vista de actividad. El deploy a Marketplace se dispara desde GitHub Actions, en el mismo tag `v*` que publica a npm.
 
-Fase actual solo planning: se elige la opción A (thin-wrapper) frente a B (fork TypeScript completo) y C (solo snippets/prompts sin CLI). Se pospone la implementación al siguiente change (`ancleto-vscode-extension-impl`).
+Fase actual solo planning: se elige la opción A (thin-wrapper) frente a B (fork TypeScript completo) y C (solo snippets/prompts sin CLI). Se pospone la implementación al siguiente change (`ancleto-fre-vscode-extension-impl`).
 
 Decisiones de diseño:
 - Versionado único: la versión del `.vsix` sigue a `package.json` (`0.6.x`) para evitar divergencia npm vs Marketplace.
 - Zero-dependencies se preserva: la extensión solo permite `devDependencies` de build (`@types/vscode`, `vsce`/`@vscode/vsce`, `esbuild` si hace falta) y ninguna dependencia de runtime nueva.
-- Activación bajo demanda (`onStartupFinished` o `onCommand:ancleto.*`), con chequeo de `process.version` (Node ≥ 24 por `node:sqlite`) y mensaje de degradación si el host no cumple.
-- Instalación de assets reutilizando `ancleto install/update` existente contra el workspace abierto, sin duplicar lógica de merge de bloques `LOCKED`.
+- Activación bajo demanda (`onStartupFinished` o `onCommand:ancleto-fre.*`), con chequeo de `process.version` (Node ≥ 24 por `node:sqlite`) y mensaje de degradación si el host no cumple.
+- Instalación de assets reutilizando `ancleto-fre install/update` existente contra el workspace abierto, sin duplicar lógica de merge de bloques `LOCKED`.
 
 ## Architecture
 
 ```text
-@ancleto/spec (repo único, npm = fuente de verdad)
+@ancleto/spec-fre (repo único, npm = fuente de verdad)
 ├── src/cli/index.js        # núcleo CLI (sin cambios en esta fase)
 ├── src/core/...            # discovery, memoria, tiers
 ├── agents/ commands/ skills/ templates/  # assets instalables
@@ -37,11 +37,11 @@ Deploy desde GitHub al Marketplace:
 - Secrets como variables nombradas (`VSCE_PAT`, `OVSX_PAT`), nunca con valores en el repo.
 
 Mapeo funcional (paridad CLI ↔ extensión):
-- `ancleto install` → comando `Ancleto: Install` (paleta + botón vista).
-- `ancleto update / upgrade` → `Ancleto: Update`.
-- `ancleto discovery / memory / mcp / doctor` → comandos equivalentes que abren terminal integrado o Output Channel.
-- `/cleto-*` (12 comandos) → snippets/contributes que insertan o ejecutan el flujo existente, sin redefinirlos.
-- Memoria `.ancleto/memory.db` sin cambios de contrato; la extensión opera sobre el workspace folder.
+- `ancleto-fre install` → comando `Ancleto: Install` (paleta + botón vista).
+- `ancleto-fre update / upgrade` → `Ancleto: Update`.
+- `ancleto-fre discovery / memory / mcp / doctor` → comandos equivalentes que abren terminal integrado o Output Channel.
+- `/fre-*` (12 comandos) → snippets/contributes que insertan o ejecutan el flujo existente, sin redefinirlos.
+- Memoria `.ancleto-fre/memory.db` sin cambios de contrato; la extensión opera sobre el workspace folder.
 
 Empaquetado:
 - `vsce package` incluye `agents, commands, skills, templates, src` (mismo set que `files` de npm) más el shim de extensión, siempre vía el script de transformación para evitar copias manuales.
@@ -49,7 +49,7 @@ Empaquetado:
 
 ## Decisiones confirmadas (Fase 1, 2026-09-30)
 
-- Nombre Marketplace: `ancleto-spec` (igual que el paquete npm sin scope).
+- Nombre Marketplace: `ancleto-fre-spec` (igual que el paquete npm sin scope).
 - Publisher: `damianarganaras` (dueño del repo; supuesto a corregir si se usa otro ID — colaboradores: damianarganaras, Lubonch). Licencia MIT visible en la ficha.
 - Estrategia: thin-wrapper (opción A) — confirmada, sin fork.
 - Versionado único: `.vsix` sigue a `package.json` (sincronizado por `scripts/build-vsix.js`).
@@ -58,27 +58,27 @@ Empaquetado:
 
 | CLI | Comando VS Code | Vía |
 |---|---|---|
-| `ancleto install [--project]` | `Ancleto: Install` | terminal integrado (cwd = workspace) |
-| `ancleto update` | `Ancleto: Update` | terminal integrado |
-| `ancleto upgrade` | `Ancleto: Upgrade` | terminal integrado |
-| `ancleto init` | `Ancleto: Init` | terminal integrado |
-| `ancleto discovery [--check]` | `Ancleto: Discovery` / `Ancleto: Discovery Check` | terminal integrado |
-| `ancleto memory context\|list\|doctor` | `Ancleto: Memory Context/List/Doctor` | terminal integrado |
-| `ancleto mcp` | `Ancleto: MCP Server Info` | terminal integrado (info; el server lo configura el IDE) |
-| `ancleto doctor` | `Ancleto: Doctor` | Output Channel `Ancleto` |
-| `ancleto check` | `Ancleto: Check` | Output Channel `Ancleto` |
-| `ancleto stats` | `Ancleto: Stats` | terminal integrado |
-| `ancleto specs check` | `Ancleto: Specs Check` | terminal integrado |
-| `ancleto export` | `Ancleto: Export Project` | terminal integrado |
-| `ancleto import` | `Ancleto: Import Project` | terminal integrado |
-| `/cleto-new`, `/cleto-propose`, `/cleto-apply`, `/cleto-verify`, `/cleto-archive`, `/cleto-bulk-archive`, `/cleto-continue`, `/cleto-explore`, `/cleto-ff`, `/cleto-onboard`, `/cleto-recall`, `/cleto-sync`, `/cleto-transplant` (13) | `Ancleto: cleto-*` (13) | envía el texto `/cleto-*` al terminal integrado |
-| `ancleto memory export/import/gc` (M1/M2 v0.7.0, planificado) | — | fuera de alcance hasta implementarse en el CLI |
+| `ancleto-fre install [--project]` | `Ancleto: Install` | terminal integrado (cwd = workspace) |
+| `ancleto-fre update` | `Ancleto: Update` | terminal integrado |
+| `ancleto-fre upgrade` | `Ancleto: Upgrade` | terminal integrado |
+| `ancleto-fre init` | `Ancleto: Init` | terminal integrado |
+| `ancleto-fre discovery [--check]` | `Ancleto: Discovery` / `Ancleto: Discovery Check` | terminal integrado |
+| `ancleto-fre memory context\|list\|doctor` | `Ancleto: Memory Context/List/Doctor` | terminal integrado |
+| `ancleto-fre mcp` | `Ancleto: MCP Server Info` | terminal integrado (info; el server lo configura el IDE) |
+| `ancleto-fre doctor` | `Ancleto: Doctor` | Output Channel `Ancleto` |
+| `ancleto-fre check` | `Ancleto: Check` | Output Channel `Ancleto` |
+| `ancleto-fre stats` | `Ancleto: Stats` | terminal integrado |
+| `ancleto-fre specs check` | `Ancleto: Specs Check` | terminal integrado |
+| `ancleto-fre export` | `Ancleto: Export Project` | terminal integrado |
+| `ancleto-fre import` | `Ancleto: Import Project` | terminal integrado |
+| `/fre-new`, `/fre-propose`, `/fre-apply`, `/fre-verify`, `/fre-archive`, `/fre-bulk-archive`, `/fre-continue`, `/fre-explore`, `/fre-ff`, `/fre-onboard`, `/fre-recall`, `/fre-sync`, `/fre-transplant` (13) | `Ancleto: fre-*` (13) | envía el texto `/fre-*` al terminal integrado |
+| `ancleto-fre memory export/import/gc` (M1/M2 v0.7.0, planificado) | — | fuera de alcance hasta implementarse en el CLI |
 
 ## Definiciones de Fase 2 (2026-09-30)
 
 - Contenido del `.vsix`: `src/`, `agents/`, `commands/`, `skills/`, `templates/`,
   `profiles/` + shim (`vscode-extension/src/extension.ts`, `package.json`,
-  `resources/icon.png`, `README.md`). Excluye `test/`, `docs/`, `aspec/`, `.ancleto/`,
+  `resources/icon.png`, `README.md`). Excluye `test/`, `docs/`, `aspec/`, `.ancleto-fre/`,
   `.github/`, `.opencode/`. Auditoría: el manifiesto final no declara
   `dependencies` (falla el build si aparecen).
 - `scripts/build-vsix.js` (`npm run build:vsix`): 1) lee versión de `package.json`
@@ -92,11 +92,11 @@ Empaquetado:
   (`OVSX_PAT`) con la misma versión. Secrets solo por nombre, nunca en el repo.
 - Zero-dependencies: la extensión solo admite `devDependencies` de build
   (`@types/vscode`, `@vscode/vsce`); el runtime usa el Node del host + el núcleo
-  ancleto (JS puro + `node:sqlite` nativo).
+  ancleto-fre (JS puro + `node:sqlite` nativo).
 - Node ≥ 24: `activate()` compara `process.version`; si no cumple, muestra error
   y no registra comandos (degradación explícita, sin crash).
 - Esbozo de `contributes`: `activationEvents: onStartupFinished` +
-  `onCommand:ancleto.*`; `commands` con los IDs `ancleto.*` de la matriz de
+  `onCommand:ancleto-fre.*`; `commands` con los IDs `ancleto-fre.*` de la matriz de
   paridad (títulos `Ancleto: ...`, categoría `Ancleto`); sin vistas propias en v1
   (paleta + terminal integrado + Output Channel `Ancleto`).
 

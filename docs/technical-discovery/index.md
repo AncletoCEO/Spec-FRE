@@ -7,9 +7,9 @@ pluginVersion: 0.12.0
 skillVersion: '2.3'
 ---
 
-# Seed técnico — `@ancleto/spec`
+# Seed técnico — `@ancleto/spec-fre`
 
-Mapa de navegación del repositorio `@ancleto/spec` (CLI `ancleto` / alias `aspec`). No
+Mapa de navegación del repositorio `@ancleto/spec-fre` (CLI `ancleto-fre` / alias `aspec`). No
 es un inventario exhaustivo: enruta a la respuesta más corta. Evidencia: pack Repomix
 (`--compress`, tier resuelto `normal`, 289 archivos, ~288k tokens), `CHANGELOG.md`
 (hasta `0.12.0`), `package.json` (`0.12.0`), `BACKLOG.md` y lectura puntual de los
@@ -37,9 +37,9 @@ archivos citados.
   (los entries `0.10.0` y `0.11.0` cubren `memory export|import|gc`, el adaptador de
   frontmatter como módulo puro, el gate de lint, el prompt de Muse Spark en `init`,
   y los 4 changes archivados en `2026-10-02-*`; `0.12.0` cubre la skill
-  `ancleto-update`). El change `add-commandcode-support` (soporte del host
+  `fre-update`). El change `add-commandcode-support` (soporte del host
   `commandcode`) se archivó el `2026-10-07` sin entry propio todavía en el changelog.
-- **Entry point**: `src/cli/index.js` (bin `ancleto` y `aspec` en `package.json`).
+- **Entry point**: `src/cli/index.js` (bin `ancleto-fre` y `aspec` en `package.json`).
 - **Producto**: orquestador SDD para IDEs (opencode, claude, vscode, antigravity,
   cursor, roo, copilot, commandcode) con descubrimiento técnico, memoria persistente
   local y control de tokens por tier.
@@ -50,18 +50,18 @@ archivos citados.
   lo importa y no define adaptadores locales. Mapas de tools: `ANTIGRAVITY_TOOL_MAP`,
   `COMMANDCODE_TOOL_MAP` y `COMMANDCODE_MCP_TOOL_MAP`.
 - **Memoria**: 3 tools del LLM (`searchMemory`, `recordRule`, `recordDecision`) +
-  operaciones `memory export|import|gc` sobre `.ancleto/memory.db`.
+  operaciones `memory export|import|gc` sobre `.ancleto-fre/memory.db`.
 - **Instalación por host**: `AGENT_TARGETS` es la fuente única de rutas
   (skills/agents/commands) por IDE; el frontmatter de agents se adapta por host.
   Detalle: `units/cli-install.md`.
-- **Este checkout**: `.ancletorc` y `.opencode/` **existen** (gitignored, no
-  versionados); el tier resuelto es **`normal`** vía `.opencode/.ancleto-tier`.
-  Persiste `.ancleto/memory.db`. `documentation/` ya no existe como área raíz
+- **Este checkout**: `.ancleto-fre.rc` y `.opencode/` **existen** (gitignored, no
+  versionados); el tier resuelto es **`normal`** vía `.opencode/.ancleto-fre-tier`.
+  Persiste `.ancleto-fre/memory.db`. `documentation/` ya no existe como área raíz
   (materialReasons lo registra como "área raíz eliminada").
 - **Rama de trabajo**: `development`; `main` protegida y estable (`BACKLOG.md`).
-- **Skill nueva**: `ancleto-update` (comando `/cleto-update`) para revisión de
+- **Skill nueva**: `fre-update` (comando `/fre-update`) para revisión de
   artifacts de un change con merge no destructivo cuando cambia una definición.
-  Routada por `skills/ancleto-workflow/SKILL.md`. Spec:
-  `aspec/specs/artifact-update/spec.md`. Doc: `docs/skill-ancleto-update.md`.
+  Routada por `skills/fre-workflow/SKILL.md`. Spec:
+  `aspec/specs/artifact-update/spec.md`. Doc: `docs/skill-fre-update.md`.
 
 Antes de afirmar un detalle fino o reciente, abrir el archivo citado en cada documento.

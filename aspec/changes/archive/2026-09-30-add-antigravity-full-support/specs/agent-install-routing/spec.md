@@ -28,7 +28,7 @@ no consumiría.
 
 Cuando un asset es no soportado para el host resuelto (por ejemplo `agents` o `commands` de `cursor` o
 `roo`), el CLI SHALL emitir a **stderr** una línea por asset omitido y NO SHALL abortar: el **exit code NO
-SHALL cambiar**. El aviso NO SHALL registrarse en el manifiesto `.ancletorc` (consistente con
+SHALL cambiar**. El aviso NO SHALL registrarse en el manifiesto `.ancleto-fre.rc` (consistente con
 `installedPaths` = unión de destinos realmente escritos).
 
 #### Scenario: Un asset `null` produce un aviso a stderr sin fallar
@@ -36,7 +36,7 @@ SHALL cambiar**. El aviso NO SHALL registrarse en el manifiesto `.ancletorc` (co
 - **WHEN** se instala con `agent: cursor`, para quien `agents` no está soportado
 - **THEN** el CLI imprime en stderr una línea con formato `skip agents: not supported by host 'cursor'`
 - **AND** el comando completa con exit 0
-- **AND** `installedPaths.agents` de `.ancletorc` no incluye ninguna ruta de agents para ese host
+- **AND** `installedPaths.agents` de `.ancleto-fre.rc` no incluye ninguna ruta de agents para ese host
 
 ### Requirement: Configuración MCP específica de host fuera de alcance
 

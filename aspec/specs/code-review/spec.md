@@ -3,7 +3,7 @@
 ## Purpose
 
 Revisión de calidad interna del código sobre un scope declarado por el usuario, invocada vía
-`/cleto-review`. Define la resolución del scope a archivos y líneas, la detección de código repetido,
+`/fre-review`. Define la resolución del scope a archivos y líneas, la detección de código repetido,
 redundante, mal ubicado y sin uso (leyendo fuera del diff solo como evidencia comparativa), y el
 reporte estructurado por severidad sin modificar código.
 
@@ -11,7 +11,7 @@ reporte estructurado por severidad sin modificar código.
 
 ### Requirement: Resolución de scope declarado por el usuario
 
-The system SHALL resolver el scope que el usuario declara tras `/cleto-review` a una lista concreta de archivos y líneas a revisar.
+The system SHALL resolver el scope que el usuario declara tras `/fre-review` a una lista concreta de archivos y líneas a revisar.
 
 #### Scenario: Scope por ticket en mensaje de commit
 

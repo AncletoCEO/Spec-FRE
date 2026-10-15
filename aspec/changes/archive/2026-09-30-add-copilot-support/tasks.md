@@ -3,7 +3,7 @@
 ## Fase 1 — Registro del agente en el CLI
 
 - [x] Sumar `'copilot'` a `SUPPORTED_AGENTS` (`src/cli/index.js`) con tests del wizard y `--agent copilot`.
-- [x] Agregar `AGENT_SKILLS_DIR['copilot'] = '.github/prompts'` y persistencia `agent: copilot` en `.ancletorc`.
+- [x] Agregar `AGENT_SKILLS_DIR['copilot'] = '.github/prompts'` y persistencia `agent: copilot` en `.ancleto-fre.rc`.
 - [x] Verificar que `applyTier` no reescribe nada bajo `.github/prompts` (sin `model:`).
 
 ## Fase 2 — Conversión de prompts y MCP

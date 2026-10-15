@@ -19,7 +19,7 @@ skillVersion: '2.3'
 
 | Sistema | Uso | Evidencia |
 |---|---|---|
-| **npm registry** | Publicación del paquete `@ancleto/spec` (`npm publish --access public`), versión actual `0.12.0` en `package.json`; `CHANGELOG.md` cubre hasta `0.12.0`. | `.github/workflows/publish.yml`, `package.json`, `CHANGELOG.md` |
+| **npm registry** | Publicación del paquete `@ancleto/spec-fre` (`npm publish --access public`), versión actual `0.12.0` en `package.json`; `CHANGELOG.md` cubre hasta `0.12.0`. | `.github/workflows/publish.yml`, `package.json`, `CHANGELOG.md` |
 | **GitHub** | Repo `github.com/damianarganaras/spec`; GitHub Actions (`publish.yml`) disparado por tag `v*` o `workflow_dispatch`; releases vía `gh release`. | `.github/workflows/publish.yml`, `package.json` |
 | **ESLint 10 + globals** | Dependencias **solo de desarrollo**; habilitan `npm run lint` y el gate de lint en CI. No entran al paquete ni al runtime. | `package.json`, `eslint.config.js` |
 | **`gh` CLI + `npm view`/`curl`** | Canary no bloqueante que verifica el tarball y evita publicar versiones ya existentes. Verifica `NPM_TOKEN` / `GITHUB_TOKEN` (valores omitidos). | `.github/workflows/publish.yml` |
@@ -28,7 +28,7 @@ skillVersion: '2.3'
 
 `agents/`, `commands/`, `skills/` y `templates/` son consumidos por el IDE
 elegido. El CLI resuelve el destino con `AGENT_TARGETS` (fuente única de
-rutas) y lo registra en `installedPaths` de `.ancletorc`. La adaptación de
+rutas) y lo registra en `installedPaths` de `.ancleto-fre.rc`. La adaptación de
 frontmatter de agents la posee `src/core/adapters/frontmatter.js`:
 
 | Host | Skills | Agents | Commands | Frontmatter de agents |
@@ -43,7 +43,7 @@ frontmatter de agents la posee `src/core/adapters/frontmatter.js`:
 | `commandcode` | `.commandcode/skills` | `.commandcode/agents/<n>.md` | `.commandcode/commands/<n>.md` | transformación completa (mapa de tools + `tools: "*"` + nota de modelo) |
 
 Con perfil `test`, el overlay (`profiles/test/`) se materializa en los mismos
-destinos del host. `ancleto check` valida que el frontmatter instalado coincida
+destinos del host. `ancleto-fre check` valida que el frontmatter instalado coincida
 con la salida del adaptador (warning no bloqueante). Detalle:
 `units/cli-install.md`.
 
@@ -58,7 +58,7 @@ evita. `import` regenera entradas rotas con rutas locales.
 
 | MCP | Tipo | Rol | Default |
 |---|---|---|---|
-| `ancleto-memory` | local (stdio) | Memoria propia del repo: expone `searchMemory`/`recordRule`/`recordDecision` sobre `.ancleto/memory.db`. Se lanza con `.../src/cli/index.js mcp`. | Habilitado |
+| `ancleto-fre-memory` | local (stdio) | Memoria propia del repo: expone `searchMemory`/`recordRule`/`recordDecision` sobre `.ancleto-fre/memory.db`. Se lanza con `.../src/cli/index.js mcp`. | Habilitado |
 | `caveman` | local (binario) | Compresión de salida del agente (`caveman-mcp.exe`). | Habilitado si está en `PATH` |
 | `engram` | externo | Memoria de agente/sesión; **opcional** (`--with-engram`), no se agrega por defecto por su costo (~4.900 tokens/request). | Deshabilitado |
 | `azure-devops` | externo (`npx -y @davstack/mcp-azure-devops`) | Solo si `azure.enabled: true` y sin `--no-mcp`. | Deshabilitado |
@@ -69,14 +69,14 @@ Evidencia: `src/cli/index.js`, `README.md`, `BACKLOG.md`.
 
 | Sistema | Uso | Evidencia |
 |---|---|---|
-| **Base de sesiones de opencode** | `ancleto stats` lee tokens de entrada/salida/razonamiento/cache, costo y subagentes por sesión. Solo opencode. | `README.md`, `src/cli/index.js` (`opencodeDbPath`) |
+| **Base de sesiones de opencode** | `ancleto-fre stats` lee tokens de entrada/salida/razonamiento/cache, costo y subagentes por sesión. Solo opencode. | `README.md`, `src/cli/index.js` (`opencodeDbPath`) |
 
 ## Azure DevOps (opcional, apagado)
 
-- Gate en `.ancletorc` → en este checkout `.ancletorc` existe pero su contenido
+- Gate en `.ancleto-fre.rc` → en este checkout `.ancleto-fre.rc` existe pero su contenido
   no se lee durante el seed (contrato: se consume resuelto vía `--check`);
   el default documentado es apagado.
-- El comando `/cleto-pr` usa GitHub por defecto; con Azure habilitado cambia
+- El comando `/fre-pr` usa GitHub por defecto; con Azure habilitado cambia
   el flujo. Setup: `az extension add --name azure-devops` + `az login`
   (extensión, no dependencia del paquete). Evidencia: `README.md`, `PRODUCT.md`.
 
@@ -95,4 +95,4 @@ Evidencia: `src/cli/index.js`, `README.md`, `BACKLOG.md`.
   aparece como área raíz (registrada como "área raíz eliminada" por
   `materialReasons`), y `package-lock.json` aparece como archivo material
   nuevo. El resto de los cambios de `materialReasons` se confirman en el
-  pack. Evidencia: `ancleto discovery --check` (`changedAreas`).
+  pack. Evidencia: `ancleto-fre discovery --check` (`changedAreas`).

@@ -2,7 +2,7 @@
 
 ## Related Work Item
 
-Sin Work Item (Azure DevOps deshabilitado en `.ancletorc`).
+Sin Work Item (Azure DevOps deshabilitado en `.ancleto-fre.rc`).
 
 ## Problema
 
@@ -115,7 +115,7 @@ Open questions:
 
 ## Nota sobre el contexto de origen
 
-Sin Work Item asociado (Azure DevOps deshabilitado en `.ancletorc`). Contexto recibido con rutas
+Sin Work Item asociado (Azure DevOps deshabilitado en `.ancleto-fre.rc`). Contexto recibido con rutas
 citadas y precedente de memoria del repo (`effect-claim-detection-signal`,
 `negative-invariant-scenario-must-be-explicit`); se confirmó el estado real de `agents/reviewer.md`,
 `agents/orchestrator.md` y `test/content-guards.test.js` antes de escribir. La delegación no declaró

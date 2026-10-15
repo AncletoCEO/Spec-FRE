@@ -6,18 +6,18 @@
 
 El CLI SHALL aceptar `claude` como valor válido de `--agent` y en el wizard de selección de host, sin
 abortar. Tras el alta, `claude` SHALL comportarse como cualquier otro host soportado: se persiste en
-`.ancletorc` (`agent`), se preserva en ejecuciones subsecuentes y SHALL aparecer en la ayuda y en los
+`.ancleto-fre.rc` (`agent`), se preserva en ejecuciones subsecuentes y SHALL aparecer en la ayuda y en los
 textos de selección. El valor por defecto del CLI NO SHALL cambiar (`opencode`).
 
 #### Scenario: `--agent claude` no aborta
 
-- **WHEN** se ejecuta `ancleto init --agent claude` o `ancleto install --project --agent claude`
+- **WHEN** se ejecuta `ancleto-fre init --agent claude` o `ancleto-fre install --project --agent claude`
 - **THEN** el comando completa con exit 0
-- **AND** `.ancletorc.agent` es `claude`
+- **AND** `.ancleto-fre.rc.agent` es `claude`
 
 #### Scenario: `claude` se preserva en ejecuciones subsecuentes
 
-- **WHEN** existe `.ancletorc` con `agent: claude` y se ejecuta un `install`/`init` posterior sin
+- **WHEN** existe `.ancleto-fre.rc` con `agent: claude` y se ejecuta un `install`/`init` posterior sin
   `--agent`
 - **THEN** el host resuelto sigue siendo `claude`
 
@@ -25,7 +25,7 @@ textos de selección. El valor por defecto del CLI NO SHALL cambiar (`opencode`)
 
 Para el host `claude`, el CLI SHALL instalar `skills/`, `agents/` y `commands/` en `.claude/skills`,
 `.claude/agents` y `.claude/commands` respectivamente, y SHALL registrar esas rutas en el manifiesto
-`.ancletorc`. El ruteo SHALL usar el mismo modelo de destino por host que el resto de los hosts.
+`.ancleto-fre.rc`. El ruteo SHALL usar el mismo modelo de destino por host que el resto de los hosts.
 
 #### Scenario: Assets de `claude` en sus rutas
 
@@ -37,9 +37,9 @@ Para el host `claude`, el CLI SHALL instalar `skills/`, `agents/` y `commands/` 
 #### Scenario: Manifiesto de `claude` veraz
 
 - **WHEN** se instala con `agent: claude`
-- **THEN** `.ancletorc.installedPaths.agents` incluye `.claude/agents`
-- **AND** `.ancletorc.installedPaths.commands` incluye `.claude/commands`
-- **AND** `.ancletorc.installedPaths.skills` incluye `.claude/skills`
+- **THEN** `.ancleto-fre.rc.installedPaths.agents` incluye `.claude/agents`
+- **AND** `.ancleto-fre.rc.installedPaths.commands` incluye `.claude/commands`
+- **AND** `.ancleto-fre.rc.installedPaths.skills` incluye `.claude/skills`
 
 ### Requirement: El soporte de `claude` requiere el adaptador de frontmatter de agents
 

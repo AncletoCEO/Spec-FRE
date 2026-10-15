@@ -26,9 +26,9 @@ Read `AGENTS.md` at the repo root for project conventions and guardrails .
 - Before running any command, verify that this runtime exposes write-capable tools. If it
   does not, stop immediately and report the restriction. Do not create a Repomix pack that
   cannot be consumed to write the seed.
-- Load and follow the `ancleto-technical-discovery` skill. It is the normative contract for
+- Load and follow the `fre-technical-discovery` skill. It is the normative contract for
   content, language, command sequence, exclusions, and output validation.
-- Write only beneath `config.outputDir` from the `ancleto discovery --check` report passed by
+- Write only beneath `config.outputDir` from the `ancleto-fre discovery --check` report passed by
   `@orchestrator` (normally `docs/technical-discovery/`). Do not modify application code,
   aspec artifacts, configuration, or files outside that directory.
 - Never create an empty directory or empty document.
@@ -40,14 +40,14 @@ Read `AGENTS.md` at the repo root for project conventions and guardrails .
 The orchestrator passes the complete check report returned by `@technical-discovery` and an
 explicit requested action. Use the report as the configuration source. A report without an
 explicit action never authorizes generation. If the report is absent or malformed after an
-action was explicitly requested, run `ancleto discovery --check` once and read its JSON.
+action was explicitly requested, run `ancleto-fre discovery --check` once and read its JSON.
 
 1. For `READY`, do not rewrite the seed; report that it is already available.
 2. For `MISSING`, `PARTIAL`, or an accepted `STALE` regeneration, execute the skill's single global Repomix command exactly once. It must use the resolved `config.exclude` values and
    must not run `--include`, an uncompressed preliminary pack, or another compressed pack.
 3. Read that pack and write the seed documents under `config.outputDir`, including `units/_map.md`. When the passed report has `impact: minor` with a non-empty `affectedDocs` list, rewrite ONLY those documents and leave every other seed document untouched. Otherwise (full regeneration), write every required seed document. Use the same pack for any optional dossier.
 4. Write `seed-map.json` in `config.outputDir` mapping every seed document to the source areas it draws evidence from. Areas are first-level directories (or root file names), the same convention the CLI uses. Example: `{ "version": 1, "generatedAt": "...", "docs": { "overview.md": ["src", "package.json"] } }`.
-5. Run `ancleto discovery --check` once to validate the written seed. This is state-only: do
+5. Run `ancleto-fre discovery --check` once to validate the written seed. This is state-only: do
    not generate another pack after it.
 6. Return the result as specified in `## Output`.
 

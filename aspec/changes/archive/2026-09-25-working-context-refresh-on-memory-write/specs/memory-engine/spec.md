@@ -4,7 +4,7 @@
 
 ### Requirement: Frescura del working-context tras escrituras MCP
 
-El bloque `<ProjectMemoryRules>` de `.ancleto/working-context.md` SHALL regenerarse desde la
+El bloque `<ProjectMemoryRules>` de `.ancleto-fre/working-context.md` SHALL regenerarse desde la
 memoria activa cuando una escritura MCP lo altere, sin exigir un lifecycle point (`init`,
 `install --project`, `upgrade`) ni un comando manual. La regeneración SHALL dispararse cuando
 ocurra al menos una de estas condiciones:
@@ -52,28 +52,28 @@ descartado.
 
 #### Scenario: Los lifecycle points siguen regenerando
 
-- **WHEN** se ejecuta `ancleto init`, `ancleto install --project`, `ancleto upgrade` o
-  `ancleto memory context --out`
+- **WHEN** se ejecuta `ancleto-fre init`, `ancleto-fre install --project`, `ancleto-fre upgrade` o
+  `ancleto-fre memory context --out`
 - **THEN** el working-context se regenera desde la memoria activa
 
 ### Requirement: Raíz de proyecto del refresh disparado por MCP
 
 El refresh del working-context disparado por una escritura MCP SHALL calcular la ruta de salida y
 el bloque `<ProjectTopology>` a partir de la raíz de proyecto detectada por la presencia de
-`.ancletorc`, y NO SHALL usar el directorio de trabajo (`cwd`) del proceso del server MCP como
+`.ancleto-fre.rc`, y NO SHALL usar el directorio de trabajo (`cwd`) del proceso del server MCP como
 raíz.
 
 #### Scenario: Topología y salida desde la raíz del proyecto
 
 - **WHEN** el server MCP se resuelve con una raíz de proyecto distinta del `cwd` del proceso
 - **AND** se registra una regla de scope `project` mediante `recordRule`
-- **THEN** el working-context se escribe bajo la raíz detectada por `.ancletorc`
+- **THEN** el working-context se escribe bajo la raíz detectada por `.ancleto-fre.rc`
 - **AND** el bloque `<ProjectTopology>` corresponde al `.discovery-map.json` de esa raíz
 
 ### Requirement: Robustez del refresh del working-context
 
 La escritura MCP SHALL persistir y devolver el nodo registrado aunque falle el refresh del
-contexto. El refresh SHALL ser idempotente y NO SHALL corromper `.ancleto/memory.db` ni provocar
+contexto. El refresh SHALL ser idempotente y NO SHALL corromper `.ancleto-fre/memory.db` ni provocar
 recursión o deadlock.
 
 #### Scenario: Falla del refresh no pierde la escritura
@@ -92,4 +92,4 @@ recursión o deadlock.
 
 - **WHEN** se refresca el working-context como parte de una escritura MCP
 - **THEN** el proceso no recursa ni queda en deadlock
-- **AND** `.ancleto/memory.db` permanece íntegra (índice FTS5 consistente)
+- **AND** `.ancleto-fre/memory.db` permanece íntegra (índice FTS5 consistente)

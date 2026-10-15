@@ -1,4 +1,4 @@
-# Proposal: Modelo de instalación multi-agente y transformaciones por host (`@ancleto/spec`)
+# Proposal: Modelo de instalación multi-agente y transformaciones por host (`@ancleto/spec-fre`)
 
 ## Problem
 
@@ -122,7 +122,7 @@ Open questions:
 
 ## Nota sobre el contexto de origen
 
-Contexto producido **sin Work Item asociado** (Azure DevOps deshabilitado en `.ancletorc`). Seed
+Contexto producido **sin Work Item asociado** (Azure DevOps deshabilitado en `.ancleto-fre.rc`). Seed
 técnico `READY`: `docs/technical-discovery/units/cli-install.md`. Hallazgos confirmados contra el código
 real (`src/cli/index.js`, `agents/*.md`, `skills/*/SKILL.md`, `test/cli.test.js`) y documentación
 oficial de cada host.

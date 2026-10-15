@@ -33,7 +33,7 @@ Knowledge Base context will be added later via the KB MCP. Do not attempt it yet
 
 Azure DevOps is optional and **disabled by default**. Before resolving anything:
 
-- Read `.ancletorc` at the repository root (JSON). If the file does not exist, or its `azure.enabled` is not `true`, Azure is off: report "no work item to resolve (Azure deshabilitado en .ancletorc)" and stop. Do not read `PRODUCT.md` nor call `az`.
+- Read `.ancleto-fre.rc` at the repository root (JSON). If the file does not exist, or its `azure.enabled` is not `true`, Azure is off: report "no work item to resolve (Azure deshabilitado en .ancleto-fre.rc)" and stop. Do not read `PRODUCT.md` nor call `az`.
 - Only when `azure.enabled` is `true` do you proceed with the workflow below.
 
 ## Bash Usage Rules

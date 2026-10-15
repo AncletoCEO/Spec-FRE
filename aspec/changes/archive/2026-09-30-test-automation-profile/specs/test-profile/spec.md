@@ -8,8 +8,8 @@ The system SHALL instalar el perfil de test automation cuando se indica `--profi
 
 #### Scenario: Init con perfil test
 
-- **WHEN** se ejecuta `ancleto init --profile test`
-- **THEN** se persiste `profile: test` en `.ancletorc` y se instalan el tester ampliado, los comandos `cleto-test-*` y la estructura `testspec/specs` + `testspec/changes`
+- **WHEN** se ejecuta `ancleto-fre init --profile test`
+- **THEN** se persiste `profile: test` en `.ancleto-fre.rc` y se instalan el tester ampliado, los comandos `fre-test-*` y la estructura `testspec/specs` + `testspec/changes`
 - **AND** un `init` sin `--profile` instala exactamente los activos generales actuales
 
 ### Requirement: Ruteo del orchestrator por tipo de cambio
@@ -32,5 +32,5 @@ The system SHALL instalar los activos del perfil test en el directorio del agent
 
 #### Scenario: Perfil test con agente copilot
 
-- **WHEN** se ejecuta `ancleto init --profile test --agent copilot`
+- **WHEN** se ejecuta `ancleto-fre init --profile test --agent copilot`
 - **THEN** los prompts del perfil quedan disponibles en `.github/prompts/`

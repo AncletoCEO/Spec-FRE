@@ -12,7 +12,7 @@ directorio base de otro host.
 
 #### Scenario: `opencode` conserva las rutas y el formato actuales
 
-- **WHEN** se ejecuta `ancleto init` o `ancleto install --project` con el agente `opencode`
+- **WHEN** se ejecuta `ancleto-fre init` o `ancleto-fre install --project` con el agente `opencode`
 - **THEN** los assets se escriben en `.opencode/agents`, `.opencode/commands` y `.opencode/skills`
 - **AND** agents y commands usan la convención `<n>.md`
 - **AND** las rutas coinciden con las de las versiones anteriores (sin regresión)
@@ -60,7 +60,7 @@ host no consumiría.
 
 Cuando un asset es no soportado para el host resuelto (por ejemplo `agents` o `commands` de `antigravity`),
 el CLI SHALL emitir a **stderr** una línea por asset omitido y NO SHALL abortar: el **exit code NO SHALL
-cambiar**. El aviso NO SHALL registrarse en el manifiesto `.ancletorc` (consistente con `installedPaths` =
+cambiar**. El aviso NO SHALL registrarse en el manifiesto `.ancleto-fre.rc` (consistente con `installedPaths` =
 unión de destinos realmente escritos).
 
 #### Scenario: Un asset `null` produce un aviso a stderr sin fallar
@@ -68,40 +68,40 @@ unión de destinos realmente escritos).
 - **WHEN** se instala con `agent: antigravity`, para quien `agents` no está soportado
 - **THEN** el CLI imprime en stderr una línea con formato `skip agents: not supported by host 'antigravity'`
 - **AND** el comando completa con exit 0
-- **AND** `installedPaths.agents` de `.ancletorc` no incluye ninguna ruta de agents para ese host
+- **AND** `installedPaths.agents` de `.ancleto-fre.rc` no incluye ninguna ruta de agents para ese host
 
 ### Requirement: Manifiesto veraz y acumulativo de las rutas de instalación
 
-El manifiesto `.ancletorc` SHALL registrar en `installedPaths.{agents,commands,skills}` las rutas
+El manifiesto `.ancleto-fre.rc` SHALL registrar en `installedPaths.{agents,commands,skills}` las rutas
 relativas reales escritas por el CLI. El manifiesto SHALL acumular la unión de destinos instalados, de
 modo que instalar para otro host preserve el registro de los layouts previos. El CLI NO SHALL declarar
-`.opencode/agents` ni `.opencode/commands` cuando esos assets se escribieron en otro base. `ancleto
+`.opencode/agents` ni `.opencode/commands` cuando esos assets se escribieron en otro base. `ancleto-fre
 check` SHALL validar la unión declarada sin requerir cambios de lógica.
 
 #### Scenario: Manifiesto veraz para un host no-opencode
 
-- **WHEN** se ejecuta `ancleto install --project` con `agent: vscode`
-- **THEN** `.ancletorc.installedPaths.agents` incluye `.github/agents`
-- **AND** `.ancletorc.installedPaths.commands` incluye `.github/prompts`
-- **AND** `.ancletorc.installedPaths.skills` incluye `.github/skills`
+- **WHEN** se ejecuta `ancleto-fre install --project` con `agent: vscode`
+- **THEN** `.ancleto-fre.rc.installedPaths.agents` incluye `.github/agents`
+- **AND** `.ancleto-fre.rc.installedPaths.commands` incluye `.github/prompts`
+- **AND** `.ancleto-fre.rc.installedPaths.skills` incluye `.github/skills`
 
 #### Scenario: Unión de layouts en un proyecto multi-agente
 
 - **WHEN** un proyecto instala con `agent: opencode` y luego con `agent: cursor`
-- **THEN** `.ancletorc.installedPaths` conserva las rutas de `.opencode/*` y agrega las de `.cursor/*`
-- **AND** `ancleto check` valida ambos layouts sin reportar faltantes ni huérfanos cuando están sanos
+- **THEN** `.ancleto-fre.rc.installedPaths` conserva las rutas de `.opencode/*` y agrega las de `.cursor/*`
+- **AND** `ancleto-fre check` valida ambos layouts sin reportar faltantes ni huérfanos cuando están sanos
 
 ### Requirement: `opencode` como default y cambio no destructivo
 
 `opencode` SHALL seguir siendo el agente por defecto cuando no se especifica `--agent` ni existe un
-`agent` válido en `.ancletorc`. El cambio de ruteo SHALL ser aditivo y no destructivo: al instalar con
+`agent` válido en `.ancleto-fre.rc`. El cambio de ruteo SHALL ser aditivo y no destructivo: al instalar con
 un host distinto, el CLI NO SHALL borrar los assets de rutas previas ni el contenido de documentos del
 usuario.
 
 #### Scenario: Default sin configuración previa
 
-- **WHEN** se ejecuta `ancleto init` o `ancleto install --project` sin `--agent` y sin `agent` en
-  `.ancletorc`, en un contexto no interactivo
+- **WHEN** se ejecuta `ancleto-fre init` o `ancleto-fre install --project` sin `--agent` y sin `agent` en
+  `.ancleto-fre.rc`, en un contexto no interactivo
 - **THEN** el host resuelto es `opencode`
 - **AND** los assets se escriben en `.opencode/*`
 

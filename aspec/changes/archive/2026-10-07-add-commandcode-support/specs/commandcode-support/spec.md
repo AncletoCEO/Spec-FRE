@@ -5,26 +5,26 @@
 ### Requirement: Alta y persistencia de `commandcode` como host soportado
 
 El CLI SHALL aceptar `commandcode` como valor válido de `--agent` y en el wizard de selección de
-host, sin abortar. Se persiste en `.ancletorc` (`agent`), se preserva en ejecuciones subsecuentes y
+host, sin abortar. Se persiste en `.ancleto-fre.rc` (`agent`), se preserva en ejecuciones subsecuentes y
 aparece en la ayuda y en los textos de selección. El valor por defecto del CLI NO SHALL cambiar
 (`opencode`).
 
 #### Scenario: `--agent commandcode` no aborta
 
-- **WHEN** se ejecuta `ancleto init --agent commandcode` o `ancleto install --project --agent commandcode`
+- **WHEN** se ejecuta `ancleto-fre init --agent commandcode` o `ancleto-fre install --project --agent commandcode`
 - **THEN** el comando completa con exit 0
-- **AND** `.ancletorc.agent` es `commandcode`
+- **AND** `.ancleto-fre.rc.agent` es `commandcode`
 
 #### Scenario: `commandcode` se preserva en ejecuciones subsecuentes
 
-- **WHEN** existe `.ancletorc` con `agent: commandcode` y se ejecuta un `install`/`init` posterior sin `--agent`
+- **WHEN** existe `.ancleto-fre.rc` con `agent: commandcode` y se ejecuta un `install`/`init` posterior sin `--agent`
 - **THEN** el host resuelto sigue siendo `commandcode`
 
 ### Requirement: Directorios y manifiesto de `commandcode`
 
 Para el host `commandcode`, el CLI SHALL instalar las skills en `.commandcode/skills/<n>/SKILL.md`,
 los agents en `.commandcode/agents/<n>.md` y los commands en `.commandcode/commands/<n>.md`, y SHALL
-registrar esas tres rutas en el manifiesto `.ancletorc`. El ruteo SHALL usar el mismo modelo de
+registrar esas tres rutas en el manifiesto `.ancleto-fre.rc`. El ruteo SHALL usar el mismo modelo de
 destino por host que el resto de los hosts. El CLI NO SHALL escribir agents ni commands de
 `commandcode` en el directorio base de otro host.
 
@@ -38,10 +38,10 @@ destino por host que el resto de los hosts. El CLI NO SHALL escribir agents ni c
 #### Scenario: Manifiesto de `commandcode` veraz
 
 - **WHEN** se instala con `agent: commandcode`
-- **THEN** `.ancletorc.installedPaths.skills` incluye `.commandcode/skills`
-- **AND** `.ancletorc.installedPaths.agents` incluye `.commandcode/agents`
-- **AND** `.ancletorc.installedPaths.commands` incluye `.commandcode/commands`
-- **AND** `ancleto check` valida el layout sin reportar faltantes
+- **THEN** `.ancleto-fre.rc.installedPaths.skills` incluye `.commandcode/skills`
+- **AND** `.ancleto-fre.rc.installedPaths.agents` incluye `.commandcode/agents`
+- **AND** `.ancleto-fre.rc.installedPaths.commands` incluye `.commandcode/commands`
+- **AND** `ancleto-fre check` valida el layout sin reportar faltantes
 
 ### Requirement: Adaptación de frontmatter de agents para `commandcode`
 
@@ -78,7 +78,7 @@ host: `read`→`read_file`, `write`→`write_file`, `edit`→`edit_file`, `bash`
 `grep`→`grep`, `glob`→`glob`, `webfetch`→`web_fetch`, `websearch`→`web_search`,
 `todowrite`→`todo_write`. Las claves de memoria propias del framework (`searchMemory`, `recordRule`,
 `recordDecision`) SHALL emitirse como tools MCP con la convención documentada
-`mcp__ancleto-memory__<tool>`. Sólo se mapean claves con valor `true`.
+`mcp__ancleto-fre-memory__<tool>`. Sólo se mapean claves con valor `true`.
 
 Cuando el mapa `tools` declare una clave sin id verificado (por ejemplo `skill`, `task`, `patch`,
 `multiedit`, `todoread` o cualquier otra), el transformador NO SHALL emitir un id y SHALL avisar por
@@ -96,8 +96,8 @@ stderr de forma no bloqueante (exit code sin cambios): nunca en silencio. Cuando
 
 - **WHEN** se instala para `agent: commandcode` el agent `memory-keeper` con `tools: { read: true,
   grep: true, searchMemory: true, recordRule: true, recordDecision: true }`
-- **THEN** el `tools` instalado incluye `mcp__ancleto-memory__searchMemory`,
-  `mcp__ancleto-memory__recordRule` y `mcp__ancleto-memory__recordDecision`
+- **THEN** el `tools` instalado incluye `mcp__ancleto-fre-memory__searchMemory`,
+  `mcp__ancleto-fre-memory__recordRule` y `mcp__ancleto-fre-memory__recordDecision`
 
 #### Scenario: Una clave sin id verificado se omite con aviso
 
@@ -134,8 +134,8 @@ avisarse sin sobrescribirse. Sin `--project` (instalación global) el CLI NO SHA
 
 #### Scenario: `install --project --agent commandcode` configura el MCP de memoria
 
-- **WHEN** se ejecuta `ancleto install --project --agent commandcode`
-- **THEN** `.mcp.json` contiene `mcpServers.ancleto-memory` con `transport: stdio` y un `command` válido
+- **WHEN** se ejecuta `ancleto-fre install --project --agent commandcode`
+- **THEN** `.mcp.json` contiene `mcpServers.ancleto-fre-memory` con `transport: stdio` y un `command` válido
 - **AND** el comando completa con exit 0
 
 #### Scenario: Merge no destructivo
@@ -152,7 +152,7 @@ avisarse sin sobrescribirse. Sin `--project` (instalación global) el CLI NO SHA
 ### Requirement: Nota de modelo de `commandcode`
 
 El CLI SHALL anexar al agent `orchestrator` instalado para `commandcode` una nota que indique que los
-tiers de ancleto no reescriben modelos en este host (el `model` se hereda de la sesión) y que el
+tiers de ancleto-fre no reescriben modelos en este host (el `model` se hereda de la sesión) y que el
 modelo se elige con `/model`. La nota NO SHALL aplicarse a otros agents ni a otros hosts.
 
 #### Scenario: El orchestrator de `commandcode` lleva la nota
@@ -163,7 +163,7 @@ modelo se elige con `/model`. La nota NO SHALL aplicarse a otros agents ni a otr
 
 ### Requirement: Commands verbatim y limitación documentada
 
-Los `commands/cleto-*.md` SHALL copiarse a `.commandcode/commands/<n>.md` sin reescribir su body
+Los `commands/fre-*.md` SHALL copiarse a `.commandcode/commands/<n>.md` sin reescribir su body
 (igual criterio que el resto de los hosts). El body invoca "the Skill tool", que no es el mecanismo
 de invocación de skills de Command Code (`/skill:<name>`): esta diferencia SHALL quedar registrada
 como limitación conocida y NO SHALL resolverse con una transformación especulativa.
@@ -171,5 +171,5 @@ como limitación conocida y NO SHALL resolverse con una transformación especula
 #### Scenario: Los commands se copian sin transformar el body
 
 - **WHEN** se instala con `agent: commandcode`
-- **THEN** existe `.commandcode/commands/cleto-propose.md`
-- **AND** su body es idéntico al de `commands/cleto-propose.md` de origen
+- **THEN** existe `.commandcode/commands/fre-propose.md`
+- **AND** su body es idéntico al de `commands/fre-propose.md` de origen

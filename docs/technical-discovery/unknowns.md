@@ -16,21 +16,21 @@ skillVersion: '2.3'
   `aspec/`, más lectura puntual de los archivos citados. Confirmar
   cualquier detalle fino en el archivo citado.
 - **Markdown fuera del pack.** El tier resuelto (`normal`, vía
-  `.opencode/.ancleto-tier`) **no** aplica `**/*.md` ni `test/**` por
-  defecto, pero `.gitignore` sigue excluyendo `.opencode/`, `.ancletorc`,
-  `.ancleto/` y `/documentation` (área eliminada). Por eso `agents/`,
+  `.opencode/.ancleto-fre-tier`) **no** aplica `**/*.md` ni `test/**` por
+  defecto, pero `.gitignore` sigue excluyendo `.opencode/`, `.ancleto-fre.rc`,
+  `.ancleto-fre/` y `/documentation` (área eliminada). Por eso `agents/`,
   `commands/`, `skills/`, `templates/` y `docs/` **no aparecen** en el
   pack. Se describen a partir de listados de directorio, `README.md`,
   `BACKLOG.md`, `CHANGELOG.md` y los specs de `aspec/`. Consecuencia:
   el `seed-map.json` asocia esos documentos a esas áreas, pero el
   próximo `--check` puede no detectar cambios dentro de ellas si la
   exclusión persiste.
-- **`.ancletorc` presente pero no leído.** Existe en este checkout
+- **`.ancleto-fre.rc` presente pero no leído.** Existe en este checkout
   (`agent: opencode`, `language: auto`, `profile: general`,
   `azure.enabled: false`, `version: 0.11.1`); por contrato de la skill
   no se lee directamente: su contenido se consume solo resuelto vía
-  `ancleto discovery --check` (`config.outputDir`, `config.exclude`). El
-  comportamiento del CLI con `.ancletorc` se describe por código y
+  `ancleto-fre discovery --check` (`config.outputDir`, `config.exclude`). El
+  comportamiento del CLI con `.ancleto-fre.rc` se describe por código y
   specs, no por un manifiesto leído directamente.
 - **Constantes de instalación confirmadas por lectura directa, no por el
   pack.** Valores como `AGENT_TARGETS`, `SUPPORTED_AGENTS`, `TIERS`,
@@ -47,7 +47,7 @@ skillVersion: '2.3'
 - **Mapeo de tools de Command Code**: los ids verificados
   (`read_file`, `write_file`, `edit_file`, `shell_command`, `grep`,
   `glob`, `web_fetch`, `web_search`, `todo_write`) y las tools de memoria
-  (`mcp__ancleto-memory__*`) están cubiertos por
+  (`mcp__ancleto-fre-memory__*`) están cubiertos por
   `test/adapters-frontmatter.test.js`; no se validaron contra un `cmd`
   real (la verificación manual de `add-commandcode-support` quedó como
   tarea declarada, no observada por este seed).
@@ -55,7 +55,7 @@ skillVersion: '2.3'
   verificados por tests (`test/adapters-frontmatter.test.js`), pero el
   resultado final no se comparó contra cada IDE real (Copilot,
   Antigravity IDE/CLI, Command Code y VS Code requieren entornos reales).
-  La validación de `ancleto check` contra el adaptador se describe por
+  La validación de `ancleto-fre check` contra el adaptador se describe por
   código; no se ejecutó sobre un proyecto multi-host real.
 - **`PRODUCT.md` desactualizado**: afirma que `package.json` no define
   scripts npm, pero `lint` y `test` existen desde `add-standard-linter`;
@@ -63,15 +63,15 @@ skillVersion: '2.3'
   atrás respecto del código. Esta discrepancia es estable a través de
   varios seeds.
 - **`aspec/`**: 16 specs fuente (incluidas `artifact-update` y
-  `commandcode-support`) + 1 change activo (`ancleto-vscode-extension`,
+  `commandcode-support`) + 1 change activo (`ancleto-fre-vscode-extension`,
   diferido) + archivados (incluidos `2026-10-07-add-commandcode-support`,
-  `2026-10-06-ancleto-update` y `2026-10-05-memory-actor-provenance`,
+  `2026-10-06-fre-update` y `2026-10-05-memory-actor-provenance`,
   más los 4 del 2026-10-02). No se analizó el contenido completo de
   cada spec/delta más allá de las capabilities afectadas.
 - **`documentation/` (≈340 archivos, eliminada como área raíz)** es
   material legado de otro CLI, usado como fuente de relevamiento. No se
   analizó su contenido y el directorio ya no existe.
-- **Memoria del repo**: `ancleto memory list` es la fuente de las
+- **Memoria del repo**: `ancleto-fre memory list` es la fuente de las
   decisiones registradas; no se inspeccionó la base completa ni nodos
   superseded.
 - **`sourcesSha` de los dossiers** fue calculado replicando el esquema
@@ -84,7 +84,7 @@ skillVersion: '2.3'
   content-guards 45 + linter-config 4). Los conteos del `BACKLOG.md` son
   declarativos; los 413/86 son de la corrida real de esta regeneración.
 - **Tier resuelto**: el seed previo afirmaba `gratis` vía
-  `.opencode/.ancleto-tier`; en este checkout el archivo dice
+  `.opencode/.ancleto-fre-tier`; en este checkout el archivo dice
   `normal`. Este seed corrige el dato.
 - **Versión**: `package.json` declara `0.12.0`; el `CHANGELOG.md` cubre
   hasta `0.12.0`. El archivado `2026-10-07-add-commandcode-support` aún no

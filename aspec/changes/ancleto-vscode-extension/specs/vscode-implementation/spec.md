@@ -1,4 +1,4 @@
-# Spec delta: ancleto-vscode-extension (continuación — implementación)
+# Spec delta: ancleto-fre-vscode-extension (continuación — implementación)
 
 ## ADDED Requirements
 
@@ -9,7 +9,7 @@ The system SHALL proveer el layout `vscode-extension/` con manifiesto, punto de 
 #### Scenario: Apertura en Extension Development Host
 
 - **WHEN** se abre el proyecto con la extensión scaffoldeada y se presiona `F5`
-- **THEN** el host de desarrollo activa la extensión sin errores y registra los comandos `ancleto.*`
+- **THEN** el host de desarrollo activa la extensión sin errores y registra los comandos `ancleto-fre.*`
 
 ### Requirement: Paridad funcional CLI y paleta
 
@@ -18,7 +18,7 @@ The system SHALL exponer cada comando CLI como comando de la Command Palette sob
 #### Scenario: Install desde la paleta
 
 - **WHEN** el usuario ejecuta `Ancleto: Install` en un workspace abierto
-- **THEN** corre el mismo flujo que `ancleto install` (incluido merge `LOCKED`) y notifica el resultado en VS Code
+- **THEN** corre el mismo flujo que `ancleto-fre install` (incluido merge `LOCKED`) y notifica el resultado en VS Code
 
 #### Scenario: Comandos de diagnóstico en Output Channel
 

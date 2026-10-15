@@ -63,9 +63,9 @@ NO SHALL abortar ni lanzar una excepción.
 - **AND** el CLI emite a stderr: `unknown agent 'unknown-host', passthrough`
 - **AND** el comando completa con exit 0
 
-### Requirement: `ancleto check` valida frontmatter de agents contra el adaptador
+### Requirement: `ancleto-fre check` valida frontmatter de agents contra el adaptador
 
-`ancleto check` SHALL validar que el frontmatter de los agents instalados coincida con la salida del
+`ancleto-fre check` SHALL validar que el frontmatter de los agents instalados coincida con la salida del
 adaptador para el host correspondiente. Para cada archivo `.md` en un directorio de agents instalado,
 el check SHALL leer el contenido instalado, leer el contenido de origen, aplicar
 `adaptFrontmatter(origen, host, 'agents', name)`, y comparar el resultado con el instalado. La
@@ -74,20 +74,20 @@ por divergencias de frontmatter (solo por faltantes de archivo).
 
 #### Scenario: Frontmatter instalado coincide con el adaptador
 
-- **WHEN** se ejecuta `ancleto check` en un proyecto con agents instalados correctamente
+- **WHEN** se ejecuta `ancleto-fre check` en un proyecto con agents instalados correctamente
 - **THEN** el check NO reporta divergencias de frontmatter
 - **AND** el comando completa con exit 0
 
 #### Scenario: Frontmatter editado manualmente se reporta como divergencia
 
 - **WHEN** un agent instalado tiene su frontmatter editado manualmente (difiere de la salida del adaptador)
-- **THEN** `ancleto check` reporta: `⚠ <dir>/<file> (frontmatter diverge del adaptador para host 'X')`
+- **THEN** `ancleto-fre check` reporta: `⚠ <dir>/<file> (frontmatter diverge del adaptador para host 'X')`
 - **AND** el aviso es no bloqueante (exit code 0 si no hay faltantes)
 
 #### Scenario: Check deriva el host del directorio instalado
 
 - **WHEN** un proyecto tiene agents instalados para múltiples hosts (multi-host)
-- **THEN** `ancleto check` SHALL derivar el host de cada directorio de agents usando
+- **THEN** `ancleto-fre check` SHALL derivar el host de cada directorio de agents usando
   `installedHostsFromPaths` (unión de hosts del manifiesto)
 - **AND** SHALL aplicar el adaptador correspondiente a cada host para la validación
 

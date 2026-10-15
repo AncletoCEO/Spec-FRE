@@ -4,7 +4,7 @@
 
 ### Requirement: Detección automática de la carpeta legacy `openspec/` en los scripts de inicio
 
-Los scripts de inicio `ancleto init` y `ancleto upgrade` SHALL detectar la presencia de una carpeta
+Los scripts de inicio `ancleto-fre init` y `ancleto-fre upgrade` SHALL detectar la presencia de una carpeta
 `openspec/` en la raíz del proyecto, sin requerir un comando separado ni intervención manual del
 usuario. La detección y la eventual migración SHALL ejecutarse antes del scaffold de `aspec/`
 (creación de `aspec/changes/` y `aspec/config.yaml`), de modo que el scaffold NO SHALL impedir la
@@ -12,14 +12,14 @@ detección.
 
 #### Scenario: `init` detecta `openspec/` antes de crear `aspec/`
 
-- **WHEN** `ancleto init` se ejecuta en una raíz que contiene `openspec/` y no contiene `aspec/` con
+- **WHEN** `ancleto-fre init` se ejecuta en una raíz que contiene `openspec/` y no contiene `aspec/` con
   contenido real
 - **THEN** detecta la carpeta legacy antes de ejecutar el scaffold de `aspec/`
 - **AND** la migración no queda bloqueada por el scaffold
 
 #### Scenario: `upgrade` detecta `openspec/`
 
-- **WHEN** `ancleto upgrade` se ejecuta en una raíz con `.ancletorc` que contiene `openspec/`
+- **WHEN** `ancleto-fre upgrade` se ejecuta en una raíz con `.ancleto-fre.rc` que contiene `openspec/`
 - **THEN** detecta la carpeta legacy como punto de partida de la migración
 
 #### Scenario: Sin carpeta legacy no se actúa

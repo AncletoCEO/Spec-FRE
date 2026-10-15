@@ -33,7 +33,7 @@ skillVersion: '2.3'
    no confiables**; *decisions* se recuperan reactivamente con `searchMemory`.
    Evidencia: `DESIGN-memory-engine-v0.2.0.md`, `agents/orchestrator.md`.
 5. **Frontera repo vs agente.** La memoria del repo vive en
-   `.ancleto/memory.db` (se comparte con el equipo); la memoria del agente
+   `.ancleto-fre/memory.db` (se comparte con el equipo); la memoria del agente
    (p. ej. engram) es de sesión. Una entrada vive en una sola. Evidencia:
    `README.md`, `AGENTS.md` (`LOCKED: memory-boundary`).
 6. **Merge no destructivo de templates.** `install`/`update`/`upgrade` re-aplican
@@ -45,7 +45,7 @@ skillVersion: '2.3'
    (skills/agents/commands con su `dir` y su `ext`; `null` = asset no
    soportado). `installAgentAssets` materializa el destino nativo y devuelve
    las rutas escritas; `unionInstalledPaths` las acumula en `installedPaths`.
-   Antigravity no tiene dir de commands: sus `/cleto-*` se empaquetan como
+   Antigravity no tiene dir de commands: sus `/fre-*` se empaquetan como
    `.agents/skills/<n>/SKILL.md` (`package: 'skill-dir'`) y **no** se registran
    en `installedPaths.commands`. Cursor y Roo solo tienen skills. Un asset no
    soportado no se escribe y avisa por stderr. Evidencia: `src/cli/index.js`,
@@ -79,7 +79,7 @@ skillVersion: '2.3'
    campo `skills`); `call_mcp_tool` está **prohibido**; el uso de MCP se
    expresa por `mcpServers`/`.agents/mcp_config.json`. Evidencia:
    `src/core/adapters/frontmatter.js`, `units/cli-install.md`.
-10. **`ancleto check` valida el frontmatter real contra el adaptador.** Por cada
+10. **`ancleto-fre check` valida el frontmatter real contra el adaptador.** Por cada
     `.md` de un directorio de agents instalado, compara el instalado contra
     `adaptFrontmatter(origen, host, 'agents', name)` (con la simulación del
     `model:` del tier en opencode y la nota de picker en copilot). La
@@ -99,7 +99,7 @@ skillVersion: '2.3'
     `gcSuperseded({days, dryRun})` purga superseded con antigüedad mayor al
     umbral (default 30 días, medido con `created_at` como proxy porque no
     existe `superseded_at`); tras el DELETE hace `VACUUM`+`REINDEX` best-effort
-    post-commit. Expuesto como `ancleto memory export|import|gc`. Evidencia:
+    post-commit. Expuesto como `ancleto-fre memory export|import|gc`. Evidencia:
     `src/core/memory/engine.js`, `src/cli/index.js`,
     `aspec/specs/memory-ops/spec.md`.
 12. **Migración/importación `openspec/` → `aspec/` no destructiva.**
@@ -143,13 +143,13 @@ skillVersion: '2.3'
     Ventaja: consistencia, no correctness de negocio. Evidencia:
     `eslint.config.js`, `test/linter-config.test.js`,
     `aspec/specs/linter-standard/spec.md`.
-17. **Patrón "CLI materializa + agente lee".** `ancleto memory context` escribe
-    `.ancleto/working-context.md`; el orquestador lo lee como datos no
+17. **Patrón "CLI materializa + agente lee".** `ancleto-fre memory context` escribe
+    `.ancleto-fre/working-context.md`; el orquestador lo lee como datos no
     confiables sin `bash`. Evidencia: `BACKLOG.md`, `agents/orchestrator.md`,
     `src/core/memory/working-context.js`.
-18. **`ancleto-update` revisa artifacts de un change ante cambio de definición
-    (merge no destructivo).** La skill (`skills/ancleto-update/SKILL.md`,
-    comando `/cleto-update`) clasifica el cambio por dueño: requisito /
+18. **`fre-update` revisa artifacts de un change ante cambio de definición
+    (merge no destructivo).** La skill (`skills/fre-update/SKILL.md`,
+    comando `/fre-update`) clasifica el cambio por dueño: requisito /
     comportamiento → `specs/<capability>/spec.md` (`## MODIFIED Requirements`);
     decisión de diseño → `design.md`; alcance → `proposal.md`; trabajo nuevo →
     `tasks.md` (al final de su fase, sin reordenar ni pisar). Detecta drift
@@ -158,13 +158,13 @@ skillVersion: '2.3'
     solo los artifacts afectados bajo `aspec/changes/<name>/rev2/` con sus
     rutas relativas y un `rev2/README.md` con motivo, fecha y origen). Nunca
     toca `aspec/changes/archive/`, los specs principales en `aspec/specs/` ni
-    código (esos dominios son de `ancleto-sync-specs` y `ancleto-apply`).
-    Cuando el cambio altera comportamiento especificado, ofrece `ancleto-verify`
-    al terminar. **No confundir** con `ancleto update` (CLI, reinstala el
-    paquete). Evidencia: `skills/ancleto-update/SKILL.md`,
-    `commands/cleto-update.md`, `aspec/specs/artifact-update/spec.md`,
-    `docs/skill-ancleto-update.md`,
-    `aspec/changes/archive/2026-10-06-ancleto-update/`.
+    código (esos dominios son de `fre-sync-specs` y `fre-apply`).
+    Cuando el cambio altera comportamiento especificado, ofrece `fre-verify`
+    al terminar. **No confundir** con `ancleto-fre update` (CLI, reinstala el
+    paquete). Evidencia: `skills/fre-update/SKILL.md`,
+    `commands/fre-update.md`, `aspec/specs/artifact-update/spec.md`,
+    `docs/skill-fre-update.md`,
+    `aspec/changes/archive/2026-10-06-fre-update/`.
 19. **Host `commandcode` (Command Code): adaptador propio con mapa de tools y
     `tools: "*"`.** `add-commandcode-support` sumó el host con layout nativo
     `.commandcode/{skills,agents,commands}`. El adaptador
@@ -174,7 +174,7 @@ skillVersion: '2.3'
     (`read→read_file`, `write→write_file`, `edit→edit_file`, `bash→shell_command`,
     `grep→grep`, `glob→glob`, `webfetch→web_fetch`, `websearch→web_search`,
     `todowrite→todo_write`); las tools de memoria se emiten como
-    `mcp__ancleto-memory__<tool>`; una clave sin id verificado se omite con aviso.
+    `mcp__ancleto-fre-memory__<tool>`; una clave sin id verificado se omite con aviso.
     **Clave del diseño**: no se usa `dropManagedKeys` (como claude/vscode/copilot)
     porque en Command Code `tools` omitido = "ninguna tool" y dejaría a los
     subagentes inútiles; un origen sin `tools` emite `tools: "*"`. El MCP de
@@ -185,7 +185,7 @@ skillVersion: '2.3'
 
 ## Seed incremental (contrato del discovery)
 
-- `ancleto discovery --check` devuelve `state` + `impact`:
+- `ancleto-fre discovery --check` devuelve `state` + `impact`:
   - `none` → sin cambios; `minor` → cambios no materiales (el agente trabaja y
     lo anota, no ofrece regenerar); `material` → cambió un config de runtime,
     entry point o apareció/desapareció un directorio raíz nuevo (ofrece
@@ -202,7 +202,7 @@ skillVersion: '2.3'
 
 - **Pack comprimido: sesgo a código, no a assets.** El tier resuelto (`normal`
   en este checkout) **no** aplica compresión de markdown/test por defecto, pero
-  `.gitignore` sigue excluyendo `.opencode/`, `.ancletorc`, `.ancleto/` y
+  `.gitignore` sigue excluyendo `.opencode/`, `.ancleto-fre.rc`, `.ancleto-fre/` y
   `/documentation` (área eliminada). Resultado: `agents/`, `commands/`,
   `skills/`, `templates/` y `docs/` **no entran** en el pack. El seed los
   describe por listados de directorio, `README.md`, `BACKLOG.md`,
@@ -228,32 +228,32 @@ skillVersion: '2.3'
 - **GC usa `created_at` como proxy.** No existe `superseded_at`; un nodo
   creado hace mucho y superseded recientemente puede purgarse antes de lo
   deseado. `--dry-run` permite auditarlo.
-- **`ancleto stats` acoplado a opencode**: lee la base de sesiones de
+- **`ancleto-fre stats` acoplado a opencode**: lee la base de sesiones de
   opencode; no funciona con otros IDEs. Evidencia: `README.md`,
   `src/cli/index.js` (`opencodeDbPath`).
 - **MCP = costo fijo por request.** La lista de tools viaja en cada request
-  (`ancleto-memory` ~500, caveman ~830, engram ~4.900 tokens). Engram quedó
+  (`ancleto-fre-memory` ~500, caveman ~830, engram ~4.900 tokens). Engram quedó
   opcional (`--with-engram`) por eso.
 - **Branch protection honor-based.** `AGENTS.md`/`BACKLOG.md` declaran `main`
   protegida, pero el remoto no aplica protection real (B3). Evidencia:
   `BACKLOG.md`.
-- **Secretos**: nunca copiar valores de `.ancletorc`, `opencode.json`,
+- **Secretos**: nunca copiar valores de `.ancleto-fre.rc`, `opencode.json`,
   `mcp_config.json`, CI o Azure. Los tokens viven fuera del repo
   (env/secretos del IDE); nombrar la variable y omitir el valor.
 - **Deuda resuelta en 0.11.0**: export/import de memoria (M1) y garbage
   collection `memory gc` (M2) ya no son deuda: se implementaron en
   `memory-ops-export-import-gc`. El `CHANGELOG.md` cubre hasta `0.12.0`
-  (skill `ancleto-update`); el change `add-commandcode-support` (2026-10-07)
+  (skill `fre-update`); el change `add-commandcode-support` (2026-10-07)
   está archivado pero todavía no tiene entrada propia. El tier resuelto en este
-  checkout (`.opencode/.ancleto-tier`) dice `normal`, **no** `gratis` como
+  checkout (`.opencode/.ancleto-fre-tier`) dice `normal`, **no** `gratis` como
   afirmaba el seed anterior. Evidencia: `BACKLOG.md`, `PRODUCT.md`,
   `CHANGELOG.md`.
 
 ## Decisiones registradas en memoria del repo
 
 - `dogfooding-versionado-init`: versionar `AGENTS.md`, `PRODUCT.md` y `aspec/`;
-  ignorar `.opencode/`, `.ancletorc`, `.ancleto/`.
+  ignorar `.opencode/`, `.ancleto-fre.rc`, `.ancleto-fre/`.
 - `fix-init-tier-huerfano-0.6.36` y `fix-init-tier-guardado-0.6.37`: `init`
   debe aplicar el tier guardado a los agentes locales (paridad con `install`),
   incluido re-init sin flags.
-- Evidencia: `.ancleto/memory.db` vía `ancleto memory list`.
+- Evidencia: `.ancleto-fre/memory.db` vía `ancleto-fre memory list`.

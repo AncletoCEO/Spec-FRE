@@ -15,7 +15,7 @@ directorio base de otro host.
 
 #### Scenario: `opencode` conserva las rutas y el formato actuales
 
-- **WHEN** se ejecuta `ancleto init` o `ancleto install --project` con el agente `opencode`
+- **WHEN** se ejecuta `ancleto-fre init` o `ancleto-fre install --project` con el agente `opencode`
 - **THEN** los assets se escriben en `.opencode/agents`, `.opencode/commands` y `.opencode/skills`
 - **AND** agents y commands usan la convención `<n>.md`
 - **AND** las rutas coinciden con las de las versiones anteriores (sin regresión)

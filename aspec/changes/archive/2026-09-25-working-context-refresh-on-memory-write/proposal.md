@@ -2,18 +2,18 @@
 
 ## Problema
 
-El contexto inyectado que arma el orquestador vive en `.ancleto/working-context.md`
+El contexto inyectado que arma el orquestador vive en `.ancleto-fre/working-context.md`
 (bloque `<ProjectMemoryRules>`). Hoy ese archivo solo se regenera en puntos de ciclo de vida
 y de forma manual:
 
-- `ancleto init` → `refreshWorkingContext` (`src/cli/index.js:1087`)
-- `ancleto install --project` → `refreshWorkingContext` (`src/cli/index.js:932`)
-- `ancleto upgrade` → `refreshWorkingContext` (`src/cli/index.js:996`)
-- manualmente con `ancleto memory context --out` (`src/cli/index.js:1434`)
+- `ancleto-fre init` → `refreshWorkingContext` (`src/cli/index.js:1087`)
+- `ancleto-fre install --project` → `refreshWorkingContext` (`src/cli/index.js:932`)
+- `ancleto-fre upgrade` → `refreshWorkingContext` (`src/cli/index.js:996`)
+- manualmente con `ancleto-fre memory context --out` (`src/cli/index.js:1434`)
 
 Ninguna tool MCP lo invoca. `createMemoryToolHandlers` (`src/core/memory/tools.js:64-70`)
 solo llama a `engine.recordNode` (`src/core/memory/engine.js:156`), que escribe
-`.ancleto/memory.db`; `serveMemoryMcp` (`src/core/memory/mcp-server.js:64`) nunca llama a
+`.ancleto-fre/memory.db`; `serveMemoryMcp` (`src/core/memory/mcp-server.js:64`) nunca llama a
 `refreshWorkingContext`. Consecuencia: tras grabar una regla o decisión por MCP, el
 working-context queda desactualizado de inmediato hasta el próximo lifecycle point o un
 comando manual.
@@ -37,7 +37,7 @@ del engine, **no** un bug pendiente. La **Opción 2** —exponer el nodo superse
 selectivo— queda **diferida** como mejora futura. El detalle vive en `design.md`.
 
 Los lifecycle points actuales (`init`, `install --project`, `upgrade`,
-`ancleto memory context --out`) siguen siendo válidos, pero dejan de ser los únicos.
+`ancleto-fre memory context --out`) siguen siendo válidos, pero dejan de ser los únicos.
 
 ## Alcance
 
@@ -52,7 +52,7 @@ In scope:
 Out of scope (no-goals):
 
 - No cambia la semántica de `init`/`install --project`/`upgrade`/`memory context --out`.
-- No cambia la ubicación ni el formato de `.ancleto/working-context.md` salvo que sea
+- No cambia la ubicación ni el formato de `.ancleto-fre/working-context.md` salvo que sea
   imprescindible.
 - No modifica la forma del resultado de `recordNode` ni expone el nodo superseded: la Opción 2
   (refresh selectivo) queda fuera de alcance, diferida como mejora futura.

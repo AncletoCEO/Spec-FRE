@@ -18,6 +18,6 @@
 
 ## Fase 3 — Gate de garantía IDE/CLI
 
-- [x] Verificación post-instalación en Antigravity IDE (`ancleto-*` visibles).
+- [x] Verificación post-instalación en Antigravity IDE (`ancleto-fre-*` visibles).
 - [x] Verificación post-instalación en Antigravity CLI (mismo criterio).
 - [x] Registrar evidencia y cerrar el item de BACKLOG solo con ambas en verde.

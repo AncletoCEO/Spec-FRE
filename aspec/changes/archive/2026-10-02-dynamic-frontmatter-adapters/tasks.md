@@ -19,7 +19,7 @@
     fuera del adapter) funcionen con el import.
   - Eliminar el código movido (funciones, constantes, comentarios de sección).
 
-- [x] **T3: Extender `ancleto check` para validar frontmatter de agents**
+- [x] **T3: Extender `ancleto-fre check` para validar frontmatter de agents**
   - En `checkCommand()`, después de validar presencia de archivos, para cada `.md` en directorios de
     agents: leer contenido instalado, leer origen, aplicar `adaptFrontmatter(origen, host, 'agents', name)`,
     comparar.
@@ -43,11 +43,11 @@
 
 - [x] **T5: Validación manual de integración**
   - `node --test test/*.test.js` — todos los tests pasan (incluyendo los nuevos).
-  - `ancleto init --agent opencode` + `ancleto check` → 0 faltantes, 0 huerfanos, 0 divergencias.
-  - `ancleto init --agent antigravity` + `ancleto check` → idem.
-  - `ancleto init --agent cursor` + `ancleto check` → idem, con aviso stderr de frontmatter no adaptado.
-  - `ancleto upgrade --agent vscode` → re-aplica adaptador, check pasa.
-  - Editar manualmente un frontmatter de agent instalado → `ancleto check` reporta divergencia (⚠).
+  - `ancleto-fre init --agent opencode` + `ancleto-fre check` → 0 faltantes, 0 huerfanos, 0 divergencias.
+  - `ancleto-fre init --agent antigravity` + `ancleto-fre check` → idem.
+  - `ancleto-fre init --agent cursor` + `ancleto-fre check` → idem, con aviso stderr de frontmatter no adaptado.
+  - `ancleto-fre upgrade --agent vscode` → re-aplica adaptador, check pasa.
+  - Editar manualmente un frontmatter de agent instalado → `ancleto-fre check` reporta divergencia (⚠).
 
 ## Cierre
 

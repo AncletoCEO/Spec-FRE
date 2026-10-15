@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path'
 // (una sola conexion, sin reabrir la DB) y persistencia del artefacto derivado.
 
 export function workingContextPath(projectRoot) {
-  return join(projectRoot, '.ancleto', 'working-context.md')
+  return join(projectRoot, '.ancleto-fre', 'working-context.md')
 }
 
 // Trigger del refresh sobre el resultado completo de `recordNode` `{ node, superseded }`:
@@ -19,17 +19,17 @@ export function shouldRefreshWorkingContext(result) {
 }
 
 // Deriva la raiz del proyecto desde la ubicacion de la DB (no desde el cwd del proceso).
-// Prioriza el primer ancestro con `.ancletorc`; si no hay, usa el candidato derivado de
-// `dbPath` mientras exista el layout `.ancleto/`; si no, no hay raiz (refresh best-effort).
+// Prioriza el primer ancestro con `.ancleto-fre.rc`; si no hay, usa el candidato derivado de
+// `dbPath` mientras exista el layout `.ancleto-fre/`; si no, no hay raiz (refresh best-effort).
 export function resolveMemoryProjectRoot(dbPath) {
   if (!dbPath) return null
   const candidate = dirname(dirname(dbPath))
   for (let dir = candidate; ; dir = dirname(dir)) {
-    if (existsSync(join(dir, '.ancletorc'))) return dir
+    if (existsSync(join(dir, '.ancleto-fre.rc'))) return dir
     const parent = dirname(dir)
     if (parent === dir) break
   }
-  if (existsSync(join(candidate, '.ancleto'))) return candidate
+  if (existsSync(join(candidate, '.ancleto-fre'))) return candidate
   return null
 }
 

@@ -85,7 +85,7 @@ in-place o `rev2`, y NO SHALL elegir el modo por sí mismo.
 
 The system SHALL limitar la actualización a los artifacts del change. NO SHALL modificar
 `aspec/changes/archive/` ni los specs principales en `aspec/specs/` ni código de implementación. Cuando
-el cambio de definición altera comportamiento especificado, SHALL ofrecer `ancleto-verify` al terminar.
+el cambio de definición altera comportamiento especificado, SHALL ofrecer `fre-verify` al terminar.
 
 #### Scenario: Change archivado
 
@@ -101,4 +101,4 @@ el cambio de definición altera comportamiento especificado, SHALL ofrecer `ancl
 #### Scenario: Cambió comportamiento especificado
 
 - **WHEN** la actualización modifica un requisito o comportamiento especificado
-- **THEN** la skill ofrece ejecutar `ancleto-verify` al terminar
+- **THEN** la skill ofrece ejecutar `fre-verify` al terminar

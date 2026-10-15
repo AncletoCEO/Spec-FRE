@@ -10,8 +10,8 @@ del caller (args de tool o argumento directo a `recordNode`) NO SHALL tener efec
 procedencia persistida. Cada superficie de escritura confiable SHALL registrar un valor de
 procedencia propio y estable que la identifique:
 
-- `mcp:ancleto-memory` — escrituras vía las tools MCP (`recordRule`, `recordDecision`).
-- `cli:import` — escrituras vía `ancleto memory import`.
+- `mcp:ancleto-fre-memory` — escrituras vía las tools MCP (`recordRule`, `recordDecision`).
+- `cli:import` — escrituras vía `ancleto-fre memory import`.
 - `tool:recordRule` / `tool:recordDecision` — valor por defecto que emite el toolkit
   in-process (`createMemoryToolkit`, `src/core/memory/tools.js:81-82`) según la tool
   invocada, cuando no se provee un `source` de runtime explícito.
@@ -30,11 +30,11 @@ procedencia propio y estable que la identifique:
 #### Scenario: Procedencia de la superficie MCP
 
 - **WHEN** se registra un nodo mediante `recordRule` o `recordDecision` a través del server MCP
-- **THEN** el nodo persistido tiene `source = 'mcp:ancleto-memory'`
+- **THEN** el nodo persistido tiene `source = 'mcp:ancleto-fre-memory'`
 
 #### Scenario: Procedencia de la superficie de import
 
-- **WHEN** `ancleto memory import` inserta o actualiza un nodo
+- **WHEN** `ancleto-fre memory import` inserta o actualiza un nodo
 - **THEN** el nodo persistido tiene `source = 'cli:import'`
 
 #### Scenario: Procedencia por defecto del toolkit in-process
@@ -52,7 +52,7 @@ procedencia propio y estable que la identifique:
 
 La lectura del motor orientada al LLM (`searchMemory`) SHALL seguir excluyendo los campos
 gestionados por el runtime, incluido `source`. La lectura de operador (`listNodes`, usada por
-`ancleto memory list`) SHALL exponer `source` como campo de solo lectura en cada nodo devuelto,
+`ancleto-fre memory list`) SHALL exponer `source` como campo de solo lectura en cada nodo devuelto,
 de modo que la procedencia sea auditable. La exposición NO SHALL modificar las firmas JSON Schema
 de entrada de las tools MCP.
 
@@ -68,7 +68,7 @@ de entrada de las tools MCP.
 
 #### Scenario: El JSON del CLI expone la procedencia
 
-- **WHEN** se ejecuta `ancleto memory list --json`
+- **WHEN** se ejecuta `ancleto-fre memory list --json`
 - **THEN** cada nodo del JSON incluye el campo `source`
 
 #### Scenario: Las firmas MCP no exponen la procedencia
@@ -93,5 +93,5 @@ ownership SHALL quedar fuera de este change.
 #### Scenario: La procedencia describe la superficie, no el rol del LLM
 
 - **WHEN** se audita la procedencia de un nodo escrito por una tool MCP
-- **THEN** la procedencia identifica la superficie de escritura (`mcp:ancleto-memory`)
+- **THEN** la procedencia identifica la superficie de escritura (`mcp:ancleto-fre-memory`)
 - **AND** no afirma una identidad de rol del LLM como verificada

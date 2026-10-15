@@ -18,25 +18,25 @@ los assets instaladas en `units/_map.md`.
 | `src/cli/**` | `index.js` (entry point y todos los subcomandos), `ui.js` (wizard/menús). | 2 |
 | `src/core/**` | `discovery.js`, `repomix-tier.js`, `tier-models.js`, `adapters/frontmatter.js`, `memory/{database,engine,tools,mcp-server,doctor,working-context}.js`. | 12 |
 | `agents/*.md` | 10 subagentes instalables. | 10 |
-| `commands/*.md` | 16 comandos (`/cleto-*` del ciclo + review/security + recall/pr + transplant + `cleto-update`). | 16 |
-| `skills/*/SKILL.md` (+ references) | 21 skills nativas (incluye `ancleto-review`, `ancleto-technical-discovery` y **`ancleto-update`**). | 35+ |
+| `commands/*.md` | 16 comandos (`/fre-*` del ciclo + review/security + recall/pr + transplant + `fre-update`). | 16 |
+| `skills/*/SKILL.md` (+ references) | 21 skills nativas (incluye `fre-review`, `fre-technical-discovery` y **`fre-update`**). | 35+ |
 | `templates/` | `AGENTS.md`, `PRODUCT.md`. | 2 |
-| `profiles/test/` | Overlay del perfil test: tester/reviewer ampliados, 5 comandos `cleto-test-*`, `AGENTS.md` con bloque LOCKED. | 8 |
-| `aspec/` | `config.yaml` + `specs/` (**16** capacidades, incluidas `artifact-update` y `commandcode-support`) + 1 change activo (`ancleto-vscode-extension`, diferido) + `changes/archive/` (incluye `2026-10-07-add-commandcode-support`, `2026-10-06-ancleto-update`, `2026-10-05-memory-actor-provenance` y los 4 del 2026-10-02). | 90+ |
+| `profiles/test/` | Overlay del perfil test: tester/reviewer ampliados, 5 comandos `fre-test-*`, `AGENTS.md` con bloque LOCKED. | 8 |
+| `aspec/` | `config.yaml` + `specs/` (**16** capacidades, incluidas `artifact-update` y `commandcode-support`) + 1 change activo (`ancleto-fre-vscode-extension`, diferido) + `changes/archive/` (incluye `2026-10-07-add-commandcode-support`, `2026-10-06-fre-update`, `2026-10-05-memory-actor-provenance` y los 4 del 2026-10-02). | 90+ |
 | `test/**` | `adapters-frontmatter`, `cli`, `content-guards`, `discovery-tier`, `discovery-topology`, `linter-config`, `mcp`, `memory-engine`, `tier-models`, `working-context` (`.test.js`); **413 tests / 86 suites medidos en verde**. | 10 |
-| `docs/**` | Documentación del framework + relevamiento (`.md`) + este seed; **incluye `skill-ancleto-update.md`** (nueva). | 19+ |
+| `docs/**` | Documentación del framework + relevamiento (`.md`) + este seed; **incluye `skill-fre-update.md`** (nueva). | 19+ |
 | `documentation/` | **Eliminada como área raíz** (registrada como "área raíz eliminada" por `materialReasons`); no se incluye en este seed. | — |
-| `.opencode/**` | Instalación local del host (incluye `.ancleto-tier`); gitignored. | 64+ |
+| `.opencode/**` | Instalación local del host (incluye `.ancleto-fre-tier`); gitignored. | 64+ |
 | `.github/workflows/**` | `publish.yml` (publicación a npm + Release + gate de lint). | 1 |
 | `eslint.config.js` | Flat config del linter (4 reglas sobre `src/` y `test/`). | 1 |
-| Raíz | `package.json` (`0.12.0`), `README.md`, `CHANGELOG.md` (hasta `0.12.0`), `BACKLOG.md`, `DESIGN-memory-engine-v0.2.0.md`, `LICENSE` (MIT), `AGENTS.md`, `PRODUCT.md`, `.gitattributes`, `.gitignore`, `.discovery-map.json`, `.ancletorc` (gitignored), **`package-lock.json`** (nuevo archivo material raíz). | 14 |
+| Raíz | `package.json` (`0.12.0`), `README.md`, `CHANGELOG.md` (hasta `0.12.0`), `BACKLOG.md`, `DESIGN-memory-engine-v0.2.0.md`, `LICENSE` (MIT), `AGENTS.md`, `PRODUCT.md`, `.gitattributes`, `.gitignore`, `.discovery-map.json`, `.ancleto-fre.rc` (gitignored), **`package-lock.json`** (nuevo archivo material raíz). | 14 |
 
 ## Fuera del árbol versionado (gitignored, puede no existir)
 
-`.ancletorc`, `.opencode/**` (instalación local del host) y `.ancleto/**`
-(memoria local) están en `.gitignore`. En este checkout `.ancletorc`,
-`.opencode/` y `.ancleto/` **sí existen**. El tier del proyecto vive en
-`.opencode/.ancleto-tier` con valor `normal`.
+`.ancleto-fre.rc`, `.opencode/**` (instalación local del host) y `.ancleto-fre/**`
+(memoria local) están en `.gitignore`. En este checkout `.ancleto-fre.rc`,
+`.opencode/` y `.ancleto-fre/` **sí existen**. El tier del proyecto vive en
+`.opencode/.ancleto-fre-tier` con valor `normal`.
 
 ## Destinos por host (no presentes en este repo)
 
@@ -54,22 +54,22 @@ con ese host: `.claude/**`, `.github/skills|agents|prompts/**`,
 los lockfiles; sin embargo, Repomix respeta `.gitignore`, que ignora
 `package-lock.json`/`yarn.lock`/`pnpm-lock.yaml` (este repo tiene
 `package-lock.json` solo). Además, Repomix respeta `.gitignore`
-(`.opencode/`, `.ancletorc`, `.ancleto/`).
+(`.opencode/`, `.ancleto-fre.rc`, `.ancleto-fre/`).
 
 ## Cambios del catálogo desde el seed previo
 
-- **Skill nueva**: `skills/ancleto-update/SKILL.md` (comando
-  `/cleto-update`) para revisión de artifacts de un change ante cambios
-  de definición. Routada por `skills/ancleto-workflow/SKILL.md` (que
-  ahora incluye `ancleto-update` en su tabla de routing).
-- **Command nuevo**: `commands/cleto-update.md`.
+- **Skill nueva**: `skills/fre-update/SKILL.md` (comando
+  `/fre-update`) para revisión de artifacts de un change ante cambios
+  de definición. Routada por `skills/fre-workflow/SKILL.md` (que
+  ahora incluye `fre-update` en su tabla de routing).
+- **Command nuevo**: `commands/fre-update.md`.
 - **Spec nueva**: `aspec/specs/artifact-update/spec.md` (4
   requirements: edición in-place, drift detection, elección de modo,
   límites de alcance).
-- **Doc nueva**: `docs/skill-ancleto-update.md` (molde de
-  `skill-ancleto-upgrade.md`).
+- **Doc nueva**: `docs/skill-fre-update.md` (molde de
+  `skill-fre-upgrade.md`).
 - **Tests**: `test/content-guards.test.js` actualizado para incluir
-  `ancleto-update` en `ARTIFACT_SKILLS` y el conteo de comandos
+  `fre-update` en `ARTIFACT_SKILLS` y el conteo de comandos
   `15 + 1`.
 - **Host nuevo**: `commandcode` (Command Code, CLI `cmd`) en
   `SUPPORTED_AGENTS` + `AGENT_TARGETS` (`.commandcode/{skills,agents,commands}`),

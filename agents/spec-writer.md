@@ -19,7 +19,7 @@ Read `AGENTS.md` at the repo root for project-specific conventions, tech stack, 
 
 ## Language Requirement
 
-- Write artifact content in the user's conversation language (or the project's configured `language` in `.ancletorc`)
+- Write artifact content in the user's conversation language (or the project's configured `language` in `.ancleto-fre.rc`)
 - Keywords are literal and MUST NOT be translated: `Requirement`, `Scenario`, `SHALL`, `WHEN`/`THEN`/`AND`, `ADDED Requirements`, `MODIFIED Requirements`, `REMOVED Requirements`, `RENAMED Requirements`
 - File names and directory names are literal and MUST NOT be translated: English kebab-case, following aspec conventions
 
@@ -29,7 +29,7 @@ Generate an aspec change in:
 
 - `aspec/changes/{change-name}/`
 
-using the `ancleto-workflow` skill and the conventions of:
+using the `fre-workflow` skill and the conventions of:
 
 - `AGENTS.md`
 
@@ -37,7 +37,7 @@ using the `ancleto-workflow` skill and the conventions of:
 
 1. Use the repository context received in the delegation, including its cited source paths and seed state; exploratory sweeping is prohibited. You MAY open a specific path that the received context cites when a detail needs confirmation.
 2. Read relevant source-of-truth specs in `aspec/specs/` when they exist
-3. Load and follow the `ancleto-workflow` skill
+3. Load and follow the `fre-workflow` skill
 4. Create a clear `change-name`
 5. Generate the minimum correct set of artifacts for the requested change:
    - `proposal.md`

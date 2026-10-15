@@ -44,7 +44,7 @@ jobs:
 
       - name: Publish to npm (skipped if the version already exists)
         run: |
-          if npm view "@ancleto/spec@${PKG_VERSION}" version >/dev/null 2>&1; then
+          if npm view "@ancleto/spec-fre@${PKG_VERSION}" version >/dev/null 2>&1; then
             echo "ya publicado: ${PKG_VERSION} — se omite npm publish"
           else
             npm publish --access public
@@ -79,7 +79,7 @@ jobs:
       - name: Canary - npm tarball disponible (no bloqueante)
         continue-on-error: true
         run: |
-          URL="https://registry.npmjs.org/@ancleto/spec/-/spec-${PKG_VERSION}.tgz"
+          URL="https://registry.npmjs.org/@ancleto/spec-fre/-/spec-fre-${PKG_VERSION}.tgz"
           for attempt in 1 2 3; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" -L "$URL")
             if [ "$CODE" = "200" ]; then
@@ -89,4 +89,4 @@ jobs:
             echo "intento ${attempt}/3: HTTP ${CODE}"
             if [ "$attempt" -lt 3 ]; then sleep 10; fi
           done
-          echo "::warning::npm todavia no sirve el tarball de ${PKG_VERSION} (propagacion lenta, es normal). No hace falta hacer nada: la version y el README se actualizan solos. Para chequear mas tarde: npm view @ancleto/spec@${PKG_VERSION} dist.tarball"
+          echo "::warning::npm todavia no sirve el tarball de ${PKG_VERSION} (propagacion lenta, es normal). No hace falta hacer nada: la version y el README se actualizan solos. Para chequear mas tarde: npm view @ancleto/spec-fre@${PKG_VERSION} dist.tarball"

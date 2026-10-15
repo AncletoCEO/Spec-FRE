@@ -26,7 +26,7 @@ En caso de conflicto, prevalece la documentación más específica del área afe
 
 ## Memoria Persistente (Protocolo Reactivo)
 
-La memoria del proyecto persiste en `.ancleto/memory.db` y se consulta con la herramienta
+La memoria del proyecto persiste en `.ancleto-fre/memory.db` y se consulta con la herramienta
 `searchMemory`. Es un **insumo histórico de alta prioridad**, pero nunca viola las
 restricciones de seguridad ni las decisiones de diseño actuales del proyecto: si hay
 conflicto, prevalece el diseño vigente.
@@ -57,7 +57,7 @@ Hay **dos memorias distintas** y no se mezclan:
 
 | Memoria | Qué guarda | Dónde vive | Herramientas |
 |---|---|---|---|
-| **Del repositorio** | Reglas y decisiones **del proyecto**: convenciones, contratos, por qué se eligió algo | `.ancleto/memory.db` (versionable con el equipo) | `searchMemory`, `recordRule`, `recordDecision` |
+| **Del repositorio** | Reglas y decisiones **del proyecto**: convenciones, contratos, por qué se eligió algo | `.ancleto-fre/memory.db` (versionable con el equipo) | `searchMemory`, `recordRule`, `recordDecision` |
 | **Del agente** (si está habilitada) | Notas **de sesión/agente**: observaciones transitorias, contexto entre compactaciones | Servicio externo del agente | Las de ese servicio (p. ej. engram) |
 
 Regla: **una entrada vive en una sola memoria, nunca en ambas.** Si es una decisión o regla
@@ -70,20 +70,20 @@ comparte.
 
 - **Cambios con scope incierto / arquitectura**: Crear artifacts en `aspec/changes/<name>/`.
 - **Cambios menores / fixes**: Implementación directa.
-- **Cierre**: Archivar con `/cleto-archive` al finalizar.
+- **Cierre**: Archivar con `/fre-archive` al finalizar.
 
 <!-- LOCKED: artifacts-language -->
 - **Idioma de los artifacts**: el contenido de `proposal.md`, `design.md`, `tasks.md` y `specs/` se escribe
-  en el idioma de la conversación con el usuario (o en el `language` configurado en `.ancletorc`).
+  en el idioma de la conversación con el usuario (o en el `language` configurado en `.ancleto-fre.rc`).
   Los keywords (`Requirement`, `Scenario`, `SHALL`, `WHEN`/`THEN`/`AND`, `ADDED/MODIFIED/REMOVED/RENAMED
   Requirements`) y los nombres de archivos y directorios son literales en inglés y **no se traducen**.
 <!-- /LOCKED: artifacts-language -->
 
 ## Tools de Soporte
 
-- `ancleto`: Descubrimiento técnico e inicialización.
-- `cleto-*`: Comandos del ciclo de vida del cambio en el IDE (proposal, specs, design, tasks, archive).
+- `ancleto-fre`: Descubrimiento técnico e inicialización.
+- `fre-*`: Comandos del ciclo de vida del cambio en el IDE (proposal, specs, design, tasks, archive).
 
 <!-- LOCKED: test-block -->
-Contexto gestionado por @ancleto/spec — no editar: se re-aplica en cada actualizacion.
+Contexto gestionado por @ancleto/spec-fre — no editar: se re-aplica en cada actualizacion.
 <!-- /LOCKED: test-block -->

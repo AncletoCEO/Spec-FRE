@@ -11,7 +11,7 @@ const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 const CLI = join(TEST_DIR, '..', 'src', 'cli', 'index.js')
 
 async function withDir(fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'ancleto-mcp-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-mcp-'))
   try {
     return await fn(dir)
   } finally {
@@ -51,16 +51,16 @@ function mcpClient(cwd) {
 }
 
 function runCli(args, cwd) {
-  return spawnSync(process.execPath, [CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, ANCLETO_MUSE_SPARK: '0' } })
+  return spawnSync(process.execPath, [CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, ANCLETO_FRE_MUSE_SPARK: '0' } })
 }
 
-describe('MCP de memoria propia (ancleto mcp)', () => {
+describe('MCP de memoria propia (ancleto-fre mcp)', () => {
   it('handshake, tools/list y round-trip de una regla', async () => {
     await withDir(async (dir) => {
       const { send, close } = mcpClient(dir)
       try {
         const init = await send(1, 'initialize', { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'test', version: '1' } })
-        assert.equal(init.result.serverInfo.name, 'ancleto-memory')
+        assert.equal(init.result.serverInfo.name, 'ancleto-fre-memory')
         assert.equal(init.result.protocolVersion, '2024-11-05')
 
         const list = await send(2, 'tools/list')
@@ -80,7 +80,7 @@ describe('MCP de memoria propia (ancleto mcp)', () => {
         assert.equal(hits.length, 1)
         assert.equal(hits[0].memory_key, 'api-error-format')
 
-        assert.ok(existsSync(join(dir, '.ancleto', 'memory.db')), 'crea la DB del proyecto')
+        assert.ok(existsSync(join(dir, '.ancleto-fre', 'memory.db')), 'crea la DB del proyecto')
       } finally {
         close()
       }
@@ -165,7 +165,7 @@ describe('CLI memory list (issue #12)', () => {
       // Esperar a que el MCP hijo termine de cerrar (checkpoint) antes de medir.
       const settle = async () => {
         const { statSync } = await import('node:fs')
-        const path = join(dir, '.ancleto', 'memory.db-wal')
+        const path = join(dir, '.ancleto-fre', 'memory.db-wal')
         let prev = -1
         for (let i = 0; i < 20; i++) {
           const size = existsSync(path) ? statSync(path).size : 0
@@ -215,7 +215,7 @@ describe('CLI memory list (issue #12)', () => {
       } finally {
         close()
       }
-      const walPath = join(dir, '.ancleto', 'memory.db-wal')
+      const walPath = join(dir, '.ancleto-fre', 'memory.db-wal')
       const { statSync } = await import('node:fs')
       const before = existsSync(walPath) ? statSync(walPath).size : 0
 
@@ -235,7 +235,7 @@ describe('CLI memory list (issue #12)', () => {
 describe('CLI memory export/import (memory-ops-export-import-gc)', () => {
   it('export escribe solo activos, sanitiza paths y reimportar es idempotente', async () => {
     await withDir(async (dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const eng = createMemoryEngine(dbPath)
       eng.recordNode({ memory_key: 'exp-a', type: 'rule', scope: 'project', content: 'ver C:\\Users\\damia\\repo', justification: 'o /Users/alice/work' })
       eng.recordNode({ memory_key: 'exp-b', type: 'decision', scope: 'feature', content: 'decision activa' })
@@ -267,7 +267,7 @@ describe('CLI memory export/import (memory-ops-export-import-gc)', () => {
 describe('CLI memory gc (memory-ops-export-import-gc)', () => {
   it('dry-run no borra; gc purga superseded antiguos y preserva los activos', async () => {
     await withDir(async (dir) => {
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const eng = createMemoryEngine(dbPath)
       eng.recordNode({ memory_key: 'gc-old', type: 'rule', scope: 'project', content: 'vieja', createdAt: new Date(Date.now() - 40 * 86400000).toISOString() })
       eng.recordNode({ memory_key: 'gc-old', type: 'rule', scope: 'project', content: 'nueva' })
@@ -301,7 +301,7 @@ describe('CLI memory gc (memory-ops-export-import-gc)', () => {
 // memory-actor-provenance: la procedencia MCP es runtime-owned, auditable en
 // `memory list --json` y no forjable desde los args de la tool.
 describe('MCP de memoria propia — procedencia (memory-actor-provenance)', () => {
-  it("una regla escrita via tool MCP persiste source = 'mcp:ancleto-memory' y aparece en memory list --json", async () => {
+  it("una regla escrita via tool MCP persiste source = 'mcp:ancleto-fre-memory' y aparece en memory list --json", async () => {
     await withDir(async (dir) => {
       const { close, send } = mcpClient(dir)
       try {
@@ -318,7 +318,7 @@ describe('MCP de memoria propia — procedencia (memory-actor-provenance)', () =
       assert.equal(json.status, 0)
       const node = JSON.parse(json.stdout).find((n) => n.memory_key === 'prov-mcp')
       assert.ok(node, 'el nodo escrito por MCP debe aparecer en list --json')
-      assert.equal(node.source, 'mcp:ancleto-memory')
+      assert.equal(node.source, 'mcp:ancleto-fre-memory')
     })
   })
 
@@ -338,7 +338,7 @@ describe('MCP de memoria propia — procedencia (memory-actor-provenance)', () =
       const json = runCli(['memory', 'list', '--json'], dir)
       const node = JSON.parse(json.stdout).find((n) => n.memory_key === 'prov-forge')
       assert.ok(node, 'el nodo forjado debe seguir apareciendo')
-      assert.equal(node.source, 'mcp:ancleto-memory')
+      assert.equal(node.source, 'mcp:ancleto-fre-memory')
       assert.notEqual(node.source, 'agent:hacker')
     })
   })

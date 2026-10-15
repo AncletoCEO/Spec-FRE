@@ -2,7 +2,7 @@
 
 ## Problem
 
-Cuando un usuario elige `antigravity` en `ancleto init` (o `ancleto install --project`), la instalación
+Cuando un usuario elige `antigravity` en `ancleto-fre init` (o `ancleto-fre install --project`), la instalación
 queda **a medias**: el CLI sólo materializa `.agents/skills` y descarta `agents` y `commands` con un aviso
 `skip agents: not supported by host 'antigravity'` / `skip commands: not supported by host 'antigravity'`.
 Además no genera el MCP de workspace de Antigravity y `check`/tier quedan acoplados a `.opencode/*`
@@ -20,7 +20,7 @@ Estado confirmado contra el código (`src/cli/index.js`, tras el change archivad
   `{ mcp: { <n>: { type:'local', enabled, command:[...] } } }`; `initProject` (`:1158-1242`) **no** llama a
   `mergeMcp` en absoluto.
 - `registerProject` (`:154-174`), `projectStatus` (`:227-244`) y `checkTierOrphan` (`:1746-1761`) leen
-  `.opencode/agents` y `.opencode/.ancleto-tier` fijos. Deuda conocida registrada en memoria
+  `.opencode/agents` y `.opencode/.ancleto-fre-tier` fijos. Deuda conocida registrada en memoria
   (`host-agent-layout-coupling`): un proyecto no-opencode con `--tier` recibe un falso warning y figura
   como global.
 
@@ -37,12 +37,12 @@ Estado confirmado contra el código (`src/cli/index.js`, tras el change archivad
 | Tools **no encontrados en docs** (solo comunidad) | `call_mcp_tool`, `write_to_file`, `multi_replace_file_content`, `list_dir`, `send_message` |
 | Tools de **delegación** (lado padre/runtime; NO van en `tools` del subagente) | `invoke_subagent` (lo invoca el **padre**; la invocación la habilita **`subagent: true`**), `start_subagent`, `define_subagent` |
 | **Regla de decisión** | Si un id no está confirmado en la tabla de frontmatter de subagents, **NO se emite — exista o no en el SDK**. Sólo (A) es emitible; (B)/(C)/(D) se omiten con aviso |
-| Tools de ancleto **sin id en frontmatter** | `write`, `glob`, `task`, `webfetch`, `websearch` → se **omiten con aviso** hasta confirmar el listado oficial completo (deuda). `edit` → `replace_file_content` (frontmatter), **no** `edit_file` (SDK) |
+| Tools de ancleto-fre **sin id en frontmatter** | `write`, `glob`, `task`, `webfetch`, `websearch` → se **omiten con aviso** hasta confirmar el listado oficial completo (deuda). `edit` → `replace_file_content` (frontmatter), **no** `edit_file` (SDK) |
 | MCP | el **mecanismo** de MCP no se configura por `tools`: se expresa por el campo `mcpServers` (agent-level) y/o `.agents/mcp_config.json` de workspace. Toda clave de MCP declarada **dentro** del mapa `tools` (`mcpServers`, `mcp_*`, `call_mcp_tool`) **no** es un id verificado → **omitir con aviso** (no en silencio). `call_mcp_tool` queda **prohibido** (no lo emite el adaptador) |
 | ⚠️ Known issue | Un tool name inexistente **cuelga el subagent** → el mapeo debe usar sólo ids con evidencia oficial |
 | Commands | Antigravity no tiene dir de commands de proyecto; su equivalente son *Workflows* (`/workflow-name`), **deprecados a favor de Agent Skills** (migración nov‑2026) |
 | MCP (workspace) | `.agents/mcp_config.json` = `{ "mcpServers": { "<n>": { "command": "...", "args": [...], "env": {...} } } }` |
-| Rules | `.agents/rules/` (md) — fuera del modelo de assets de ancleto |
+| Rules | `.agents/rules/` (md) — fuera del modelo de assets de ancleto-fre |
 
 ## Proposed change
 
@@ -88,7 +88,7 @@ In scope:
 
 Out of scope (no-goals explícitos):
 
-- **Antigravity Rules** (`.agents/rules/`): fuera del modelo de assets de ancleto.
+- **Antigravity Rules** (`.agents/rules/`): fuera del modelo de assets de ancleto-fre.
 - **Workflows** (`.agent/workflows/`): deprecados; no se generan.
 - **MCP de host para el resto de los hosts**: `.mcp.json` (Claude) y `.vscode/mcp.json` (VS Code) siguen OOS.
 - **MCP global de Antigravity** (`~/.gemini/config/mcp_config.json`): sólo workspace.

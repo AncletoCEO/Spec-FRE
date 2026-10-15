@@ -17,10 +17,10 @@
   - NO tocar `publicNode`: `searchMemory` debe seguir sin exponer campos del runtime.
 
 - [x] **T4**: Confirmar el cableado del valor MCP en `src/core/memory/mcp-server.js`
-  - Mantener `source: 'mcp:ancleto-memory'` como procedencia de la superficie MCP.
+  - Mantener `source: 'mcp:ancleto-fre-memory'` como procedencia de la superficie MCP.
   - Verificar que `createMemoryToolHandlers` no permite override por args (encapsulamiento).
 
-- [x] **T5**: Confirmar que `ancleto memory list --json` (`src/cli/index.js`) refleja `source`
+- [x] **T5**: Confirmar que `ancleto-fre memory list --json` (`src/cli/index.js`) refleja `source`
   - Sin cambio de comando: el JSON de `listNodes` ya debe traer `source`.
   - Opcional (no bloqueante): agregar `source` al formato de texto de `memory list`.
 
@@ -43,10 +43,10 @@
   - **Evidencia:** `source = 'cli:import'` verificado en el insert, en el upsert y en el nodo superseded.
 
 - [x] **T9**: Tests de integración en `test/mcp.test.js`
-  - Una regla escrita vía tool MCP persiste `source = 'mcp:ancleto-memory'`.
-  - Ese `source` aparece en `ancleto memory list --json`.
+  - Una regla escrita vía tool MCP persiste `source = 'mcp:ancleto-fre-memory'`.
+  - Ese `source` aparece en `ancleto-fre memory list --json`.
   - Un `source` forjado en los args de la tool no altera la procedencia persistida.
-  - **Evidencia:** round-trip MCP→`memory list --json` con `source = 'mcp:ancleto-memory'`;
+  - **Evidencia:** round-trip MCP→`memory list --json` con `source = 'mcp:ancleto-fre-memory'`;
     arg `source: 'agent:hacker'` ignorado; `tools/list` serializado sin `source`.
 
 ## Validación

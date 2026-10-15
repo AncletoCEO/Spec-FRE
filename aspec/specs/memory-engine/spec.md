@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Memoria persistente del proyecto (`.ancleto/memory.db`) consultada por el orquestador y expuesta
+Memoria persistente del proyecto (`.ancleto-fre/memory.db`) consultada por el orquestador y expuesta
 vía tools MCP. Define qué nodos se inyectan proactivamente en el system prompt y cuáles se
 recuperan reactivamente, y mantiene coherente el contrato documentado con el comportamiento real.
 
@@ -54,7 +54,7 @@ con precisión qué nodos se inyectan proactivamente: las `rule` activas con sco
 
 ### Requirement: Frescura del working-context tras escrituras MCP
 
-El bloque `<ProjectMemoryRules>` de `.ancleto/working-context.md` SHALL regenerarse desde la
+El bloque `<ProjectMemoryRules>` de `.ancleto-fre/working-context.md` SHALL regenerarse desde la
 memoria activa cuando una escritura MCP lo altere, sin exigir un lifecycle point (`init`,
 `install --project`, `upgrade`) ni un comando manual. La regeneración SHALL dispararse cuando
 ocurra al menos una de estas condiciones:
@@ -102,28 +102,28 @@ descartado.
 
 #### Scenario: Los lifecycle points siguen regenerando
 
-- **WHEN** se ejecuta `ancleto init`, `ancleto install --project`, `ancleto upgrade` o
-  `ancleto memory context --out`
+- **WHEN** se ejecuta `ancleto-fre init`, `ancleto-fre install --project`, `ancleto-fre upgrade` o
+  `ancleto-fre memory context --out`
 - **THEN** el working-context se regenera desde la memoria activa
 
 ### Requirement: Raíz de proyecto del refresh disparado por MCP
 
 El refresh del working-context disparado por una escritura MCP SHALL calcular la ruta de salida y
 el bloque `<ProjectTopology>` a partir de la raíz de proyecto detectada por la presencia de
-`.ancletorc`, y NO SHALL usar el directorio de trabajo (`cwd`) del proceso del server MCP como
+`.ancleto-fre.rc`, y NO SHALL usar el directorio de trabajo (`cwd`) del proceso del server MCP como
 raíz.
 
 #### Scenario: Topología y salida desde la raíz del proyecto
 
 - **WHEN** el server MCP se resuelve con una raíz de proyecto distinta del `cwd` del proceso
 - **AND** se registra una regla de scope `project` mediante `recordRule`
-- **THEN** el working-context se escribe bajo la raíz detectada por `.ancletorc`
+- **THEN** el working-context se escribe bajo la raíz detectada por `.ancleto-fre.rc`
 - **AND** el bloque `<ProjectTopology>` corresponde al `.discovery-map.json` de esa raíz
 
 ### Requirement: Robustez del refresh del working-context
 
 La escritura MCP SHALL persistir y devolver el nodo registrado aunque falle el refresh del
-contexto. El refresh SHALL ser idempotente y NO SHALL corromper `.ancleto/memory.db` ni provocar
+contexto. El refresh SHALL ser idempotente y NO SHALL corromper `.ancleto-fre/memory.db` ni provocar
 recursión o deadlock.
 
 #### Scenario: Falla del refresh no pierde la escritura
@@ -142,7 +142,7 @@ recursión o deadlock.
 
 - **WHEN** se refresca el working-context como parte de una escritura MCP
 - **THEN** el proceso no recursa ni queda en deadlock
-- **AND** `.ancleto/memory.db` permanece íntegra (índice FTS5 consistente)
+- **AND** `.ancleto-fre/memory.db` permanece íntegra (índice FTS5 consistente)
 
 ### Requirement: Límites del fallback OR-prefijo de `searchMemory`
 
@@ -259,8 +259,8 @@ del caller (args de tool o argumento directo a `recordNode`) NO SHALL tener efec
 procedencia persistida. Cada superficie de escritura confiable SHALL registrar un valor de
 procedencia propio y estable que la identifique:
 
-- `mcp:ancleto-memory` — escrituras vía las tools MCP (`recordRule`, `recordDecision`).
-- `cli:import` — escrituras vía `ancleto memory import`.
+- `mcp:ancleto-fre-memory` — escrituras vía las tools MCP (`recordRule`, `recordDecision`).
+- `cli:import` — escrituras vía `ancleto-fre memory import`.
 - `tool:recordRule` / `tool:recordDecision` — valor por defecto que emite el toolkit
   in-process (`createMemoryToolkit`, `src/core/memory/tools.js:81-82`) según la tool
   invocada, cuando no se provee un `source` de runtime explícito.
@@ -279,11 +279,11 @@ procedencia propio y estable que la identifique:
 #### Scenario: Procedencia de la superficie MCP
 
 - **WHEN** se registra un nodo mediante `recordRule` o `recordDecision` a través del server MCP
-- **THEN** el nodo persistido tiene `source = 'mcp:ancleto-memory'`
+- **THEN** el nodo persistido tiene `source = 'mcp:ancleto-fre-memory'`
 
 #### Scenario: Procedencia de la superficie de import
 
-- **WHEN** `ancleto memory import` inserta o actualiza un nodo
+- **WHEN** `ancleto-fre memory import` inserta o actualiza un nodo
 - **THEN** el nodo persistido tiene `source = 'cli:import'`
 
 #### Scenario: Procedencia por defecto del toolkit in-process
@@ -301,7 +301,7 @@ procedencia propio y estable que la identifique:
 
 La lectura del motor orientada al LLM (`searchMemory`) SHALL seguir excluyendo los campos
 gestionados por el runtime, incluido `source`. La lectura de operador (`listNodes`, usada por
-`ancleto memory list`) SHALL exponer `source` como campo de solo lectura en cada nodo devuelto,
+`ancleto-fre memory list`) SHALL exponer `source` como campo de solo lectura en cada nodo devuelto,
 de modo que la procedencia sea auditable. La exposición NO SHALL modificar las firmas JSON Schema
 de entrada de las tools MCP.
 
@@ -317,7 +317,7 @@ de entrada de las tools MCP.
 
 #### Scenario: El JSON del CLI expone la procedencia
 
-- **WHEN** se ejecuta `ancleto memory list --json`
+- **WHEN** se ejecuta `ancleto-fre memory list --json`
 - **THEN** cada nodo del JSON incluye el campo `source`
 
 #### Scenario: Las firmas MCP no exponen la procedencia
@@ -342,5 +342,5 @@ ownership SHALL quedar fuera de este change.
 #### Scenario: La procedencia describe la superficie, no el rol del LLM
 
 - **WHEN** se audita la procedencia de un nodo escrito por una tool MCP
-- **THEN** la procedencia identifica la superficie de escritura (`mcp:ancleto-memory`)
+- **THEN** la procedencia identifica la superficie de escritura (`mcp:ancleto-fre-memory`)
 - **AND** no afirma una identidad de rol del LLM como verificada

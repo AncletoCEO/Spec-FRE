@@ -2,11 +2,11 @@
 
 ## Problem
 
-El motor de memoria (`.ancleto/memory.db`, `node:sqlite` + FTS5) registra una columna `source`
+El motor de memoria (`.ancleto-fre/memory.db`, `node:sqlite` + FTS5) registra una columna `source`
 en cada nodo (`src/core/memory/database.js:15`), pero esa columna NO distingue quién ni qué
 escribió:
 
-- El server MCP fija `source: 'mcp:ancleto-memory'` para **todos** los nodos
+- El server MCP fija `source: 'mcp:ancleto-fre-memory'` para **todos** los nodos
   (`src/core/memory/mcp-server.js:16`), sin importar la tool ni la sesión.
 - `recordNode` resuelve `source` del contexto de runtime, no de una identidad de emisor
   (`src/core/memory/engine.js:196`).
@@ -26,9 +26,9 @@ Endurecer la procedencia del motor de memoria sin cambiar su arquitectura (zero-
 
 1. **Formalizar `source` como atributo de procedencia** resuelto exclusivamente por el runtime:
    cada superficie de escritura confiable registra un valor propio y estable
-   (`mcp:ancleto-memory`, `cli:import`, `runtime`, y `agent:<rol>` cuando el runtime lo provea),
+   (`mcp:ancleto-fre-memory`, `cli:import`, `runtime`, y `agent:<rol>` cuando el runtime lo provea),
    y un `source` forjado por el caller NO tiene efecto.
-2. **Exponer la procedencia en la lectura de operador** (`listNodes`, `ancleto memory list --json`),
+2. **Exponer la procedencia en la lectura de operador** (`listNodes`, `ancleto-fre memory list --json`),
    manteniendo ocultos los campos gestionados por el runtime en la lectura orientada al LLM
    (`searchMemory`), preservando el encapsulamiento de las firmas MCP.
 3. **Documentar la frontera auditoría vs enforcement**: la procedencia es un dato descriptivo; el
@@ -42,7 +42,7 @@ Endurecer la procedencia del motor de memoria sin cambiar su arquitectura (zero-
 In scope:
 - Semántica y vocabulario de `source` como procedencia (runtime-owned).
 - Registro de valores de procedencia por superficie de escritura (MCP, import CLI, runtime).
-- Exposición de `source` en `listNodes` y en `ancleto memory list --json`.
+- Exposición de `source` en `listNodes` y en `ancleto-fre memory list --json`.
 - Invariante de no-forja (args forjados ignorados) formalizado y testeado.
 - Frontera auditoría vs enforcement documentada en `design.md` y en `DESIGN`.
 - Tests de motor y de integración MCP.

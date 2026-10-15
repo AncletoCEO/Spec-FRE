@@ -3,8 +3,8 @@
 ## Problem
 
 Un proyecto que usaba `openspec` **antes** de adoptar Ancleto tiene una carpeta `openspec/` en su
-raíz. Al incorporar el framework, el primer comando que ejecuta es `ancleto init` (todavía no
-existe `.ancletorc`). Hoy `init` **no detecta ni migra** esa carpeta legacy: sólo llama
+raíz. Al incorporar el framework, el primer comando que ejecuta es `ancleto-fre init` (todavía no
+existe `.ancleto-fre.rc`). Hoy `init` **no detecta ni migra** esa carpeta legacy: sólo llama
 `scaffoldAspec` (`src/cli/index.js:1087`), que crea `aspec/changes/` y `aspec/config.yaml`
 (`src/cli/index.js:770-777`, `CHANGES_ROOT = 'aspec'` en `:763`). Resultado: los specs y changes
 del proyecto quedan en `openspec/`, invisibles para el flujo aspec, y el scaffold crea un `aspec/`
@@ -12,7 +12,7 @@ paralelo.
 
 La migración legacy existe, pero **sólo dentro de `upgrade`** (`src/cli/index.js:986-993`):
 renombra `openspec/` → `aspec/` si `aspec/` no existe, y si ambas existen avisa y no migra. Como
-`upgrade` exige `.ancletorc` (`:981-985`), el caso de uso real (proyecto que llega con `openspec/`
+`upgrade` exige `.ancleto-fre.rc` (`:981-985`), el caso de uso real (proyecto que llega con `openspec/`
 pre-existente y corre `init` primero) queda sin cubrir. Peor: como `init` ya creó `aspec/` vía
 scaffold, un `upgrade` posterior cae en la rama de coexistencia y **aborta** la migración.
 
@@ -56,7 +56,7 @@ Out of scope (no-goals):
 - **No** se toca `install --project`, aunque también llama `scaffoldAspec` (`:930-933`). Queda como
   open question.
 - **No** se modifica `CHANGES_ROOT`, `scaffoldAspec` ni el layout de `aspec/`.
-- **No** se migra contenido de `.ancleto/` ni de memoria; sólo la carpeta legacy `openspec/`.
+- **No** se migra contenido de `.ancleto-fre/` ni de memoria; sólo la carpeta legacy `openspec/`.
 
 ## Risks
 
@@ -115,6 +115,6 @@ Open questions (decisiones de producto materiales):
 
 ## Nota sobre el contexto de origen
 
-Contexto producido sin Work Item asociado (Azure DevOps deshabilitado en `.ancletorc`). Los
+Contexto producido sin Work Item asociado (Azure DevOps deshabilitado en `.ancleto-fre.rc`). Los
 hallazgos se confirmaron contra el código real: `src/cli/index.js` (`scaffoldAspec`, `upgradeCmd`,
 `initProject`), `test/cli.test.js:434-462` y `aspec/specs/` (única spec activa: `memory-engine`).

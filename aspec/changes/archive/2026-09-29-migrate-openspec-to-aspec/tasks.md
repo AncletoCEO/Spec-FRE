@@ -14,7 +14,7 @@
 - [x] 1.3 Invocar `migrateLegacyOpenspec(projectDir)` en `initProject` **antes** de
   `scaffoldAspec(projectDir)` (`:1087`).
 - [x] 1.4 Reemplazar el bloque legacy de `upgradeCmd` (`:986-993`) por la llamada a
-  `migrateLegacyOpenspec(projectDir)`, conservando la exigencia previa de `.ancletorc`.
+  `migrateLegacyOpenspec(projectDir)`, conservando la exigencia previa de `.ancleto-fre.rc`.
 - [x] 1.5 Verificar que `scaffoldAspec` sigue sin pisar `aspec/config.yaml` cuando la copia ya dejó
   uno presente; ajustar la salida/reporte del comando si hace falta.
 

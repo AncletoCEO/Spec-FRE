@@ -15,7 +15,7 @@ skillVersion: '2.3'
 ## Propósito
 
 Retener reglas y decisiones del proyecto entre sesiones de IA, en una base
-SQLite **local** (`.ancleto/memory.db`), sin bases vectoriales. Un mismo
+SQLite **local** (`.ancleto-fre/memory.db`), sin bases vectoriales. Un mismo
 motor soporta cuatro consumidores: tools MCP del LLM, subcomandos CLI
 (incluidas las ops export/import/gc), el working-context inyectado al system
 prompt y el doctor. Evidencia: `README.md`,
@@ -23,11 +23,11 @@ prompt y el doctor. Evidencia: `README.md`,
 
 ## Recorrido relevante
 
-1. `ancleto mcp` arranca `serveMemoryMcp`, que abre la DB y publica 3
+1. `ancleto-fre mcp` arranca `serveMemoryMcp`, que abre la DB y publica 3
    tools al IDE.
 2. `recordRule`/`recordDecision` superseden atómicamente por `memory_key` y
    pueden refrescar el working-context.
-3. `ancleto memory export|import|gc` mueven/purgan nodos sin cambiar el
+3. `ancleto-fre memory export|import|gc` mueven/purgan nodos sin cambiar el
    schema.
 4. `buildWorkingContext` materializa `<ProjectMemoryRules>`/
    `<ProjectTopology>` para el prompt.
@@ -47,19 +47,19 @@ prompt y el doctor. Evidencia: `README.md`,
 
 Expuestas como subcomandos del grupo `memory`:
 
-- **`ancleto memory export [--out <archivo>]`** → `exportActive()`: array
+- **`ancleto-fre memory export [--out <archivo>]`** → `exportActive()`: array
   JSON de nodos activos con `{memory_key, type, content, justification,
   scope, createdAt}`. Los superseded no se incluyen. Antes de serializar,
   `sanitizePaths` reemplaza paths absolutos (Windows `C:\...`, Unix
   `/home/...`, `/Users/...`) por `<redacted>`. Sin `--out` va a stdout.
-- **`ancleto memory import <archivo>`** → `importNodes(json)`: valida el
+- **`ancleto-fre memory import <archivo>`** → `importNodes(json)`: valida el
   schema de cada entrada y **aborta el batch completo** si alguna es
   inválida. Upsert por `memory_key`: inserta si no existe (con el
   `createdAt` del JSON); si existe activo, supersede solo cuando el
   `createdAt` del JSON es más reciente (empate/no más nuevo = no-op →
   idempotente); si existe superseded, lo saltea (los superseded **no se
   reactivan**). Reporta insertados/actualizados/omitidos.
-- **`ancleto memory gc [--dry-run] [--days N]`** → `gcSuperseded({days,
+- **`ancleto-fre memory gc [--dry-run] [--days N]`** → `gcSuperseded({days,
   dryRun})`: purga nodos `superseded` con antigüedad mayor al umbral
   (default 30 días). La antigüedad se mide con `created_at` como **proxy**
   (no existe `superseded_at`). Tras el DELETE hace `VACUUM` + `REINDEX`
@@ -69,7 +69,7 @@ Expuestas como subcomandos del grupo `memory`:
 
 ## Flujo
 
-1. `ancleto mcp` arranca `serveMemoryMcp`, que abre la DB y publica 3
+1. `ancleto-fre mcp` arranca `serveMemoryMcp`, que abre la DB y publica 3
    tools al IDE.
 2. `searchMemory(query)`: intenta primero FTS5 preciso (AND por términos);
    si no hay resultados, reintenta tolerante (OR con prefijos `*`). El
@@ -88,7 +88,7 @@ Expuestas como subcomandos del grupo `memory`:
    `<ProjectMemoryRules>` (reglas activas, scope `project`) y
    `<ProjectTopology>`; trunca de forma segura con
    `<ContextOverflowWarning>` si excede el presupuesto.
-6. `ancleto memory doctor`: verifica integridad, reconstruye FTS5 y
+6. `ancleto-fre memory doctor`: verifica integridad, reconstruye FTS5 y
    fusiona el WAL para dejar el `.db` seguro de copiar.
 
 ## Reglas invariantes
@@ -106,8 +106,8 @@ Expuestas como subcomandos del grupo `memory`:
   `<ProjectMemoryRules>`; las decisiones `project` se recuperan
   reactivamente con `searchMemory`.
 - **Raíz del proyecto desde la DB, no desde el cwd**:
-  `resolveMemoryProjectRoot` prioriza el primer ancestro con `.ancletorc`;
-  si no, el candidato derivado de `dbPath` con layout `.ancleto/`. El
+  `resolveMemoryProjectRoot` prioriza el primer ancestro con `.ancleto-fre.rc`;
+  si no, el candidato derivado de `dbPath` con layout `.ancleto-fre/`. El
   refresh es best-effort.
 - Apertura read-only (`createReadonlyMemoryEngine`) para inspección sin
   migrar ni tocar el WAL.
@@ -121,7 +121,7 @@ Expuestas como subcomandos del grupo `memory`:
   `aspec/specs/memory-ops/spec.md`.
 - `2026-10-05-memory-actor-provenance` (B5 del backlog): autor/procedencia
   en el campo `source` (runtime-owned, vocabulario controlado: `mcp:
-  ancleto-memory`, `cli:import`, `tool:recordRule`, `tool:recordDecision`,
+  ancleto-fre-memory`, `cli:import`, `tool:recordRule`, `tool:recordDecision`,
   `runtime`, `agent:<rol>` solo si el runtime lo provee). Archivado y
   respaldado por un delta sobre `aspec/specs/memory-engine/spec.md`; el
   contrato del motor no cambia de esquema.

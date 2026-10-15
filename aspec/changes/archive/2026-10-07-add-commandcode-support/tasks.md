@@ -4,13 +4,13 @@
 
 - [x] Sumar `commandcode` a `SUPPORTED_AGENTS` (`src/cli/index.js`) con cobertura del wizard y de `--agent commandcode`.
 - [x] Agregar la entrada `commandcode` a `AGENT_TARGETS`: skills `.commandcode/skills`, agents `.commandcode/agents` (`.md`), commands `.commandcode/commands` (`.md`).
-- [x] Verificar persistencia en `.ancletorc` (`agent: commandcode`) y preservación en ejecuciones subsecuentes.
+- [x] Verificar persistencia en `.ancleto-fre.rc` (`agent: commandcode`) y preservación en ejecuciones subsecuentes.
 - [x] Verificar que `applyTier` no reescribe `model` bajo `.commandcode/agents` (no existe el campo).
 
 ## Fase 2 — Adaptador de frontmatter de agents
 
 - [x] Agregar `commandcode` a `KNOWN_HOSTS` y a `TRANSFORM_AGENTS` (`src/core/adapters/frontmatter.js`).
-- [x] Definir `COMMANDCODE_TOOL_MAP` (tabla cerrada) y `COMMANDCODE_MCP_TOOL_MAP` (`mcp__ancleto-memory__*`).
+- [x] Definir `COMMANDCODE_TOOL_MAP` (tabla cerrada) y `COMMANDCODE_MCP_TOOL_MAP` (`mcp__ancleto-fre-memory__*`).
 - [x] Implementar `adaptCommandCodeFrontmatter(content, name)`: inyecta `name`, preserva `description`, elimina `mode`/`color`/`temperature`/`permission`, omite `model` (inherit).
 - [x] Traducir `tools` mapa → lista; clave sin id verificado → omisión con aviso a stderr (exit 0).
 - [x] Agent sin `tools` declarado → `tools: "*"`; `tools` con sólo claves `false` → `tools: []`.
@@ -33,7 +33,7 @@
 
 - [x] Test de ruteo: `install --project --agent commandcode` crea los tres directorios y registra `installedPaths` veraces.
 - [x] Test del adaptador: keys dropeadas, `model` ausente, `tools` mapeado, clave desconocida con aviso, `tools: "*"` cuando falta.
-- [x] Test de MCP: `.mcp.json` creado con `ancleto-memory` (`transport: stdio`); no destructivo; JSON inválido avisa.
+- [x] Test de MCP: `.mcp.json` creado con `ancleto-fre-memory` (`transport: stdio`); no destructivo; JSON inválido avisa.
 - [x] Test de `check` sobre layout `commandcode` (sin faltantes ni divergencias de frontmatter).
 - [x] `node --test test/*.test.js` en verde.
-- [x] Verificación manual documentada en una sesión `cmd` (skills, subagentes, `/cleto-*`, MCP de memoria).
+- [x] Verificación manual documentada en una sesión `cmd` (skills, subagentes, `/fre-*`, MCP de memoria).

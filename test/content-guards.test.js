@@ -7,17 +7,17 @@ import { fileURLToPath } from 'node:url'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const ARTIFACT_SKILLS = [
-  'ancleto-propose',
-  'ancleto-new',
-  'ancleto-continue',
-  'ancleto-ff',
-  'ancleto-archive',
-  'ancleto-sync-specs',
-  'ancleto-bulk-archive',
-  'ancleto-explore',
-  'ancleto-onboard',
-  'ancleto-upgrade',
-  'ancleto-update'
+  'fre-propose',
+  'fre-new',
+  'fre-continue',
+  'fre-ff',
+  'fre-archive',
+  'fre-sync-specs',
+  'fre-bulk-archive',
+  'fre-explore',
+  'fre-onboard',
+  'fre-upgrade',
+  'fre-update'
 ]
 
 function mdFiles(dir) {
@@ -82,7 +82,7 @@ describe('content guards — idioma de artefactos', () => {
     const t = readFileSync(join(ROOT, 'templates', 'AGENTS.md'), 'utf8')
     assert.match(t, /Frontera: memoria del repo vs memoria del agente/)
     assert.match(t, /una entrada vive en una sola memoria/i)
-    assert.match(t, /\.ancleto\/memory\.db/)
+    assert.match(t, /\.ancleto-fre\/memory\.db/)
     assert.match(t, /engram/)
   })
 
@@ -118,18 +118,18 @@ describe('content guards — referencias validas', () => {
       .filter((e) => e.isDirectory())
       .map((e) => e.name)
     const commands = readdirSync(join(ROOT, 'commands')).filter((n) => n.endsWith('.md'))
-    // Excepcion documentada (cross-machine-export-import): cleto-transplant no
+    // Excepcion documentada (cross-machine-export-import): fre-transplant no
     // envuelve una skill — instruye al agente a correr el CLI (export/import),
     // cuya logica requiere spawnear procesos y no vive en markdown.
-    const NON_SKILL_COMMANDS = ['cleto-transplant.md']
+    const NON_SKILL_COMMANDS = ['fre-transplant.md']
     assert.equal(commands.length, 15 + NON_SKILL_COMMANDS.length)
     for (const c of commands) {
       const t = readFileSync(join(ROOT, 'commands', c), 'utf8')
       if (NON_SKILL_COMMANDS.includes(c)) {
-        assert.match(t, /ancleto (export|import)/, `${c} debe instruir el CLI export/import`)
+        assert.match(t, /ancleto-fre (export|import)/, `${c} debe instruir el CLI export/import`)
         continue
       }
-      const m = t.match(/Invoke the `(ancleto-[\w-]+)` skill/)
+      const m = t.match(/Invoke the `(fre-[\w-]+)` skill/)
       assert.ok(m, `${c} no es un wrapper valido`)
       assert.ok(skills.includes(m[1]), `${c} apunta a skill inexistente: ${m[1]}`)
     }
@@ -221,9 +221,9 @@ describe('content guards - tope de output y destilado del retorno (issues #25 y 
 })
 
 describe('content guards - frescura del seed al archivar (issue #17)', () => {
-  it('la skill ancleto-archive chequea STALE y ofrece regenerar sin automatico', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-archive', 'SKILL.md'), 'utf8')
-    assert.match(t, /ancleto discovery --check/)
+  it('la skill fre-archive chequea STALE y ofrece regenerar sin automatico', () => {
+    const t = readFileSync(join(ROOT, 'skills', 'fre-archive', 'SKILL.md'), 'utf8')
+    assert.match(t, /ancleto-fre discovery --check/)
     assert.match(t, /Never regenerate automatically/)
     assert.match(t, /If the user declines, continue the archive/)
   })
@@ -242,27 +242,27 @@ describe('content guards - guia de .gitignore (issue #18)', () => {
     assert.match(t, /## Guía de \.gitignore/)
     assert.match(t, /es una decisión del proyecto/i)
     assert.match(t, /`aspec\/`/)
-    assert.match(t, /`\.ancleto\/`/)
+    assert.match(t, /`\.ancleto-fre\/`/)
   })
 })
 
 describe('content guards - keywords canonicos en specs (issue #21)', () => {
   it('verify detecta specs no canonicos al verificar', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-verify', 'SKILL.md'), 'utf8')
-    assert.match(t, /ancleto specs check --change <name> --json/)
+    const t = readFileSync(join(ROOT, 'skills', 'fre-verify', 'SKILL.md'), 'utf8')
+    assert.match(t, /ancleto-fre specs check --change <name> --json/)
     assert.match(t, /Non-canonical spec:/)
     assert.match(t, /WARNING with the same recommendation/)
   })
 
   it('archive chequea keywords antes de sincronizar deltas', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-archive', 'SKILL.md'), 'utf8')
-    assert.match(t, /ancleto specs check --change <name> --json/)
+    const t = readFileSync(join(ROOT, 'skills', 'fre-archive', 'SKILL.md'), 'utf8')
+    assert.match(t, /ancleto-fre specs check --change <name> --json/)
     assert.match(t, /Never merge into a non-canonical spec silently/)
   })
 
   it('documenter corre el chequeo antes de mergear deltas', () => {
     const t = readFileSync(join(ROOT, 'agents', 'documenter.md'), 'utf8')
-    assert.match(t, /ancleto specs check --change \{change-name\} --json/)
+    assert.match(t, /ancleto-fre specs check --change \{change-name\} --json/)
     assert.match(t, /stop and report it instead of merging into it/)
   })
 
@@ -273,9 +273,9 @@ describe('content guards - keywords canonicos en specs (issue #21)', () => {
 })
 
 describe('content guards - telemetria de tokens (issue #27)', () => {
-  it('README documenta ancleto stats y su alcance (opencode)', () => {
+  it('README documenta ancleto-fre stats y su alcance (opencode)', () => {
     const t = readFileSync(join(ROOT, 'README.md'), 'utf8')
-    assert.match(t, /ancleto stats/)
+    assert.match(t, /ancleto-fre stats/)
     assert.match(t, /tokens de entrada\/salida\/razonamiento\/cache/)
     assert.match(t, /Solo funciona con opencode/)
   })
@@ -290,14 +290,14 @@ describe('content guards - seed: sin oferta con impact minor (Release 1)', () =>
   })
 
   it('la skill archive continua sin ofrecer con impact minor', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-archive', 'SKILL.md'), 'utf8')
+    const t = readFileSync(join(ROOT, 'skills', 'fre-archive', 'SKILL.md'), 'utf8')
     assert.match(t, /`STALE` with `impact: minor`/)
     assert.match(t, /continue without offering/)
     assert.match(t, /`STALE` with `impact: material`/)
   })
 
   it('la skill technical-discovery distingue minor de material', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-technical-discovery', 'SKILL.md'), 'utf8')
+    const t = readFileSync(join(ROOT, 'skills', 'fre-technical-discovery', 'SKILL.md'), 'utf8')
     assert.match(t, /`STALE` with `impact: minor`/)
     assert.match(t, /`STALE` with `impact: material`/)
   })
@@ -318,13 +318,13 @@ describe('content guards - regeneracion parcial (Release 2)', () => {
   })
 
   it('la pipeline exige seed-map.json tras generar', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-technical-discovery', 'references', 'generation-pipeline.md'), 'utf8')
+    const t = readFileSync(join(ROOT, 'skills', 'fre-technical-discovery', 'references', 'generation-pipeline.md'), 'utf8')
     assert.match(t, /when the check report lists `affectedDocs`, those are the only documents to rewrite/)
     assert.match(t, /write `seed-map\.json` in `config\.outputDir`/)
   })
 
   it('el checklist valida seed-map.json', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-technical-discovery', 'references', 'validation-checklist.md'), 'utf8')
+    const t = readFileSync(join(ROOT, 'skills', 'fre-technical-discovery', 'references', 'validation-checklist.md'), 'utf8')
     assert.match(t, /`seed-map\.json` exists and maps each seed document to its source areas/)
   })
 
@@ -335,24 +335,24 @@ describe('content guards - regeneracion parcial (Release 2)', () => {
 })
 
 describe('content guards - registro de proyectos', () => {
-  it('README documenta ancleto projects y su registro local', () => {
+  it('README documenta ancleto-fre projects y su registro local', () => {
     const t = readFileSync(join(ROOT, 'README.md'), 'utf8')
-    assert.match(t, /## Proyectos con ancleto/)
-    assert.match(t, /ancleto projects scan/)
-    assert.match(t, /ancleto projects prune/)
-    assert.match(t, /~\/\.config\/ancleto\/projects\.json/)
+    assert.match(t, /## Proyectos con ancleto-fre/)
+    assert.match(t, /ancleto-fre projects scan/)
+    assert.match(t, /ancleto-fre projects prune/)
+    assert.match(t, /~\/\.config\/ancleto-fre\/projects\.json/)
   })
 })
 
 describe('content guards - discovery --check devuelve config', () => {
   it('README documenta el estado completo del check', () => {
     const t = readFileSync(join(ROOT, 'README.md'), 'utf8')
-    assert.match(t, /ancleto discovery --check # Estado del technical seed \(READY \/ STALE \/ PARTIAL \/ MISSING\) \+ config/)
+    assert.match(t, /ancleto-fre discovery --check # Estado del technical seed \(READY \/ STALE \/ PARTIAL \/ MISSING\) \+ config/)
   })
 
   it('la skill technical-discovery usa la config del check report', () => {
-    const t = readFileSync(join(ROOT, 'skills', 'ancleto-technical-discovery', 'SKILL.md'), 'utf8')
-    assert.match(t, /ancleto discovery --check/)
+    const t = readFileSync(join(ROOT, 'skills', 'fre-technical-discovery', 'SKILL.md'), 'utf8')
+    assert.match(t, /ancleto-fre discovery --check/)
   })
 })
 

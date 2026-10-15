@@ -9,14 +9,14 @@ la documentación oficial), con copia adicional a `.agent/skills` solo si no exi
 `install --global`. Antes de declarar soporte, se verifica si Antigravity espera
 además agentes en rutas propias (`.antigravity/agents`, `.greenclay/...`): si existe
 tal expectativa, se mapea también; si no, se documenta que no aplica. El criterio de
-salida es evidencia en dos entornos: las skills `ancleto-*` deben descubrirse en
+salida es evidencia en dos entornos: las skills `ancleto-fre-*` deben descubrirse en
 Antigravity IDE y en Antigravity CLI con frontmatter sin warnings.
 
 Decisiones de diseño:
 - No se cambia el nombre del agente (`antigravity`) ni el formato `SKILL.md` (ya estándar).
 - La copia retro `.agent/skills` es solo fallback: si el directorio ya existe con contenido, no se toca.
 - `install --global` con agente antigravity respeta XDG/destino global documentado (`~/.gemini/antigravity/skills`).
-- La verificación post-instalación queda como paso documentado (listar skills `@skill`/`/skill` y confirmar `ancleto-*`), ejecutable en ambos entornos.
+- La verificación post-instalación queda como paso documentado (listar skills `@skill`/`/skill` y confirmar `ancleto-fre-*`), ejecutable en ambos entornos.
 
 ## Architecture
 
@@ -33,7 +33,7 @@ install --global --agent antigravity
 └── skills → ~/.gemini/antigravity/skills/<skill>/SKILL.md
 
 verificación (IDE y CLI)
-└── listar skills → ancleto-new/propose/apply/... presentes, sin warnings de frontmatter
+└── listar skills → fre-new/propose/apply/... presentes, sin warnings de frontmatter
 ```
 
 ## Validation

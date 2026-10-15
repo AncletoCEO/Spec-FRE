@@ -24,7 +24,7 @@
 - [x] 1.7 En `init`, `install` (`:964-980`) y `upgrade` (`:1025-1033`), escribir `installedPaths` con
   las rutas reales devueltas por el dueño, **acumulando** la unión de destinos (design D10); sacar el
   hardcode `.opencode/agents`/`.opencode/commands` (`:976-978`, `:1029-1031`).
-- [x] 1.8 Verificar que `ancleto check` valida la unión de rutas del manifiesto sin cambios de lógica y
+- [x] 1.8 Verificar que `ancleto-fre check` valida la unión de rutas del manifiesto sin cambios de lógica y
   que no se borra ninguna ruta previa (aditivo/no destructivo).
 - [x] 1.9 (R2, doc) Materializar en README (o `docs/`) la decisión D2: `.agents/skills` es un **punto de
   lectura compartido** entre hosts, **no** un destino universal. Documentar por qué cada host recibe sus
@@ -78,7 +78,7 @@
 - [x] 5.3 Recorte 1 (no-regresión, valida la semántica de `--agent`): `opencode` conserva `.opencode/*`
   y `<n>.md`; reinstalar no borra rutas previas.
 - [x] 5.4 Recorte 1 (multi-agente, valida la semántica de `--agent`): instalar para dos hosts deja ambos
-  destinos en `installedPaths`; `ancleto check` valida ambos sin faltantes ni huérfanos.
+  destinos en `installedPaths`; `ancleto-fre check` valida ambos sin faltantes ni huérfanos.
 - [x] 5.5 Recorte 2: una `SKILL.md` sin adaptación se instala byte-idéntica; un agent de opencode hacia
   Claude no contiene `mode:`/`color:`/`temperature:`/`permission:`, ni `model` de `opencode-go`, ni
   `tools` con mapa opencode; `description` se conserva.

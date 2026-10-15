@@ -70,7 +70,7 @@ export function createMemoryToolHandlers(engine, runtimeContext = {}) {
         writeWorkingContext(engine, runtimeContext.projectRoot)
       } catch (err) {
         // stderr: stdout es el canal JSON-RPC del server MCP.
-        console.warn(`ancleto: no se pudo refrescar el working-context: ${err.message}`)
+        console.warn(`ancleto-fre: no se pudo refrescar el working-context: ${err.message}`)
       }
     }
     return result

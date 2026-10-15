@@ -1,13 +1,13 @@
-# Tasks: Extensión de VS Code para ancleto
+# Tasks: Extensión de VS Code para ancleto-fre
 
 > Alcance de este change: planning (Fases 1-2) + continuación a implementación (Fases 3-5) — decidido con el usuario el 2026-09-30.
 
 ## Fase 1 — Decisiones de distribución (este change)
 
-- [ ] Confirmar nombre y publisher de Marketplace (`ancleto-spec`; publisher `damianarganaras` como supuesto a corregir) y licencia MIT visible en la ficha.
+- [ ] Confirmar nombre y publisher de Marketplace (`ancleto-fre-spec`; publisher `damianarganaras` como supuesto a corregir) y licencia MIT visible en la ficha.
 - [ ] Confirmar estrategia thin-wrapper (reutilizar `src/cli/index.js` y assets) frente a fork completo.
 - [ ] Confirmar versionado único npm + `.vsix` atado a `package.json`.
-- [ ] Registrar matriz de paridad CLI ↔ Command Palette (`install`, `update`, `discovery`, `memory`, `mcp`, `doctor`, `/cleto-*`).
+- [ ] Registrar matriz de paridad CLI ↔ Command Palette (`install`, `update`, `discovery`, `memory`, `mcp`, `doctor`, `/fre-*`).
 
 ## Fase 2 — Diseño de empaquetado y pipeline (este change)
 
@@ -26,9 +26,9 @@
 
 ## Fase 4 — Paridad funcional (este change, continuación)
 
-- [ ] Mapear `ancleto install/update` a `Ancleto: Install/Update` sobre el workspace abierto.
+- [ ] Mapear `ancleto-fre install/update` a `Ancleto: Install/Update` sobre el workspace abierto.
 - [ ] Mapear `discovery/memory/mcp/doctor/stats/check` a Output Channel o terminal integrado.
-- [ ] Exponer los 12 comandos `/cleto-*` como comandos de paleta (13 con `cleto-transplant`, agregado posterior por `cross-machine-export-import`).
+- [ ] Exponer los 12 comandos `/fre-*` como comandos de paleta (13 con `fre-transplant`, agregado posterior por `cross-machine-export-import`).
 - [ ] Verificar `node --test test/*.test.js` sigue en verde y sin nuevas dependencias de runtime.
 
 ## Fase 5 — Publish (este change, continuación)

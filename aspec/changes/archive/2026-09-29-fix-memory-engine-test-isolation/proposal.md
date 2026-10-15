@@ -109,4 +109,4 @@ Contexto producido con rutas citadas y precedente de memoria del repo
 `src/core/memory/engine.js`, `src/core/discovery.js` y `test/memory-engine.test.js` antes de
 escribir esta spec. Los conteos de fallos provienen de ejecuciones reales del runner
 (`node --test test/memory-engine.test.js`). Sin Work Item asociado (Azure DevOps deshabilitado en
-`.ancletorc`).
+`.ancleto-fre.rc`).

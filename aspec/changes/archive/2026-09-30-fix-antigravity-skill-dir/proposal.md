@@ -2,9 +2,9 @@
 
 ## Problem
 
-`ancleto install --agent antigravity` copia las skills a `.antigravity/skills`
+`ancleto-fre install --agent antigravity` copia las skills a `.antigravity/skills`
 (`AGENT_SKILLS_DIR` en `src/cli/index.js:734-737`), pero Antigravity no escanea esa
-ruta: las skills no aparecen en el IDE y "ancleto no funciona". La ruta real según la
+ruta: las skills no aparecen en el IDE y "ancleto-fre no funciona". La ruta real según la
 documentación oficial es `<workspace>/.agents/skills/<skill>/` (con compat retro
 `.agent/skills`) y global `~/.gemini/antigravity/skills/`. Además está pendiente
 validar si Antigravity IDE y Antigravity CLI se comportan igual (item abierto en
@@ -15,7 +15,7 @@ BACKLOG "En curso / próximo").
 Corregir `AGENT_SKILLS_DIR.antigravity` a `.agents/skills`, con copia de compatibilidad
 retro a `.agent/skills` y destino global `~/.gemini/antigravity/skills` para
 `install --global`. Cerrar con una verificación post-instalación en IDE y CLI que
-confirme que las skills `ancleto-*` aparecen y el frontmatter (`name`/`description`)
+confirme que las skills `ancleto-fre-*` aparecen y el frontmatter (`name`/`description`)
 parsea sin warnings. Sin esa verificación en ambos entornos, el soporte NO se da por
 garantizado.
 

@@ -2,17 +2,17 @@
 
 ## Contexto y problema
 
-`.ancleto/working-context.md` es el artefacto derivado que el orquestador lee al arrancar
+`.ancleto-fre/working-context.md` es el artefacto derivado que el orquestador lee al arrancar
 (`agents/orchestrator.md:146-148`, una sola vez, sin shell). Se compone de `<ProjectTopology>`
 más el bloque `<ProjectMemoryRules>`, y hoy solo se regenera en puntos de ciclo de vida y de
 forma manual:
 
-- `ancleto init` (`src/cli/index.js:1087`), `install --project` (`:932`), `upgrade` (`:996`),
-  y `ancleto memory context --out` (`memoryContext`, `:1434-1459`).
+- `ancleto-fre init` (`src/cli/index.js:1087`), `install --project` (`:932`), `upgrade` (`:996`),
+  y `ancleto-fre memory context --out` (`memoryContext`, `:1434-1459`).
 
 Ninguna tool MCP lo invoca. `createMemoryToolHandlers` (`src/core/memory/tools.js:64-70`) solo
 llama a `engine.recordNode` (`src/core/memory/engine.js:156-187`), que escribe
-`.ancleto/memory.db`; `serveMemoryMcp` (`src/core/memory/mcp-server.js:64`) nunca refresca.
+`.ancleto-fre/memory.db`; `serveMemoryMcp` (`src/core/memory/mcp-server.js:64`) nunca refresca.
 Consecuencia: tras grabar por MCP, el contexto inyectado queda desactualizado hasta el próximo
 lifecycle point o un comando manual. Es el residuo del gap **G1**, no un diseño deliberado: no
 hay decisión registrada de excluir el refresh.
@@ -91,14 +91,14 @@ nodo superseded desde el motor; se documenta como **Opción 2 diferida** en "Alt
 consideradas", no como trabajo de este change. La Opción intermedia (flag "dirty"/batch) se descarta
 por complejidad sin ventaja clara dado el único consumidor.
 
-### Fallback de raíz sin `.ancletorc` (decidido)
+### Fallback de raíz sin `.ancleto-fre.rc` (decidido)
 
 La resolución de `projectRoot` adopta el **fallback** como comportamiento decidido: si el walk-up
-no encuentra `.ancletorc`, `resolveMemoryProjectRoot` usa el candidato derivado de `dbPath`
-(`dirname(dirname(dbPath))`) como raíz mientras exista el layout `.ancleto/`; si no puede
+no encuentra `.ancleto-fre.rc`, `resolveMemoryProjectRoot` usa el candidato derivado de `dbPath`
+(`dirname(dirname(dbPath))`) como raíz mientras exista el layout `.ancleto-fre/`; si no puede
 determinar ninguna raíz, el refresh se omite (best-effort). Se elige este comportamiento —y no
-omitir el refresh sin `.ancletorc`— para no perder la garantía. El detalle está en
-"Resolución de project-root vía `.ancletorc`" (paso 3).
+omitir el refresh sin `.ancleto-fre.rc`— para no perder la garantía. El detalle está en
+"Resolución de project-root vía `.ancleto-fre.rc`" (paso 3).
 
 ## Alternativas consideradas
 
@@ -139,7 +139,7 @@ El invariante "memoria activa → `working-context.md`" es una preocupación del
 (render + persistencia de un artefacto derivado), no del CLI ni del protocolo MCP. Se centraliza
 en un módulo core nuevo, `src/core/memory/working-context.js`, con estas responsabilidades:
 
-- `workingContextPath(projectRoot)` → `join(projectRoot, '.ancleto', 'working-context.md')`.
+- `workingContextPath(projectRoot)` → `join(projectRoot, '.ancleto-fre', 'working-context.md')`.
 - `writeWorkingContext(engine, projectRoot, scope = 'project')` → render con
   `engine.buildWorkingContext(scope, MAX_TOKENS, projectRoot)` (el tercer argumento es la raíz,
   no un `cwd` implícito), `mkdir` recursivo y `writeFile` con `''` si el bloque es `null`
@@ -193,7 +193,7 @@ en el primer `tools/call`, `mcp-server.js:11-17`), en lugar de abrir una segunda
 Esto contrasta con el `refreshWorkingContext` del CLI, que abre y cierra su propio engine porque
 corre en otro proceso y en otro momento del ciclo de vida; ahí sigue siendo correcto.
 
-### Resolución de project-root vía `.ancletorc`
+### Resolución de project-root vía `.ancleto-fre.rc`
 
 El refresh **no debe** usar el `cwd` del proceso del server MCP como raíz. Si el IDE lanza el MCP
 desde otro directorio, `readTopologySummary(cwd)` (`engine.js:98`) leería el
@@ -202,11 +202,11 @@ desde otro directorio, `readTopologySummary(cwd)` (`engine.js:98`) leería el
 `resolveMemoryProjectRoot(dbPath)`:
 
 1. Deriva el proyecto implícito por la ubicación de la DB: `dirname(dirname(dbPath))`
-   (la DB vive en `<proyecto>/.ancleto/memory.db`).
-2. Camina hacia arriba desde ese candidato buscando un directorio con `.ancletorc`; el primero
-   que lo contenga es la raíz. Detecta la raíz por **`.ancletorc`**, no por el `cwd`.
-3. Si no encuentra `.ancletorc`, usa el candidato derivado de `dbPath` como raíz de
-   fallback (mientras exista el layout `.ancleto/`), para no perder la garantía; si no puede
+   (la DB vive en `<proyecto>/.ancleto-fre/memory.db`).
+2. Camina hacia arriba desde ese candidato buscando un directorio con `.ancleto-fre.rc`; el primero
+   que lo contenga es la raíz. Detecta la raíz por **`.ancleto-fre.rc`**, no por el `cwd`.
+3. Si no encuentra `.ancleto-fre.rc`, usa el candidato derivado de `dbPath` como raíz de
+   fallback (mientras exista el layout `.ancleto-fre/`), para no perder la garantía; si no puede
    determinar ninguna raíz, el refresh se omite (best-effort).
 
 El `projectRoot` resuelto se pasa **explícitamente** a `buildWorkingContext(scope, MAX_TOKENS,
@@ -256,8 +256,8 @@ DB temporal):
   `rule`+`project` → true (aunque `superseded = 0`); `decision`+`project` o `rule`+`feature`/`task`
   con `superseded = 0` → false; **cualquier** nodo (incl. `decision` y `rule` de otro scope) con
   `superseded = 1` → true.
-- **Unit — resolución de raíz:** `resolveMemoryProjectRoot` con un `.ancletorc` en la raíz, con
-  DB anidada, y sin `.ancletorc`.
+- **Unit — resolución de raíz:** `resolveMemoryProjectRoot` con un `.ancleto-fre.rc` en la raíz, con
+  DB anidada, y sin `.ancleto-fre.rc`.
 - **Integración — trigger positivo (contribución directa):** `recordRule` scope `project` por el
   handler actualiza `working-context.md` con la regla nueva.
 - **Integración — trigger positivo por supersesión cross-type/cross-scope:** un `recordDecision`
@@ -274,7 +274,7 @@ DB temporal):
   contenido previo.
 - **Idempotencia:** dos refreshes sin escrituras intermedias → archivo byte-idéntico.
 - **Raíz vs cwd:** con `.discovery-map.json` sembrado en la raíz y el server resuelto desde otra
-  raíz de DB, `<ProjectTopology>` refleja el mapa de la raíz detectada por `.ancletorc`.
+  raíz de DB, `<ProjectTopology>` refleja el mapa de la raíz detectada por `.ancleto-fre.rc`.
 
 Los detalles de casos y su orden van a `tasks.md`; este diseño no los fija.
 

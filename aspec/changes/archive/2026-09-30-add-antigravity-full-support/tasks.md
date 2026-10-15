@@ -12,7 +12,7 @@ Convención: `- [ ]` pendiente. Cada tarea es chica y verificable. Las tareas de
   la política de drop actual; Antigravity usa una función de adaptación propia (design D2).
 - [x] 1.3 Extender la firma de `adaptFrontmatter` (y su llamada en `installAssetFiles`/`copyDirTransformed`)
   para recibir el nombre base del asset, sin duplicar el parser (design D2).
-- [x] 1.4 Implementar la tabla de mapeo de `tools` de ancleto → ids de Antigravity emitiendo **sólo la columna
+- [x] 1.4 Implementar la tabla de mapeo de `tools` de ancleto-fre → ids de Antigravity emitiendo **sólo la columna
   (A)** confirmada en el frontmatter de subagents (design D3): `read`→`view_file`, `edit`→
   `replace_file_content` (no `edit_file`, que es del SDK), `grep`→`grep_search`, `bash`→`run_command`,
   `todowrite`→`manage_task`; sólo claves con valor `true`. **No** emitir ids de la columna (B) solo-SDK
@@ -82,11 +82,11 @@ Convención: `- [ ]` pendiente. Cada tarea es chica y verificable. Las tareas de
   emite `find_file`/`read_url_content` (solo-SDK); un `task: true` NO emite `invoke_subagent`/`start_subagent`/
   `define_subagent` (delegación); `memory-keeper` NO incluye `call_mcp_tool` (MCP no es tool); un agent con
   `skill: true` NO emite un id de tool para `skill` (design D3/D5, OQ2).
-- [x] 6.5 Test de commands→skills: existe `.agents/skills/cleto-new/SKILL.md` con `name: cleto-new` y
+- [x] 6.5 Test de commands→skills: existe `.agents/skills/fre-new/SKILL.md` con `name: fre-new` y
   `installedPaths.commands` vacío para Antigravity.
 - [x] 6.6 Test de MCP de workspace: `init --agent antigravity` crea `.agents/mcp_config.json` con
-  `ancleto-memory`; un `mcpServers` preexistente no se pisa; `--no-mcp` no lo crea.
-- [x] 6.7 Test de `check`/tier: tras `init --agent antigravity`, `ancleto check` reporta `0 faltantes` y
+  `ancleto-fre-memory`; un `mcpServers` preexistente no se pisa; `--no-mcp` no lo crea.
+- [x] 6.7 Test de `check`/tier: tras `init --agent antigravity`, `ancleto-fre check` reporta `0 faltantes` y
   `0 huerfanos`; no emite "tier ... sin agentes locales"; el proyecto figura `scoped`.
 - [x] 6.8 Test de no-regresión: `opencode` conserva `.opencode/*` y su MCP en `opencode.json`; `claude` y
   `vscode` siguen sin adaptar Antigravity y sin generar `.mcp.json`/`.vscode/mcp.json`.
@@ -99,7 +99,7 @@ Convención: `- [ ]` pendiente. Cada tarea es chica y verificable. Las tareas de
 
 - [x] 7.1 Correr la suite completa: `node --test test/*.test.js` y confirmar 0 fallos.
 - [x] 7.2 Verificar que todo spec delta usa keywords canónicos
-  (`ancleto specs check --change add-antigravity-full-support`).
+  (`ancleto-fre specs check --change add-antigravity-full-support`).
 - [ ] 7.3 Registrar en memoria la decisión que supersede `cli.host-mcp-config-out-of-scope` para Antigravity
   y la política de `model: inherit` / mapeo de tools (design D6/D8). Incluir la supersesión del nodo
   `antigravity-agent-frontmatter-mapping` para reflejar el mapa **sólo con ids verificados**

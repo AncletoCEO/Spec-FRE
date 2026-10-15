@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 export const DISCOVERY_MAP_FILE = '.discovery-map.json'
-export const TOPOLOGY_IGNORED_DIRS = ['node_modules', '.git', '.ancleto', 'dist', 'build', 'coverage']
+export const TOPOLOGY_IGNORED_DIRS = ['node_modules', '.git', '.ancleto-fre', 'dist', 'build', 'coverage']
 
 function countFilesRecursive(dir, ignored) {
   let n = 0

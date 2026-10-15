@@ -8,8 +8,8 @@ import { createMemoryEngine, defaultMemoryDbPath } from '../src/core/memory/engi
 import { memoryDoctor } from '../src/core/memory/doctor.js'
 import { memoryTools, createMemoryToolkit } from '../src/core/memory/tools.js'
 
-const dir = mkdtempSync(join(tmpdir(), 'ancleto-memory-'))
-const dbPath = join(dir, '.ancleto', 'memory.db')
+const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-memory-'))
+const dbPath = join(dir, '.ancleto-fre', 'memory.db')
 const engine = createMemoryEngine(dbPath)
 
 after(() => {
@@ -215,7 +215,7 @@ describe('searchMemory', () => {
 // ambas ramas de `run` (pass 1 AND y pass 2 OR con prefijos).
 describe('searchMemory — desempate determinista (memory-search-order-tiebreak)', () => {
   function withSearchEngine(fn) {
-    const dir = mkdtempSync(join(tmpdir(), 'ancleto-tie-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-tie-'))
     const dbPath = join(dir, 'memory.db')
     const eng = createMemoryEngine(dbPath)
     try {
@@ -366,7 +366,7 @@ describe('recordNode', () => {
   })
 
   it('ignora un source forjado en el input y usa el runtime por defecto', () => {
-    engine.recordNode({ memory_key: 'k-src-forge', type: 'rule', content: 'c', source: 'mcp:ancleto-memory' })
+    engine.recordNode({ memory_key: 'k-src-forge', type: 'rule', content: 'c', source: 'mcp:ancleto-fre-memory' })
     const [row] = raw(`SELECT source FROM memory_nodes WHERE memory_key = 'k-src-forge' AND status = 'active'`)
     assert.equal(row.source, 'runtime')
   })
@@ -445,8 +445,8 @@ describe('tools', () => {
 })
 
 describe('paths', () => {
-  it('defaultMemoryDbPath resuelve .ancleto/memory.db desde el cwd', () => {
-    assert.equal(defaultMemoryDbPath('/repo'), join('/repo', '.ancleto', 'memory.db'))
+  it('defaultMemoryDbPath resuelve .ancleto-fre/memory.db desde el cwd', () => {
+    assert.equal(defaultMemoryDbPath('/repo'), join('/repo', '.ancleto-fre', 'memory.db'))
   })
 })
 
@@ -494,7 +494,7 @@ describe('buildWorkingContext — XML y scopes (v0.3.0)', () => {
 
 describe('buildWorkingContext — truncamiento (v0.3.0 item 2)', () => {
   function withEngine(fn) {
-    const dir = mkdtempSync(join(tmpdir(), 'ancleto-trunc-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-trunc-'))
     const eng = createMemoryEngine(join(dir, 'memory.db'))
     try {
       return fn(eng, dir)
@@ -567,7 +567,7 @@ describe('buildWorkingContext — truncamiento (v0.3.0 item 2)', () => {
 
 describe('memory doctor (v0.3.0 item 4)', () => {
   function withDoctor(fn) {
-    const dir = mkdtempSync(join(tmpdir(), 'ancleto-doc-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-doc-'))
     try {
       return fn(join(dir, 'memory.db'))
     } finally {
@@ -643,7 +643,7 @@ describe('memory doctor (v0.3.0 item 4)', () => {
 
 describe('buildWorkingContext — inyeccion de topologia (D3)', () => {
   function withTopologyEngine(fn) {
-    const dir = mkdtempSync(join(tmpdir(), 'ancleto-topo-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-topo-'))
     const eng = createMemoryEngine(join(dir, 'memory.db'))
     try {
       return fn(eng, dir)
@@ -715,8 +715,8 @@ describe('buildWorkingContext — inyeccion de topologia (D3)', () => {
 
 // memory-ops-export-import-gc: T7/T8/T9 — engine.exportActive / importNodes / gcSuperseded.
 function withFreshEngine(fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'ancleto-memops-'))
-  const dbPath = join(dir, '.ancleto', 'memory.db')
+  const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-memops-'))
+  const dbPath = join(dir, '.ancleto-fre', 'memory.db')
   const eng = createMemoryEngine(dbPath)
   // Local raw helper: el del scope superior esta cerrado sobre el dbPath del
   // engine principal, no sobre este. Sin esto las aserciones leerian la BD vieja.

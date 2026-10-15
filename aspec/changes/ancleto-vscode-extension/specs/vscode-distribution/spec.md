@@ -2,12 +2,12 @@
 
 ### Requirement: Distribución dual npm y VS Code Marketplace
 
-The system SHALL ofrecer `ancleto` tanto como paquete npm (`@ancleto/spec`) como extensión de VS Code (`.vsix` en VS Marketplace y Open VSX), manteniendo versionado único y paridad funcional.
+The system SHALL ofrecer `ancleto-fre` tanto como paquete npm (`@ancleto/spec-fre`) como extensión de VS Code (`.vsix` en VS Marketplace y Open VSX), manteniendo versionado único y paridad funcional.
 
 #### Scenario: Instalación vía Marketplace
 
 - **WHEN** el usuario instala la extensión desde VS Marketplace u Open VSX
-- **THEN** obtiene las mismas capacidades que con `npm install -g @ancleto/spec` sin requerir npm manualmente
+- **THEN** obtiene las mismas capacidades que con `npm install -g @ancleto/spec-fre` sin requerir npm manualmente
 
 #### Scenario: Versionado único
 
@@ -21,7 +21,7 @@ The system SHALL exponer los comandos de la CLI (`install`, `update`, `discovery
 #### Scenario: Comando Install desde la paleta
 
 - **WHEN** el usuario ejecuta `Ancleto: Install` en un workspace abierto
-- **THEN** se ejecuta el mismo flujo que `ancleto install`, incluyendo merge de bloques `LOCKED`, y se notifica el resultado en VS Code
+- **THEN** se ejecuta el mismo flujo que `ancleto-fre install`, incluyendo merge de bloques `LOCKED`, y se notifica el resultado en VS Code
 
 #### Scenario: Host sin Node compatible
 

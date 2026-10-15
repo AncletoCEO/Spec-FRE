@@ -3,8 +3,8 @@
 ## Purpose
 
 Operaciones de portabilidad y mantenimiento de la memoria del proyecto
-(`.ancleto/memory.db`): export e import de nodos activos vía JSON y garbage collection de
-nodos superseded. Expuestas como subcomandos del grupo `ancleto memory`.
+(`.ancleto-fre/memory.db`): export e import de nodos activos vía JSON y garbage collection de
+nodos superseded. Expuestas como subcomandos del grupo `ancleto-fre memory`.
 
 ## Requirements
 
@@ -30,20 +30,20 @@ Windows `X:\...` y Unix `/home/...`, `/Users/...`) con `<redacted>`.
 - **WHEN** un nodo activo tiene en `content` un path absoluto como `C:\Users\damia\repo`
 - **THEN** el export reemplaza ese path con `<redacted>`
 
-### Requirement: Comando CLI `ancleto memory export`
+### Requirement: Comando CLI `ancleto-fre memory export`
 
-El sistema SHALL exponer el subcomando `ancleto memory export [--out <file>]` que invoca
+El sistema SHALL exponer el subcomando `ancleto-fre memory export [--out <file>]` que invoca
 `exportActive()` y escribe el resultado. Si `--out` no se especifica, la salida SHALL ir a
 `stdout`. Si se especifica, SHALL escribirse al archivo indicado.
 
 #### Scenario: Export a stdout
 
-- **WHEN** se ejecuta `ancleto memory export` sin `--out`
+- **WHEN** se ejecuta `ancleto-fre memory export` sin `--out`
 - **THEN** el JSON se imprime en `stdout`
 
 #### Scenario: Export a archivo
 
-- **WHEN** se ejecuta `ancleto memory export --out backup.json`
+- **WHEN** se ejecuta `ancleto-fre memory export --out backup.json`
 - **THEN** el archivo `backup.json` contiene el JSON de nodos activos
 
 ### Requirement: Import de nodos desde JSON con upsert por memory_key
@@ -98,15 +98,15 @@ reportar el error.
 - **THEN** el import aborta sin insertar ningún nodo
 - **AND** se reporta un error indicando el campo faltante
 
-### Requirement: Comando CLI `ancleto memory import`
+### Requirement: Comando CLI `ancleto-fre memory import`
 
-El sistema SHALL exponer el subcomando `ancleto memory import <file>` que lee el archivo JSON,
+El sistema SHALL exponer el subcomando `ancleto-fre memory import <file>` que lee el archivo JSON,
 invoca `importNodes(json)`, y reporta un resumen (cantidad de nodos insertados, actualizados,
 omitidos).
 
 #### Scenario: Import exitoso
 
-- **WHEN** se ejecuta `ancleto memory import backup.json`
+- **WHEN** se ejecuta `ancleto-fre memory import backup.json`
 - **THEN** se reporta la cantidad de nodos insertados, actualizados y omitidos
 
 ### Requirement: Garbage collection de nodos superseded
@@ -139,21 +139,21 @@ configurable vía `opts.days`. Después del purge, el sistema SHALL ejecutar `VA
 - **THEN** se reporta la cantidad de nodos que serían purgados y el tamaño estimado a liberar
 - **AND** ningún nodo es borrado
 
-### Requirement: Comando CLI `ancleto memory gc`
+### Requirement: Comando CLI `ancleto-fre memory gc`
 
-El sistema SHALL exponer el subcomando `ancleto memory gc [--dry-run] [--days <n>]` que invoca
+El sistema SHALL exponer el subcomando `ancleto-fre memory gc [--dry-run] [--days <n>]` que invoca
 `gcSuperseded(opts)`. Sin `--dry-run`, SHALL ejecutar el purge + VACUUM + REINDEX y reportar
 la cantidad de nodos purgados. Con `--dry-run`, SHALL solo reportar sin modificar la BD.
 
 #### Scenario: GC con dry-run
 
-- **WHEN** se ejecuta `ancleto memory gc --dry-run`
+- **WHEN** se ejecuta `ancleto-fre memory gc --dry-run`
 - **THEN** se reporta cuántos nodos serían purgados y el tamaño estimado
 - **AND** la BD no se modifica
 
 #### Scenario: GC sin dry-run
 
-- **WHEN** se ejecuta `ancleto memory gc`
+- **WHEN** se ejecuta `ancleto-fre memory gc`
 - **THEN** los nodos superseded antiguos son purgados
 - **AND** se ejecuta VACUUM + REINDEX
 - **AND** se reporta la cantidad de nodos purgados

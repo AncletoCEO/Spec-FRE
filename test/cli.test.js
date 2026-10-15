@@ -17,12 +17,12 @@ function run(args, cwd, env = {}) {
   return spawnSync(process.execPath, [CLI, ...args], {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, ANCLETO_MUSE_SPARK: '0', ...env }
+    env: { ...process.env, ANCLETO_FRE_MUSE_SPARK: '0', ...env }
   })
 }
 
 function withDir(fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'ancleto-cli-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ancleto-fre-cli-'))
   try {
     return fn(dir)
   } finally {
@@ -35,11 +35,11 @@ function withDir(fn) {
 }
 
 function readRc(dir) {
-  return JSON.parse(readFileSync(join(dir, '.ancletorc'), 'utf8'))
+  return JSON.parse(readFileSync(join(dir, '.ancleto-fre.rc'), 'utf8'))
 }
 
 describe('CLI init (G6 manifest)', () => {
-  it('crea el .ancletorc con el manifiesto completo', () => {
+  it('crea el .ancleto-fre.rc con el manifiesto completo', () => {
     withDir((dir) => {
       const r = run(['init'], dir)
       assert.equal(r.status, 0)
@@ -47,7 +47,6 @@ describe('CLI init (G6 manifest)', () => {
       assert.equal(rc.schemaVersion, 1)
       assert.equal(rc.version, PKG.version)
       assert.ok(!Number.isNaN(Date.parse(rc.installedAt)))
-      assert.deepEqual(rc.azure, { enabled: false })
       assert.deepEqual(rc.discovery, { outputDir: 'docs/technical-discovery', exclude: [] })
       // init materializa el layout del host (default opencode) y lo registra (D10/1.7).
       assert.deepEqual(rc.installedPaths, {
@@ -59,18 +58,10 @@ describe('CLI init (G6 manifest)', () => {
     })
   })
 
-  it('init --with-azure habilita azure', () => {
-    withDir((dir) => {
-      const r = run(['init', '--with-azure'], dir)
-      assert.equal(r.status, 0)
-      assert.deepEqual(readRc(dir).azure, { enabled: true })
-    })
-  })
-
   it('init re-ejecutado preserva config existente y campos de usuario', () => {
     withDir((dir) => {
       run(['init'], dir)
-      const rcPath = join(dir, '.ancletorc')
+      const rcPath = join(dir, '.ancleto-fre.rc')
       const rc = readRc(dir)
       rc.customField = 'no-tocar'
       rc.discovery.exclude = ['vendor']
@@ -133,7 +124,7 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, '.github', 'skills', 'triage-clarifier', 'SKILL.md')))
       assert.ok(existsSync(join(dir, '.github', 'agents', 'orchestrator.agent.md')))
-      assert.ok(existsSync(join(dir, '.github', 'prompts', 'cleto-new.prompt.md')))
+      assert.ok(existsSync(join(dir, '.github', 'prompts', 'fre-new.prompt.md')))
       assert.equal(existsSync(join(dir, '.opencode', 'agents')), false, 'no escribe agents en otro base')
       assert.equal(existsSync(join(dir, '.vscode')), false, 'no usa la ruta vieja .vscode/skills')
       const rc = readRc(dir)
@@ -145,7 +136,7 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
 
   it('6.1 init --agent antigravity escribe skills y agents adaptados sin avisos de skip (D10)', () => {
     withDir((dir) => {
-      const r = run(['init', '--agent', 'antigravity', '--no-mcp'], dir, { ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+      const r = run(['init', '--agent', 'antigravity', '--no-mcp'], dir, { ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, '.agents', 'skills', 'triage-clarifier', 'SKILL.md')))
       assert.equal(existsSync(join(dir, '.antigravity', 'skills')), false, 'no usa la ruta vieja')
@@ -166,7 +157,7 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
       const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo'], dir)
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, '.opencode', 'agents', 'orchestrator.md')))
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-new.md')))
       assert.ok(existsSync(join(dir, '.opencode', 'skills', 'triage-clarifier', 'SKILL.md')))
       const rc = readRc(dir)
       assert.deepEqual(rc.installedPaths.agents, ['.opencode/agents'])
@@ -242,8 +233,8 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
     withDir((dir) => {
       const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'vscode'], dir)
       assert.equal(r.status, 0)
-      const out = readFileSync(join(dir, '.github', 'prompts', 'cleto-new.prompt.md'))
-      assert.ok(out.equals(readFileSync(COMMAND_SRC('cleto-new'))), 'command vscode byte-idéntico')
+      const out = readFileSync(join(dir, '.github', 'prompts', 'fre-new.prompt.md'))
+      assert.ok(out.equals(readFileSync(COMMAND_SRC('fre-new'))), 'command vscode byte-idéntico')
     })
   })
 
@@ -282,7 +273,7 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
       assert.equal(readRc(dir).agent, 'claude')
       assert.ok(existsSync(join(dir, '.claude', 'skills', 'triage-clarifier', 'SKILL.md')))
       assert.ok(existsSync(join(dir, '.claude', 'agents', 'orchestrator.md')))
-      assert.ok(existsSync(join(dir, '.claude', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.claude', 'commands', 'fre-new.md')))
       const rc = readRc(dir)
       assert.deepEqual(rc.installedPaths.skills, ['.claude/skills'])
       assert.deepEqual(rc.installedPaths.agents, ['.claude/agents'])
@@ -360,7 +351,7 @@ describe('CLI multi-host routing y adapters (add-multi-agent-cli-support)', () =
 describe('CLI antigravity full support (add-antigravity-full-support)', () => {
   const REPO = join(TEST_DIR, '..')
   const AGENT_SRC = (n) => join(REPO, 'agents', `${n}.md`)
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
   it('6.2 init --agent antigravity rutea skills/agents a .agents y no crea .agents/commands', () => {
     withDir((dir) => {
@@ -407,7 +398,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
   it('6.3 dedupe: cada clave gestionada se emite una sola vez, en orden determinista', () => {
     const AGENT = 'fixture-dedupe'
     withDir((dir) => {
-      const root = mkdtempSync(join(tmpdir(), 'ancleto-cli-src-'))
+      const root = mkdtempSync(join(tmpdir(), 'ancleto-fre-cli-src-'))
       try {
         for (const d of ['src', 'agents', 'commands', 'skills', 'templates']) {
           cpSync(join(REPO, d), join(root, d), { recursive: true })
@@ -434,7 +425,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
             'tools:',
             '  grep: true',
             'description: Segunda description gestionada (duplicada en la fuente)',
-            'skills: [ancleto-new]',
+            'skills: [fre-new]',
             'mcpServers:',
             '  custom:',
             '    command: custom-cmd',
@@ -447,7 +438,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
         const r = spawnSync(
           process.execPath,
           [join(root, 'src', 'cli', 'index.js'), 'install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'antigravity'],
-          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_MUSE_SPARK: '0', ...regEnv(dir) } }
+          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_FRE_MUSE_SPARK: '0', ...regEnv(dir) } }
         )
         assert.equal(r.status, 0)
         const out = readFileSync(join(dir, '.agents', 'agents', `${AGENT}.md`), 'utf8')
@@ -519,7 +510,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
 
   it('6.4 una tool sin id verificado se omite con aviso a stderr y exit 0 (sin inferir MCP)', () => {
     withDir((dir) => {
-      const root = mkdtempSync(join(tmpdir(), 'ancleto-cli-src-'))
+      const root = mkdtempSync(join(tmpdir(), 'ancleto-fre-cli-src-'))
       try {
         for (const d of ['src', 'agents', 'commands', 'skills', 'templates']) {
           cpSync(join(REPO, d), join(root, d), { recursive: true })
@@ -533,7 +524,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
         const r = spawnSync(
           process.execPath,
           [cli, 'install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'antigravity'],
-          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_MUSE_SPARK: '0', ...regEnv(dir) } }
+          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_FRE_MUSE_SPARK: '0', ...regEnv(dir) } }
         )
         assert.equal(r.status, 0)
         assert.match(r.stderr, /skip tool 'unknown_tool': no verified Antigravity id for agent 'fixture-unknown-tool'/)
@@ -552,11 +543,11 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
     withDir((dir) => {
       const r = run(['init', '--agent', 'antigravity', '--no-mcp'], dir, regEnv(dir))
       assert.equal(r.status, 0)
-      assert.ok(existsSync(join(dir, '.agents', 'skills', 'cleto-new', 'SKILL.md')))
-      const sk = readFileSync(join(dir, '.agents', 'skills', 'cleto-new', 'SKILL.md'), 'utf8')
-      assert.match(sk, /^name: cleto-new$/m)
+      assert.ok(existsSync(join(dir, '.agents', 'skills', 'fre-new', 'SKILL.md')))
+      const sk = readFileSync(join(dir, '.agents', 'skills', 'fre-new', 'SKILL.md'), 'utf8')
+      assert.match(sk, /^name: fre-new$/m)
       assert.match(sk, /^description: Start a new change using the experimental artifact workflow$/m)
-      assert.match(sk, /Invoke the `ancleto-new` skill/)
+      assert.match(sk, /Invoke the `fre-new` skill/)
       assert.deepEqual(readRc(dir).installedPaths.commands, [])
     })
   })
@@ -566,11 +557,11 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       const r = run(['init', '--agent', 'antigravity', '--tier', 'minimo'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.agents', 'mcp_config.json'), 'utf8'))
-      assert.ok(cfg.mcpServers['ancleto-memory'], 'ancleto-memory presente')
-      assert.equal(cfg.mcpServers['ancleto-memory'].command, process.execPath)
-      assert.deepEqual(cfg.mcpServers['ancleto-memory'].args.slice(-1), ['mcp'])
-      assert.equal('type' in cfg.mcpServers['ancleto-memory'], false)
-      assert.equal('enabled' in cfg.mcpServers['ancleto-memory'], false)
+      assert.ok(cfg.mcpServers['ancleto-fre-memory'], 'ancleto-fre-memory presente')
+      assert.equal(cfg.mcpServers['ancleto-fre-memory'].command, process.execPath)
+      assert.deepEqual(cfg.mcpServers['ancleto-fre-memory'].args.slice(-1), ['mcp'])
+      assert.equal('type' in cfg.mcpServers['ancleto-fre-memory'], false)
+      assert.equal('enabled' in cfg.mcpServers['ancleto-fre-memory'], false)
     })
   })
 
@@ -580,7 +571,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       const prev = {
         mcpServers: {
           propio: { command: 'propio-cmd', args: ['--x'] },
-          'ancleto-memory': { command: 'memoria-propia', args: ['--keep'] }
+          'ancleto-fre-memory': { command: 'memoria-propia', args: ['--keep'] }
         },
         customTop: 1
       }
@@ -589,7 +580,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.agents', 'mcp_config.json'), 'utf8'))
       assert.deepEqual(cfg.mcpServers.propio, { command: 'propio-cmd', args: ['--x'] })
-      assert.deepEqual(cfg.mcpServers['ancleto-memory'], { command: 'memoria-propia', args: ['--keep'] })
+      assert.deepEqual(cfg.mcpServers['ancleto-fre-memory'], { command: 'memoria-propia', args: ['--keep'] })
       assert.equal(cfg.customTop, 1)
     })
   })
@@ -612,7 +603,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       assert.equal(existsSync(join(dir, '.agents', 'mcp_config.json')), false)
       assert.equal(existsSync(join(dir, '.opencode')), false)
       assert.ok(existsSync(join(dir, '.agents', 'agents', 'coder.md')))
-      assert.ok(existsSync(join(dir, '.agents', 'skills', 'cleto-new', 'SKILL.md')))
+      assert.ok(existsSync(join(dir, '.agents', 'skills', 'fre-new', 'SKILL.md')))
     })
   })
 
@@ -645,10 +636,10 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       const r = run(['install', '--project', dir, '--tier', 'gratis', '--agent', 'opencode'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, '.opencode', 'agents', 'orchestrator.md')))
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-new.md')))
       assert.ok(existsSync(join(dir, '.opencode', 'skills', 'triage-clarifier', 'SKILL.md')))
       const cfg = JSON.parse(readFileSync(join(dir, '.opencode', 'opencode.json'), 'utf8'))
-      assert.ok(cfg.mcp['ancleto-memory'])
+      assert.ok(cfg.mcp['ancleto-fre-memory'])
       assert.match(readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8'), /^mode:/m)
       assert.equal(existsSync(join(dir, '.agents', 'mcp_config.json')), false)
       assert.equal(existsSync(join(dir, '.agents')), false)
@@ -704,7 +695,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
     const AGENT = 'fixture-no-mapped-tools'
     const UNMAPPED = ['write', 'glob', 'task', 'webfetch', 'websearch', 'find_file', 'call_mcp_tool', 'invoke_subagent', 'searchMemory', 'unknown_tool']
     withDir((dir) => {
-      const root = mkdtempSync(join(tmpdir(), 'ancleto-cli-src-'))
+      const root = mkdtempSync(join(tmpdir(), 'ancleto-fre-cli-src-'))
       try {
         for (const d of ['src', 'agents', 'commands', 'skills', 'templates']) {
           cpSync(join(REPO, d), join(root, d), { recursive: true })
@@ -717,7 +708,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
         const r = spawnSync(
           process.execPath,
           [join(root, 'src', 'cli', 'index.js'), 'install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'antigravity'],
-          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_MUSE_SPARK: '0', ...regEnv(dir) } }
+          { cwd: dir, encoding: 'utf8', env: { ...process.env, ANCLETO_FRE_MUSE_SPARK: '0', ...regEnv(dir) } }
         )
         // (a) arranca sin colgar: exit 0 pese a las tools sin id verificado.
         assert.equal(r.status, 0)
@@ -745,7 +736,7 @@ describe('CLI antigravity full support (add-antigravity-full-support)', () => {
       assert.equal(run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'antigravity'], dir, regEnv(dir)).status, 0)
       // Segundo install con --agent opencode acumula destinos y fija rc.agent=opencode.
       assert.equal(run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'opencode'], dir, regEnv(dir)).status, 0)
-      assert.ok(existsSync(join(dir, '.agents', 'skills', 'cleto-new', 'SKILL.md')), 'command-skill de antigravity presente')
+      assert.ok(existsSync(join(dir, '.agents', 'skills', 'fre-new', 'SKILL.md')), 'command-skill de antigravity presente')
       assert.equal(readRc(dir).agent, 'opencode')
       const r = run(['check'], dir)
       assert.equal(r.status, 0)
@@ -785,14 +776,14 @@ describe('CLI documentación multi-host (R2/R3)', () => {
 })
 
 describe('CLI install', () => {
-  it('instala assets y templates, aplica tier y actualiza el manifiesto', () => {
+  it('instala assets y templates y actualiza el manifiesto', () => {
     withDir((dir) => {
       const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo'], dir)
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, 'AGENTS.md')))
       assert.ok(existsSync(join(dir, 'PRODUCT.md')))
       assert.ok(existsSync(join(dir, '.opencode', 'agents', 'orchestrator.md')))
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-new.md')))
       assert.ok(existsSync(join(dir, '.opencode', 'skills', 'triage-clarifier', 'SKILL.md')))
 
       const rc = readRc(dir)
@@ -804,9 +795,7 @@ describe('CLI install', () => {
       assert.deepEqual(rc.installedPaths.skills, ['.opencode/skills'])
 
       const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode-go\/deepseek-v4\.1-flash/)
-
-      assert.equal(readFileSync(join(dir, '.opencode', '.ancleto-tier'), 'utf8').trim(), 'minimo')
+      assert.match(orchestrator, /model: opencode-go\/qwen3\.7-plus/)
     })
   })
 
@@ -836,10 +825,10 @@ describe('CLI install', () => {
       const r = run(['install', '--project', dir, '--tier', 'gratis'], dir)
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.opencode', 'opencode.json'), 'utf8'))
-      assert.ok(cfg.mcp['ancleto-memory'], 'ancleto-memory presente')
-      assert.equal(cfg.mcp['ancleto-memory'].type, 'local')
-      assert.equal(cfg.mcp['ancleto-memory'].enabled, true)
-      assert.deepEqual(cfg.mcp['ancleto-memory'].command.slice(-1), ['mcp'])
+      assert.ok(cfg.mcp['ancleto-fre-memory'], 'ancleto-fre-memory presente')
+      assert.equal(cfg.mcp['ancleto-fre-memory'].type, 'local')
+      assert.equal(cfg.mcp['ancleto-fre-memory'].enabled, true)
+      assert.deepEqual(cfg.mcp['ancleto-fre-memory'].command.slice(-1), ['mcp'])
       assert.equal(cfg.mcp.engram, undefined, 'engram no se agrega sin --with-engram')
     })
   })
@@ -849,7 +838,7 @@ describe('CLI install', () => {
       const r = run(['install', '--project', dir, '--tier', 'gratis', '--with-engram'], dir)
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.opencode', 'opencode.json'), 'utf8'))
-      assert.ok(cfg.mcp['ancleto-memory'], 'ancleto-memory presente')
+      assert.ok(cfg.mcp['ancleto-fre-memory'], 'ancleto-fre-memory presente')
       if (cfg.mcp.engram) {
         assert.deepEqual(cfg.mcp.engram.command.slice(1), ['mcp', '--tools=agent'])
       } else {
@@ -890,8 +879,8 @@ describe('CLI test profile (test-automation-profile)', () => {
       assert.ok(existsSync(join(dir, 'testspec', 'changes')))
       const tester = readFileSync(join(dir, '.opencode', 'agents', 'tester.md'), 'utf8')
       assert.match(tester, /healing/, 'tester ampliado con workflows')
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-test-heal.md')))
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-test-coverage.md')))
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-test-heal.md')))
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-test-coverage.md')))
       const rootAgents = readFileSync(join(dir, 'AGENTS.md'), 'utf8')
       assert.match(rootAgents, /Test automation profile/, 'bloque LOCKED del perfil en AGENTS.md')
     })
@@ -903,7 +892,7 @@ describe('CLI test profile (test-automation-profile)', () => {
       assert.equal(r.status, 0)
       assert.equal(readRc(dir).profile, 'general')
       assert.equal(existsSync(join(dir, 'testspec')), false, 'sin testspec/')
-      assert.equal(existsSync(join(dir, '.opencode', 'commands', 'cleto-test-heal.md')), false, 'sin comandos del perfil')
+      assert.equal(existsSync(join(dir, '.opencode', 'commands', 'fre-test-heal.md')), false, 'sin comandos del perfil')
       const tester = readFileSync(join(dir, '.opencode', 'agents', 'tester.md'), 'utf8')
       assert.doesNotMatch(tester, /healing/, 'tester base intacto')
     })
@@ -923,7 +912,7 @@ describe('CLI test profile (test-automation-profile)', () => {
       const r = run(['upgrade'], dir)
       assert.equal(r.status, 0)
       assert.equal(readRc(dir).profile, 'test')
-      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'cleto-test-heal.md')), 'overlay sobrevive upgrade')
+      assert.ok(existsSync(join(dir, '.opencode', 'commands', 'fre-test-heal.md')), 'overlay sobrevive upgrade')
     })
   })
 
@@ -943,8 +932,8 @@ describe('CLI test profile (test-automation-profile)', () => {
       const rc = readRc(dir)
       assert.equal(rc.profile, 'test')
       assert.equal(rc.agent, 'claude')
-      assert.ok(existsSync(join(dir, '.claude', 'skills', 'ancleto-new', 'SKILL.md')), 'skills del agente')
-      assert.ok(existsSync(join(dir, '.claude', 'commands', 'cleto-test-heal.md')), 'overlay del perfil en el layout del host')
+      assert.ok(existsSync(join(dir, '.claude', 'skills', 'fre-new', 'SKILL.md')), 'skills del agente')
+      assert.ok(existsSync(join(dir, '.claude', 'commands', 'fre-test-heal.md')), 'overlay del perfil en el layout del host')
     })
   })
 })
@@ -959,13 +948,13 @@ describe('CLI export/import (cross-machine-export-import)', () => {
     mkdirSync(join(dir, '.opencode'), { recursive: true })
     writeFileSync(join(dir, '.opencode', 'opencode.json'), JSON.stringify({
       mcp: {
-        'ancleto-memory': { type: 'local', enabled: true, command: [process.execPath, join(dir, 'fake-mcp.js')] },
+        'ancleto-fre-memory': { type: 'local', enabled: true, command: [process.execPath, join(dir, 'fake-mcp.js')] },
         custom: { type: 'local', enabled: true, command: ['custom-mcp'] }
       }
     }))
     writeFileSync(join(dir, 'service.json'), JSON.stringify({ token: 'SECRETO-NO-EXPORTAR' }))
-    mkdirSync(join(dir, '.ancleto'), { recursive: true })
-    writeFileSync(join(dir, '.ancleto', 'memory.db'), 'BINARIO-SIMULADO')
+    mkdirSync(join(dir, '.ancleto-fre'), { recursive: true })
+    writeFileSync(join(dir, '.ancleto-fre', 'memory.db'), 'BINARIO-SIMULADO')
   }
 
   it('export genera bundle sin absolutos ni secretos y excluye sesion', () => {
@@ -973,19 +962,19 @@ describe('CLI export/import (cross-machine-export-import)', () => {
       seedProject(dir)
       const r = run(['export'], dir)
       assert.equal(r.status, 0)
-      const out = join(dir, 'ancleto-export')
+      const out = join(dir, 'ancleto-fre-export')
       const manifest = JSON.parse(readFileSync(join(out, 'manifest.json'), 'utf8'))
-      assert.equal(manifest.format, 'ancleto-export/1')
-      assert.ok(manifest.mcp.some((m) => m.name === 'ancleto-memory' && m.type === 'local'), 'intencion MCP')
+      assert.equal(manifest.format, 'ancleto-fre-export/1')
+      assert.ok(manifest.mcp.some((m) => m.name === 'ancleto-fre-memory' && m.type === 'local'), 'intencion MCP')
       const serialized = JSON.stringify(manifest)
       assert.equal(serialized.includes(dir), false, 'sin paths absolutos')
       assert.equal(serialized.includes('SECRETO'), false, 'sin secretos')
       assert.equal(serialized.includes('C:\\'), false, 'sin rutas Windows')
-      assert.ok(existsSync(join(out, '.ancletorc')), 'rc portable')
+      assert.ok(existsSync(join(out, '.ancleto-fre.rc')), 'rc portable')
       assert.ok(existsSync(join(out, 'aspec', 'config.yaml')), 'aspec portable')
       assert.equal(existsSync(join(out, '.opencode', 'opencode.json')), false, 'opencode.json excluido')
       assert.equal(existsSync(join(out, 'service.json')), false, 'service.json excluido')
-      assert.equal(existsSync(join(out, '.ancleto')), false, '.ancleto excluido')
+      assert.equal(existsSync(join(out, '.ancleto-fre')), false, '.ancleto-fre excluido')
     })
   })
 
@@ -1005,7 +994,7 @@ describe('CLI export/import (cross-machine-export-import)', () => {
       mkdirSync(join(dir, '.opencode'), { recursive: true })
       writeFileSync(join(dir, '.opencode', 'opencode.json'), JSON.stringify({
         mcp: {
-          'ancleto-memory': { type: 'local', enabled: true, command: ['C:\\Program Files\\nodejs\\node.exe', 'C:\\x\\index.js', 'mcp'] },
+          'ancleto-fre-memory': { type: 'local', enabled: true, command: ['C:\\Program Files\\nodejs\\node.exe', 'C:\\x\\index.js', 'mcp'] },
           custom: { type: 'local', enabled: true, command: ['custom-mcp'] }
         }
       }))
@@ -1013,8 +1002,8 @@ describe('CLI export/import (cross-machine-export-import)', () => {
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.opencode', 'opencode.json'), 'utf8'))
       assert.deepEqual(cfg.mcp.custom, { type: 'local', enabled: true, command: ['custom-mcp'] }, 'sana intacta')
-      assert.equal(cfg.mcp['ancleto-memory'].command[0], process.execPath, 'rota regenerada con node local')
-      assert.deepEqual(cfg.mcp['ancleto-memory'].command.slice(-1), ['mcp'], 'subcomando mcp preservado')
+      assert.equal(cfg.mcp['ancleto-fre-memory'].command[0], process.execPath, 'rota regenerada con node local')
+      assert.deepEqual(cfg.mcp['ancleto-fre-memory'].command.slice(-1), ['mcp'], 'subcomando mcp preservado')
     })
   })
 
@@ -1028,14 +1017,14 @@ describe('CLI export/import (cross-machine-export-import)', () => {
       mkdirSync(dst, { recursive: true })
       mkdirSync(join(dst, '.opencode'), { recursive: true })
       writeFileSync(join(dst, '.opencode', 'opencode.json'), JSON.stringify({
-        mcp: { 'ancleto-memory': { type: 'local', enabled: true, command: ['C:\\viejo\\node.exe', 'x', 'mcp'] } }
+        mcp: { 'ancleto-fre-memory': { type: 'local', enabled: true, command: ['C:\\viejo\\node.exe', 'x', 'mcp'] } }
       }))
       const r = run(['import', join(dir, 'b.tgz')], dst)
       assert.equal(r.status, 0)
       assert.equal(readRc(dst).profile, 'general', 'rc del bundle aplicada')
       assert.ok(existsSync(join(dst, 'aspec', 'config.yaml')), 'aspec del bundle aplicado')
       const cfg = JSON.parse(readFileSync(join(dst, '.opencode', 'opencode.json'), 'utf8'))
-      assert.equal(cfg.mcp['ancleto-memory'].command[0], process.execPath, 'MCP regenerado local')
+      assert.equal(cfg.mcp['ancleto-fre-memory'].command[0], process.execPath, 'MCP regenerado local')
     })
   })
 })
@@ -1122,21 +1111,21 @@ describe('CLI import openspec externo (import-legacy-openspec)', () => {
     })
   })
 
-  it('upgrade sin .ancletorc migra en lugar de exigir init', () => {
+  it('upgrade sin .ancleto-fre.rc migra en lugar de exigir init', () => {
     withDir((dir) => {
       seedExternalOpenspec(dir)
       const r = run(['upgrade', '--yes'], dir)
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, 'aspec', 'specs', 'pagos', 'spec.md')), 'upgrade migra')
-      assert.match(r.stdout, /Corré 'ancleto init'/, 'indica el siguiente paso')
+      assert.match(r.stdout, /Corré 'ancleto-fre init'/, 'indica el siguiente paso')
     })
   })
 
-  it('upgrade sin .ancletorc y sin openspec sigue exigiendo init', () => {
+  it('upgrade sin .ancleto-fre.rc y sin openspec sigue exigiendo init', () => {
     withDir((dir) => {
       const r = run(['upgrade'], dir)
       assert.equal(r.status, 1)
-      assert.match(r.stderr, /Ejecuta 'ancleto init' primero/)
+      assert.match(r.stderr, /Ejecuta 'ancleto-fre init' primero/)
     })
   })
 })
@@ -1157,7 +1146,7 @@ describe('CLI copilot support (add-copilot-support)', () => {
       const files = promptFiles(dir)
       assert.ok(files.includes('orchestrator.prompt.md'), 'prompt del orchestrator')
       assert.ok(files.includes('coder.prompt.md'), 'prompt de coder')
-      assert.ok(files.includes('cleto-new.prompt.md'), 'comando como prompt')
+      assert.ok(files.includes('fre-new.prompt.md'), 'comando como prompt')
       const orch = readFileSync(join(dir, '.github', 'prompts', 'orchestrator.prompt.md'), 'utf8')
       assert.match(orch, /^description: Orchestrates tasks/m, 'description preservada por el adapter')
       assert.match(orch, /picker de Copilot/, 'nota de modelo en orchestrator')
@@ -1178,8 +1167,8 @@ describe('CLI copilot support (add-copilot-support)', () => {
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, 'copilot-mcp.json'), 'utf8'))
       assert.deepEqual(cfg.mcp.custom, { type: 'local', command: ['x'] }, 'custom preservado')
-      assert.ok(cfg.mcp['ancleto-memory'], 'ancleto-memory agregado')
-      assert.equal(cfg.mcp['ancleto-memory'].command[0], process.execPath, 'ruta local del host')
+      assert.ok(cfg.mcp['ancleto-fre-memory'], 'ancleto-fre-memory agregado')
+      assert.equal(cfg.mcp['ancleto-fre-memory'].command[0], process.execPath, 'ruta local del host')
     })
   })
 
@@ -1207,7 +1196,7 @@ describe('CLI copilot support (add-copilot-support)', () => {
     withDir((dir) => {
       const r = run(['install', '--project', dir, '--profile', 'test', '--agent', 'copilot', '--no-mcp', '--tier', 'minimo'], dir)
       assert.equal(r.status, 0)
-      assert.ok(existsSync(join(dir, '.github', 'prompts', 'cleto-test-heal.prompt.md')), 'comando del perfil como prompt')
+      assert.ok(existsSync(join(dir, '.github', 'prompts', 'fre-test-heal.prompt.md')), 'comando del perfil como prompt')
       assert.match(readFileSync(join(dir, '.github', 'prompts', 'tester.prompt.md'), 'utf8'), /healing/, 'tester ampliado en prompts')
     })
   })
@@ -1291,47 +1280,10 @@ describe('CLI check (G3)', () => {
     })
   })
 
-  it('exit 1 sin .ancletorc', () => {
+  it('exit 1 sin .ancleto-fre.rc', () => {
     withDir((dir) => {
       const r = run(['check'], dir)
       assert.equal(r.status, 1)
-    })
-  })
-
-  it('sano con agentes locales NO avisa tier huerfano', () => {
-    withDir((dir) => {
-      run(['install', '--project', dir, '--no-mcp', '--tier', 'gratis'], dir)
-      const r = run(['check'], dir)
-      assert.equal(r.status, 0)
-      assert.doesNotMatch(r.stdout, /tier .* sin agentes locales/)
-    })
-  })
-
-  it('avisa tier huerfano sin fallar cuando no hay agentes locales', () => {
-    withDir((dir) => {
-      run(['init', '--tier', 'gratis'], dir)
-      // escenario de riesgo: el tier quedo pero los agentes locales ya no estan.
-      // Se limpia tambien el manifiesto para aislar el aviso de tier huerfano: con
-      // el manifiesto veraz (D10), borrar .opencode/agents seria un faltante, no un
-      // tier huerfano.
-      rmSync(join(dir, '.opencode', 'agents'), { recursive: true, force: true })
-      const rcPath = join(dir, '.ancletorc')
-      const rc = JSON.parse(readFileSync(rcPath, 'utf8'))
-      rc.installedPaths.agents = []
-      writeFileSync(rcPath, JSON.stringify(rc, null, 2))
-      const r = run(['check'], dir)
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /⚠ tier "gratis" sin agentes locales/)
-      assert.match(r.stdout, /0 faltantes/)
-    })
-  })
-
-  it('init deja agentes locales, asi que el tier NO queda huerfano', () => {
-    withDir((dir) => {
-      run(['init', '--tier', 'gratis'], dir)
-      const r = run(['check'], dir)
-      assert.equal(r.status, 0)
-      assert.doesNotMatch(r.stdout, /sin agentes locales/)
     })
   })
 })
@@ -1433,22 +1385,22 @@ describe('CLI init + templates y working-context (v0.6.18 / issues #15 y #10)', 
     withDir((dir) => {
       const r = run(['init'], dir)
       assert.equal(r.status, 0)
-      assert.equal(existsSync(join(dir, '.ancleto', 'working-context.md')), false)
+      assert.equal(existsSync(join(dir, '.ancleto-fre', 'working-context.md')), false)
     })
   })
 
   it('init materializa las reglas del proyecto en working-context.md', () => {
     withDir((dir) => {
       run(['init'], dir)
-      mkdirSync(join(dir, '.ancleto'), { recursive: true })
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      mkdirSync(join(dir, '.ancleto-fre'), { recursive: true })
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const engine = createMemoryEngine(dbPath)
       engine.recordNode({ memory_key: 'regla-de-prueba', type: 'rule', scope: 'project', content: 'Siempre validar la entrada.' })
       engine.close()
 
       const r = run(['init'], dir)
       assert.equal(r.status, 0)
-      const wc = readFileSync(join(dir, '.ancleto', 'working-context.md'), 'utf8')
+      const wc = readFileSync(join(dir, '.ancleto-fre', 'working-context.md'), 'utf8')
       assert.match(wc, /<ProjectMemoryRules>/)
       assert.match(wc, /regla-de-prueba/)
       assert.match(wc, /Siempre validar la entrada/)
@@ -1458,30 +1410,30 @@ describe('CLI init + templates y working-context (v0.6.18 / issues #15 y #10)', 
   it('init deja working-context.md vacio si hay memoria pero ninguna regla activa', () => {
     withDir((dir) => {
       run(['init'], dir)
-      mkdirSync(join(dir, '.ancleto'), { recursive: true })
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      mkdirSync(join(dir, '.ancleto-fre'), { recursive: true })
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const engine = createMemoryEngine(dbPath)
       engine.recordNode({ memory_key: 'solo-decision', type: 'decision', scope: 'project', content: 'No es regla.' })
       engine.close()
 
       const r = run(['init'], dir)
       assert.equal(r.status, 0)
-      assert.ok(existsSync(join(dir, '.ancleto', 'working-context.md')), 'archivo creado')
-      assert.equal(readFileSync(join(dir, '.ancleto', 'working-context.md'), 'utf8'), '')
+      assert.ok(existsSync(join(dir, '.ancleto-fre', 'working-context.md')), 'archivo creado')
+      assert.equal(readFileSync(join(dir, '.ancleto-fre', 'working-context.md'), 'utf8'), '')
     })
   })
 
   it('upgrade regenera el working-context', () => {
     withDir((dir) => {
       run(['install', '--project', dir, '--no-mcp', '--tier', 'gratis'], dir)
-      const dbPath = join(dir, '.ancleto', 'memory.db')
+      const dbPath = join(dir, '.ancleto-fre', 'memory.db')
       const engine = createMemoryEngine(dbPath)
       engine.recordNode({ memory_key: 'regla-upgrade', type: 'rule', scope: 'project', content: 'Regla para el upgrade.' })
       engine.close()
       const r = run(['upgrade'], dir)
       assert.equal(r.status, 0)
       assert.match(r.stdout, /working-context\.md regenerado/)
-      assert.match(readFileSync(join(dir, '.ancleto', 'working-context.md'), 'utf8'), /regla-upgrade/)
+      assert.match(readFileSync(join(dir, '.ancleto-fre', 'working-context.md'), 'utf8'), /regla-upgrade/)
     })
   })
 })
@@ -1489,7 +1441,7 @@ describe('CLI init + templates y working-context (v0.6.18 / issues #15 y #10)', 
 describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
   it('upgrade migra openspec/ a aspec/ preservando contenido y conserva openspec/ como backup', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec', 'changes', 'demo'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'changes', 'demo', 'proposal.md'), '# demo\n')
       const r = run(['upgrade'], dir)
@@ -1503,7 +1455,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
 
   it('aspec/ con contenido real coexiste con openspec/: no migra y advierte', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'old.txt'), 'viejo\n')
       mkdirSync(join(dir, 'aspec', 'changes', 'existing'), { recursive: true })
@@ -1520,7 +1472,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
 
   it('aspec/ solo-scaffold se migra encima y conserva el config.yaml previo', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec', 'changes', 'demo'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'changes', 'demo', 'proposal.md'), '# demo\n')
       mkdirSync(join(dir, 'aspec', 'changes'), { recursive: true })
@@ -1537,7 +1489,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
 
   it('aspec/ con solo config.yaml (sin changes/) se trata como scaffold y migra', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec', 'changes', 'demo'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'changes', 'demo', 'proposal.md'), '# demo\n')
       mkdirSync(join(dir, 'aspec'), { recursive: true })
@@ -1553,7 +1505,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
 
   it('segunda corrida tras migrar es no-op silenciosa (idempotencia por marcador)', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec', 'changes', 'demo'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'changes', 'demo', 'proposal.md'), '# demo\n')
 
@@ -1619,7 +1571,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
 
   it('un directorio vacio bajo aspec/changes cuenta como contenido real (conservador)', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'old.txt'), 'viejo\n')
       mkdirSync(join(dir, 'aspec', 'changes', 'placeholder'), { recursive: true })
@@ -1658,7 +1610,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
   // W1: el skip de cp force:false omite un archivo homonimo ya presente en aspec/.
   it('cp force:false omite archivos existentes en aspec/ con el mismo nombre', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       // aspec/ solo-scaffold: config.yaml propio y changes/ vacio (sin contenido real).
       mkdirSync(join(dir, 'aspec', 'changes'), { recursive: true })
       writeFileSync(join(dir, 'aspec', 'config.yaml'), '# config equipo\n')
@@ -1680,7 +1632,7 @@ describe('CLI migracion openspec -> aspec (copia no destructiva)', () => {
   // W1 (variante bajo changes/): mismo path en ambas ramas no se pisa de forma destructiva.
   it('un archivo homonimo bajo changes/ en aspec/ no se pisa (coexistencia)', () => {
     withDir((dir) => {
-      writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
+      writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, version: '0.0.0' }) + '\n')
       mkdirSync(join(dir, 'openspec', 'changes', 'demo'), { recursive: true })
       writeFileSync(join(dir, 'openspec', 'changes', 'demo', 'proposal.md'), '# legacy distinto\n')
       mkdirSync(join(dir, 'aspec', 'changes', 'demo'), { recursive: true })
@@ -1756,35 +1708,8 @@ describe('CLI LOCKED blocks (G7)', () => {
   })
 })
 
-describe('CLI azure MCP (G8)', () => {
-  it('init --with-azure + install inyecta azure-devops y muestra aviso', () => {
-    withDir((dir) => {
-      run(['init', '--with-azure'], dir)
-      const r = run(['install', '--project', dir, '--tier', 'gratis'], dir)
-      assert.equal(r.status, 0)
-      const cfg = JSON.parse(readFileSync(join(dir, '.opencode', 'opencode.json'), 'utf8'))
-      assert.ok(cfg.mcp['azure-devops'], 'azure-devops presente')
-      assert.equal(cfg.mcp['azure-devops'].command[0], 'npx')
-      assert.match(r.stdout, /AZURE_DEVOPS_ORG_URL/)
-    })
-  })
-
-  it('sin --with-azure no inyecta azure-devops', () => {
-    withDir((dir) => {
-      run(['init'], dir)
-      const r = run(['install', '--project', dir, '--tier', 'gratis'], dir)
-      assert.equal(r.status, 0)
-      const cfgPath = join(dir, '.opencode', 'opencode.json')
-      if (existsSync(cfgPath)) {
-        const cfg = JSON.parse(readFileSync(cfgPath, 'utf8'))
-        assert.equal(cfg.mcp['azure-devops'], undefined)
-      }
-    })
-  })
-})
-
 describe('CLI aspec skills Pack 1 (S2)', () => {
-  const PACK1 = ['ancleto-new', 'ancleto-propose', 'ancleto-apply', 'ancleto-verify', 'ancleto-archive']
+  const PACK1 = ['fre-new', 'fre-propose', 'fre-apply', 'fre-verify', 'fre-archive']
 
   it('install --project instala las 5 skills en el directorio del agente', () => {
     withDir((dir) => {
@@ -1810,7 +1735,7 @@ describe('CLI aspec skills Pack 1 (S2)', () => {
 })
 
 describe('CLI aspec skills catálogo completo (S2)', () => {
-  const ALL11 = ['ancleto-new', 'ancleto-propose', 'ancleto-apply', 'ancleto-verify', 'ancleto-archive', 'ancleto-bulk-archive', 'ancleto-continue', 'ancleto-explore', 'ancleto-ff', 'ancleto-onboard', 'ancleto-workflow']
+  const ALL11 = ['fre-new', 'fre-propose', 'fre-apply', 'fre-verify', 'fre-archive', 'fre-bulk-archive', 'fre-continue', 'fre-explore', 'fre-ff', 'fre-onboard', 'fre-workflow']
 
   it('install --project instala las 11 skills en el directorio del agente', () => {
     withDir((dir) => {
@@ -1834,11 +1759,11 @@ describe('CLI aspec skills catálogo completo (S2)', () => {
 })
 
 describe('CLI upgrade (S3)', () => {
-  it('upgrade sin .ancletorc falla con exit 1', () => {
+  it('upgrade sin .ancleto-fre.rc falla con exit 1', () => {
     withDir((dir) => {
       const r = run(['upgrade'], dir)
       assert.equal(r.status, 1)
-      assert.match(r.stderr, /No se encontro \.ancletorc/)
+      assert.match(r.stderr, /No se encontro \.ancleto-fre.rc/)
     })
   })
 
@@ -1951,96 +1876,6 @@ describe('CLI ui (v0.6.2) — fallback sin TTY', () => {
   })
 })
 
-describe('CLI init --tier (v0.6.2)', () => {
-  it('init --tier persiste el tier y install lo aplica sin preguntar', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'gratis'], dir)
-      assert.equal(r.status, 0)
-      assert.equal(readFileSync(join(dir, '.opencode', '.ancleto-tier'), 'utf8').trim(), 'gratis')
-
-      const inst = run(['install', '--project', dir, '--no-mcp'], dir, { ANCLETO_MUSE_SPARK: '0' })
-      assert.equal(inst.status, 0)
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode\/big-pickle/)
-    })
-  })
-
-  it('init --tier invalido falla con exit 1', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'premium'], dir)
-      assert.equal(r.status, 1)
-      assert.match(r.stderr, /tier invalido/)
-    })
-  })
-
-  it('init --tier minimo aplica los modelos del tier a los agentes locales', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'minimo'], dir)
-      assert.equal(r.status, 0)
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode-go\/deepseek-v4\.1-flash/)
-    })
-  })
-
-  it('init --tier gratis aplica el modelo gratis y lo persiste en .ancletorc', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'gratis'], dir)
-      assert.equal(r.status, 0)
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode\/big-pickle/)
-      assert.equal(readRc(dir).gratisModel, 'opencode/big-pickle')
-    })
-  })
-
-  it('init --tier gratis con gratisModel persistido lo reutiliza y anuncia el origen', () => {
-    withDir((dir) => {
-      assert.equal(run(['init', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '1' }).status, 0)
-      const r = run(['init', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '' })
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /modelo gratis: opencode\/muse-spark-1\.3-contributor-free \(valor guardado en \.ancletorc\)/)
-      assert.equal(readRc(dir).gratisModel, 'opencode/muse-spark-1.3-contributor-free')
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode\/muse-spark-1\.3-contributor-free/)
-    })
-  })
-
-  it('init --tier gratis con ANCLETO_MUSE_SPARK=0 anuncia el origen entorno', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '0' })
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /modelo gratis: opencode\/big-pickle \(variable de entorno ANCLETO_MUSE_SPARK\)/)
-      assert.equal(readRc(dir).gratisModel, 'opencode/big-pickle')
-    })
-  })
-
-  it('init --tier gratis no interactivo anuncia la detección automática', () => {
-    withDir((dir) => {
-      const r = run(['init', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '' })
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /modelo gratis: opencode\/big-pickle \(detección automática\)/)
-    })
-  })
-
-  it('init sin tier no escribe .ancleto-tier (fallback silencioso)', () => {
-    withDir((dir) => {
-      const r = run(['init', '--agent', 'opencode'], dir)
-      assert.equal(r.status, 0)
-      assert.equal(existsSync(join(dir, '.opencode', '.ancleto-tier')), false)
-    })
-  })
-
-  it('init sin tier respeta el tier guardado y no pierde los modelos aplicados', () => {
-    withDir((dir) => {
-      assert.equal(run(['init', '--tier', 'minimo'], dir).status, 0)
-      const r = run(['init'], dir)
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /Tier: minimo/)
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode-go\/deepseek-v4\.1-flash/)
-    })
-  })
-})
-
 describe('CLI install wizard (v0.6.6)', () => {
   it('install no interactivo no emite banner ni secuencias ANSI', () => {
     withDir((dir) => {
@@ -2051,36 +1886,6 @@ describe('CLI install wizard (v0.6.6)', () => {
     })
   })
 
-  it('install sin --tier ni tier guardado cae en normal sin colgar', () => {
-    withDir((dir) => {
-      const r = run(['install', '--project', dir, '--no-mcp'], dir)
-      assert.equal(r.status, 0)
-      assert.equal(readFileSync(join(dir, '.opencode', '.ancleto-tier'), 'utf8').trim(), 'normal')
-    })
-  })
-
-  it('install --tier gratis con Muse Spark disponible aplica muse-spark', () => {
-    withDir((dir) => {
-      const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '1' })
-      assert.equal(r.status, 0)
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode\/muse-spark-1\.3-contributor-free/)
-      assert.match(r.stdout, /modelo gratis: opencode\/muse-spark-1\.3-contributor-free/)
-      assert.equal(readRc(dir).gratisModel, 'opencode/muse-spark-1.3-contributor-free')
-    })
-  })
-
-  it('install --tier gratis reutiliza el modelo persistido sin preguntar', () => {
-    withDir((dir) => {
-      run(['install', '--project', dir, '--no-mcp', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '1' })
-      const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'gratis'], dir, { ANCLETO_MUSE_SPARK: '' })
-      assert.equal(r.status, 0)
-      assert.match(r.stdout, /modelo gratis: opencode\/muse-spark-1\.3-contributor-free/)
-      assert.equal(readRc(dir).gratisModel, 'opencode/muse-spark-1.3-contributor-free')
-      const orchestrator = readFileSync(join(dir, '.opencode', 'agents', 'orchestrator.md'), 'utf8')
-      assert.match(orchestrator, /model: opencode\/muse-spark-1\.3-contributor-free/)
-    })
-  })
 })
 
 describe('CLI specs check (issue #21)', () => {
@@ -2227,7 +2032,7 @@ describe('CLI stats (issue #27)', () => {
       addSession(db, { id: 'ses_child', parent_id: 'ses_root', title: 'Subagente', directory: dir, agent: 'coder', tokens_input: 500, tokens_output: 50, cost: 0.1 })
       addSession(db, { id: 'ses_other', title: 'Otra', directory: 'D:/otro/lado', agent: 'build', tokens_input: 9999 })
       db.close()
-      const r = run(['stats', '--json'], dir, { ANCLETO_OPENCODE_DB: dbPath })
+      const r = run(['stats', '--json'], dir, { ANCLETO_FRE_OPENCODE_DB: dbPath })
       assert.equal(r.status, 0)
       const j = JSON.parse(r.stdout)
       assert.equal(j.scope, 'directory')
@@ -2250,7 +2055,7 @@ describe('CLI stats (issue #27)', () => {
       addMessage(db, 'ses_child', 'coder', { input: 200, output: 20, cacheRead: 80 })
       db.prepare('INSERT INTO message (id, session_id, data) VALUES (?, ?, ?)').run('msg_user', 'ses_root', JSON.stringify({ role: 'user' }))
       db.close()
-      const r = run(['stats', '--session', 'ses_root', '--json'], dir, { ANCLETO_OPENCODE_DB: dbPath })
+      const r = run(['stats', '--session', 'ses_root', '--json'], dir, { ANCLETO_FRE_OPENCODE_DB: dbPath })
       assert.equal(r.status, 0)
       const j = JSON.parse(r.stdout)
       assert.equal(j.scope, 'session')
@@ -2272,7 +2077,7 @@ describe('CLI stats (issue #27)', () => {
       addSession(db, { id: 'ses_old', directory: dir, time_created: Date.parse('2026-08-01T10:00:00'), tokens_input: 10 })
       addSession(db, { id: 'ses_new', directory: dir, time_created: Date.parse('2026-09-21T10:00:00'), tokens_input: 20 })
       db.close()
-      const r = run(['stats', '--json', '--since', '2026-09-01'], dir, { ANCLETO_OPENCODE_DB: dbPath })
+      const r = run(['stats', '--json', '--since', '2026-09-01'], dir, { ANCLETO_FRE_OPENCODE_DB: dbPath })
       assert.equal(r.status, 0)
       const j = JSON.parse(r.stdout)
       assert.equal(j.sessions.length, 1)
@@ -2282,7 +2087,7 @@ describe('CLI stats (issue #27)', () => {
 
   it('sin base de opencode falla claro', () => {
     withDir((dir) => {
-      const r = run(['stats'], dir, { ANCLETO_OPENCODE_DB: join(dir, 'no-existe.db') })
+      const r = run(['stats'], dir, { ANCLETO_FRE_OPENCODE_DB: join(dir, 'no-existe.db') })
       assert.equal(r.status, 1)
       assert.match(r.stderr, /no se encontro la base de sesiones/)
     })
@@ -2290,7 +2095,7 @@ describe('CLI stats (issue #27)', () => {
 })
 
 describe('CLI projects (registro de proyectos)', () => {
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
   it('install --project registra el proyecto en el registro global', () => {
     withDir((dir) => {
@@ -2301,7 +2106,6 @@ describe('CLI projects (registro de proyectos)', () => {
       const reg = JSON.parse(readFileSync(join(dir, 'registry.json'), 'utf8'))
       const entry = Object.values(reg.projects)[0]
       assert.ok(entry, 'debe haber una entrada')
-      assert.equal(entry.tier, 'minimo')
       assert.equal(entry.agent, 'opencode')
       assert.equal(entry.scoped, true)
     })
@@ -2326,7 +2130,6 @@ describe('CLI projects (registro de proyectos)', () => {
       run(['install', '--project', proj, '--no-mcp', '--tier', 'normal'], dir, regEnv(dir))
       const reg = JSON.parse(readFileSync(join(dir, 'registry.json'), 'utf8'))
       assert.equal(Object.keys(reg.projects).length, 1)
-      assert.equal(Object.values(reg.projects)[0].tier, 'normal')
       assert.ok(Object.values(reg.projects)[0].registeredAt, 'conserva registeredAt')
     })
   })
@@ -2341,7 +2144,6 @@ describe('CLI projects (registro de proyectos)', () => {
       const j = JSON.parse(r.stdout)
       assert.equal(j.count, 1)
       assert.equal(j.projects[0].exists, true)
-      assert.equal(j.projects[0].tier, 'minimo')
     })
   })
 
@@ -2398,23 +2200,22 @@ describe('CLI projects (registro de proyectos)', () => {
       assert.equal(r.status, 0)
       const j = JSON.parse(r.stdout)
       assert.equal(j.agent, 'opencode')
-      assert.equal(j.tier, 'minimo')
       assert.equal(j.scoped, true)
       assert.equal(j.activeChanges, 0)
     })
   })
 
-  it('projects info sin .ancletorc falla claro', () => {
+  it('projects info sin .ancleto-fre.rc falla claro', () => {
     withDir((dir) => {
       const r = run(['projects', 'info', dir, '--json'], dir, regEnv(dir))
       assert.equal(r.status, 1)
-      assert.match(r.stderr, /no parece un proyecto ancleto/)
+      assert.match(r.stderr, /no parece un proyecto ancleto-fre/)
     })
   })
 })
 
 describe('CLI projects update (actualizacion desde la lista)', () => {
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
   const makeOutdated = (dir, name) => {
     const proj = join(dir, name)
@@ -2425,7 +2226,7 @@ describe('CLI projects update (actualizacion desde la lista)', () => {
     const key = Object.keys(r.projects).find((k) => k.endsWith(`/${name}`))
     r.projects[key].version = '0.0.1'
     writeFileSync(regPath, JSON.stringify(r, null, 2))
-    const rcPath = join(proj, '.ancletorc')
+    const rcPath = join(proj, '.ancleto-fre.rc')
     const rc = JSON.parse(readFileSync(rcPath, 'utf8'))
     rc.version = '0.0.1'
     writeFileSync(rcPath, JSON.stringify(rc, null, 2))
@@ -2448,7 +2249,7 @@ describe('CLI projects update (actualizacion desde la lista)', () => {
       const r = run(['projects', 'update', '--all'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       assert.match(r.stdout, /1\/1 proyectos actualizados/)
-      assert.equal(JSON.parse(readFileSync(join(proj, '.ancletorc'), 'utf8')).version, PKG.version)
+      assert.equal(JSON.parse(readFileSync(join(proj, '.ancleto-fre.rc'), 'utf8')).version, PKG.version)
     })
   })
 
@@ -2479,11 +2280,11 @@ describe('CLI projects update (actualizacion desde la lista)', () => {
       const dead = join(dir, 'dead')
       mkdirSync(dead, { recursive: true })
       run(['install', '--project', dead, '--no-mcp'], dir, regEnv(dir))
-      rmSync(join(dead, '.ancletorc'), { force: true })
+      rmSync(join(dead, '.ancleto-fre.rc'), { force: true })
       const r = run(['projects', 'update', '--all'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       assert.match(r.stdout, /1\/1 proyectos actualizados/)
-      assert.equal(JSON.parse(readFileSync(join(proj, '.ancletorc'), 'utf8')).version, PKG.version)
+      assert.equal(JSON.parse(readFileSync(join(proj, '.ancleto-fre.rc'), 'utf8')).version, PKG.version)
     })
   })
 
@@ -2503,14 +2304,14 @@ describe('CLI discovery --help y --check config', () => {
       run(['init', '--agent', 'opencode'], dir)
       const r = run(['discovery', '--help'], dir)
       assert.equal(r.status, 0)
-      assert.match(r.stdout, /ancleto discovery/)
+      assert.match(r.stdout, /ancleto-fre discovery/)
       assert.match(r.stdout, /--check/)
       assert.match(r.stdout, /El seed en si lo genera la skill/)
       assert.doesNotMatch(r.stdout, /pack generado/)
     })
   })
 
-  it('discovery --check devuelve config (outputDir, exclude, tier)', () => {
+  it('discovery --check devuelve config (outputDir, exclude)', () => {
     withDir((dir) => {
       run(['init', '--agent', 'opencode'], dir)
       const r = run(['discovery', '--check'], dir)
@@ -2520,14 +2321,13 @@ describe('CLI discovery --help y --check config', () => {
       assert.ok(j.state)
       assert.equal(j.config.outputDir, 'docs/technical-discovery')
       assert.deepEqual(j.config.exclude, [])
-      assert.ok('tier' in j.config)
     })
   })
 
-  it('--check respeta outputDir de .ancletorc', () => {
+  it('--check respeta outputDir de .ancleto-fre.rc', () => {
     withDir((dir) => {
       run(['init', '--agent', 'opencode'], dir)
-      const rcPath = join(dir, '.ancletorc')
+      const rcPath = join(dir, '.ancleto-fre.rc')
       const rc = JSON.parse(readFileSync(rcPath, 'utf8'))
       rc.discovery = { outputDir: 'docs/seed-custom', exclude: ['tmp/**'] }
       writeFileSync(rcPath, JSON.stringify(rc, null, 2))
@@ -2540,9 +2340,9 @@ describe('CLI discovery --help y --check config', () => {
 })
 
 describe('CLI update scoped por cwd (regresion)', () => {
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
-  it('update parado en un proyecto con .ancletorc lo actualiza y registra (no global)', () => {
+  it('update parado en un proyecto con .ancleto-fre.rc lo actualiza y registra (no global)', () => {
     withDir((dir) => {
       const proj = join(dir, 'proj')
       mkdirSync(proj, { recursive: true })
@@ -2572,7 +2372,7 @@ describe('CLI update scoped por cwd (regresion)', () => {
     })
   })
 
-  it('--global fuerza alcance global aunque haya .ancletorc', () => {
+  it('--global fuerza alcance global aunque haya .ancleto-fre.rc', () => {
     withDir((dir) => {
       const proj = join(dir, 'proj')
       mkdirSync(proj, { recursive: true })
@@ -2593,7 +2393,7 @@ describe('CLI idioma de artifacts (--lang)', () => {
     })
   })
 
-  it('init --lang es persiste language en .ancletorc', () => {
+  it('init --lang es persiste language en .ancleto-fre.rc', () => {
     withDir((dir) => {
       const r = run(['init', '--agent', 'opencode', '--lang', 'es'], dir)
       assert.equal(r.status, 0)
@@ -2629,13 +2429,13 @@ describe('CLI discovery --check impact (minor vs material)', () => {
     const docsDir = join(dir, 'docs', 'technical-discovery')
     mkdirSync(join(docsDir, 'units'), { recursive: true })
     for (const d of DOCS) writeFileSync(join(docsDir, d), '# doc\n')
-    writeFileSync(join(dir, '.ancletorc'), JSON.stringify({ schemaVersion: 1, discovery: { outputDir: 'docs/technical-discovery', exclude: [] } }, null, 2))
+    writeFileSync(join(dir, '.ancleto-fre.rc'), JSON.stringify({ schemaVersion: 1, discovery: { outputDir: 'docs/technical-discovery', exclude: [] } }, null, 2))
     for (const [rel, content] of Object.entries(files)) {
       const p = join(dir, rel)
       mkdirSync(dirname(p), { recursive: true })
       writeFileSync(p, content)
     }
-    const sources = ['.ancletorc', ...Object.keys(files)].sort()
+    const sources = ['.ancleto-fre.rc', ...Object.keys(files)].sort()
     const h = createHash('sha256')
     const fileHashes = {}
     for (const rel of sources) {
@@ -2774,9 +2574,9 @@ describe('CLI discovery --check impact (minor vs material)', () => {
 })
 
 describe('CLI exclusiones del discovery (--exclude)', () => {
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
-  it('init --exclude persiste los globs en .ancletorc', () => {
+  it('init --exclude persiste los globs en .ancleto-fre.rc', () => {
     withDir((dir) => {
       const r = run(['init', '--agent', 'opencode', '--exclude', '**/*.png,docs'], dir, regEnv(dir))
       assert.equal(r.status, 0)
@@ -2818,7 +2618,7 @@ describe('CLI exclusiones del discovery (--exclude)', () => {
 })
 
 describe('CLI commandcode support (add-commandcode-support)', () => {
-  const regEnv = (dir) => ({ ANCLETO_PROJECTS_FILE: join(dir, 'registry.json') })
+  const regEnv = (dir) => ({ ANCLETO_FRE_PROJECTS_FILE: join(dir, 'registry.json') })
 
   it('init --agent commandcode rutea skills/agents/commands a .commandcode/*', () => {
     withDir((dir) => {
@@ -2826,7 +2626,7 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       assert.equal(r.status, 0)
       assert.ok(existsSync(join(dir, '.commandcode', 'skills', 'triage-clarifier', 'SKILL.md')))
       assert.ok(existsSync(join(dir, '.commandcode', 'agents', 'orchestrator.md')))
-      assert.ok(existsSync(join(dir, '.commandcode', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.commandcode', 'commands', 'fre-new.md')))
       const rc = readRc(dir)
       assert.deepEqual(rc.installedPaths.skills, ['.commandcode/skills'])
       assert.deepEqual(rc.installedPaths.agents, ['.commandcode/agents'])
@@ -2865,7 +2665,7 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       const r = run(['install', '--project', dir, '--no-mcp', '--tier', 'minimo', '--agent', 'commandcode'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       const mk = readFileSync(join(dir, '.commandcode', 'agents', 'memory-keeper.md'), 'utf8')
-      assert.match(mk, /^tools: \[read_file, grep, mcp__ancleto-memory__searchMemory, mcp__ancleto-memory__recordRule, mcp__ancleto-memory__recordDecision\]$/m)
+      assert.match(mk, /^tools: \[read_file, grep, mcp__ancleto-fre-memory__searchMemory, mcp__ancleto-fre-memory__recordRule, mcp__ancleto-fre-memory__recordDecision\]$/m)
       assert.doesNotMatch(r.stderr, /skip tool '(write|edit)': no verified Command Code id for agent 'memory-keeper'/)
     })
   })
@@ -2881,13 +2681,13 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
     })
   })
 
-  it('init commandcode crea .mcp.json con ancleto-memory (transport stdio, sin type/enabled)', () => {
+  it('init commandcode crea .mcp.json con ancleto-fre-memory (transport stdio, sin type/enabled)', () => {
     withDir((dir) => {
       const r = run(['init', '--agent', 'commandcode', '--tier', 'minimo'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.mcp.json'), 'utf8'))
-      const mem = cfg.mcpServers['ancleto-memory']
-      assert.ok(mem, 'ancleto-memory presente')
+      const mem = cfg.mcpServers['ancleto-fre-memory']
+      assert.ok(mem, 'ancleto-fre-memory presente')
       assert.equal(mem.transport, 'stdio')
       assert.equal(mem.command, process.execPath)
       assert.deepEqual(mem.args.slice(-1), ['mcp'])
@@ -2901,7 +2701,7 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       const prev = {
         mcpServers: {
           propio: { transport: 'stdio', command: 'propio-cmd', args: ['--x'] },
-          'ancleto-memory': { transport: 'stdio', command: 'memoria-propia', args: ['--keep'] }
+          'ancleto-fre-memory': { transport: 'stdio', command: 'memoria-propia', args: ['--keep'] }
         },
         customTop: 1
       }
@@ -2910,7 +2710,7 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       assert.equal(r.status, 0)
       const cfg = JSON.parse(readFileSync(join(dir, '.mcp.json'), 'utf8'))
       assert.deepEqual(cfg.mcpServers.propio, { transport: 'stdio', command: 'propio-cmd', args: ['--x'] })
-      assert.deepEqual(cfg.mcpServers['ancleto-memory'], { transport: 'stdio', command: 'memoria-propia', args: ['--keep'] })
+      assert.deepEqual(cfg.mcpServers['ancleto-fre-memory'], { transport: 'stdio', command: 'memoria-propia', args: ['--keep'] })
       assert.equal(cfg.customTop, 1)
     })
   })
@@ -2931,7 +2731,7 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       assert.equal(r.status, 0)
       assert.equal(existsSync(join(dir, '.mcp.json')), false)
       assert.ok(existsSync(join(dir, '.commandcode', 'agents', 'coder.md')))
-      assert.ok(existsSync(join(dir, '.commandcode', 'commands', 'cleto-new.md')))
+      assert.ok(existsSync(join(dir, '.commandcode', 'commands', 'fre-new.md')))
       assert.ok(existsSync(join(dir, '.commandcode', 'skills', 'triage-clarifier', 'SKILL.md')))
     })
   })
@@ -2941,12 +2741,12 @@ describe('CLI commandcode support (add-commandcode-support)', () => {
       run(['init', '--agent', 'commandcode', '--tier', 'minimo'], dir, regEnv(dir))
       const file = join(dir, '.mcp.json')
       const cfg = JSON.parse(readFileSync(file, 'utf8'))
-      cfg.mcpServers['ancleto-memory'] = { transport: 'stdio', command: '/no/existe/ancleto', args: [] }
+      cfg.mcpServers['ancleto-fre-memory'] = { transport: 'stdio', command: '/no/existe/ancleto-fre', args: [] }
       writeFileSync(file, JSON.stringify(cfg, null, 2) + '\n')
       const r = run(['upgrade', '--agent', 'commandcode'], dir, regEnv(dir))
       assert.equal(r.status, 0)
       const healed = JSON.parse(readFileSync(file, 'utf8'))
-      assert.equal(healed.mcpServers['ancleto-memory'].command, process.execPath)
+      assert.equal(healed.mcpServers['ancleto-fre-memory'].command, process.execPath)
     })
   })
 

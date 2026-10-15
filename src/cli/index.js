@@ -14,29 +14,24 @@ import { writeWorkingContext } from '../core/memory/working-context.js'
 import { memoryDoctor } from '../core/memory/doctor.js'
 import { serveMemoryMcp } from '../core/memory/mcp-server.js'
 import { writeDiscoveryMap } from '../core/discovery.js'
-import { readProjectTier, buildRepomixArgs, tierTokenBudget } from '../core/repomix-tier.js'
 import { showBanner, selectOption, selectMultiple, stopBanner } from './ui.js'
-import { tierModels, gratisModel, envGratisModel, isKnownGratisModel, MUSE_SPARK_MODEL, GRATIS_FALLBACK_MODEL } from '../core/tier-models.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..', '..')
 const ASSETS = ['agents', 'commands', 'skills']
 const TEMPLATES = ['AGENTS.md', 'PRODUCT.md']
-const AZURE_MCP_NOTICE = 'ancleto: MCP azure-devops habilitado — usa las variables de entorno AZURE_DEVOPS_ORG_URL y AZURE_DEVOPS_PAT'
 
-const HELP = `ancleto - orquestador SDD liviano con subagentes optimizados para costo/tokens
-(alias: aspec)
+const HELP = `ancleto-fre - Spec For Reverse Engineering — orquestador SDD para ingeniería inversa
 
 Uso:
-  ancleto install [--project <dir>]   Instala agents/commands/skills en opencode
+  ancleto-fre install [--project <dir>]   Instala agents/commands/skills en opencode
                                    (global por defecto, o en .opencode/ del proyecto)
                                    Configura el MCP de memoria propia + caveman por defecto
-  ancleto install --no-mcp           Igual que install pero sin tocar config MCP
-  ancleto install --with-engram      Ademas configura el MCP externo engram (memoria opcional)
-  ancleto install --tier <nivel>     normal | minimo | gratis (wizard interactivo en TTY)
-  ancleto install --lang <codigo>    auto | es | en | pt (idioma de los artifacts; auto = idioma de la conversacion)
-  ancleto install --exclude <globs>  Paths excluidos del discovery, coma-separados (ej: "**/*.png,docs")
-  ancleto install --agent <nombre>    opencode | claude | vscode | antigravity | cursor | roo | copilot | commandcode (wizard si no esta guardado)
+  ancleto-fre install --no-mcp           Igual que install pero sin tocar config MCP
+  ancleto-fre install --with-engram      Ademas configura el MCP externo engram (memoria opcional)
+  ancleto-fre install --lang <codigo>    auto | es | en | pt (idioma de los artifacts; auto = idioma de la conversacion)
+  ancleto-fre install --exclude <globs>  Paths excluidos del discovery, coma-separados (ej: "**/*.png,docs")
+  ancleto-fre install --agent <nombre>    opencode | claude | vscode | antigravity | cursor | roo | copilot | commandcode (wizard si no esta guardado)
                                    Elige el layout nativo a materializar (directorio + convencion de
                                    nombre) y el adapter de frontmatter del host. NO arbitra el
                                    descubrimiento entre hosts: si dos leen el mismo directorio, eso es
@@ -45,52 +40,52 @@ Uso:
                                    (.agents/*) y mergea el MCP de workspace .agents/mcp_config.json.
                                    commandcode instala skills, agents adaptados y commands en
                                    .commandcode/* y mergea el MCP de proyecto .mcp.json.
-  ancleto install --profile <perfil>  general | test (perfil de test automation con Playwright; persiste en .ancletorc)
-  ancleto update [--project <dir>]    Alias de install (re-instala sobre lo existente)
-                                   Parado en un proyecto con .ancletorc opera sobre ese proyecto;
+  ancleto-fre install --profile <perfil>  general | test (perfil de test automation con Playwright; persiste en .ancleto-fre.rc)
+  ancleto-fre update [--project <dir>]    Alias de install (re-instala sobre lo existente)
+                                   Parado en un proyecto con .ancleto-fre.rc opera sobre ese proyecto;
                                    usa --global para forzar el alcance global
-  ancleto upgrade [--agent <nombre>]  Re-aplica templates (LOCKED) y skills sobre el proyecto actual
-  ancleto init [--with-azure] [--agent <nombre>] [--tier <nivel>] [--lang <codigo>] [--exclude <globs>] [--no-mcp] [--profile <perfil>]
-                                     Crea .ancletorc en el repositorio actual y configura el MCP del host
-                                     (interactivo en TTY: banner + menu; Azure desactivado por defecto)
-  ancleto discovery --check           Estado del seed (READY/STALE/PARTIAL/MISSING)
-  ancleto discovery [--compress] [--include G] [--ignore G] [--token-budget N]
+  ancleto-fre upgrade [--agent <nombre>]  Re-aplica templates (LOCKED) y skills sobre el proyecto actual
+  ancleto-fre init [--agent <nombre>] [--lang <codigo>] [--exclude <globs>] [--no-mcp] [--profile <perfil>]
+                                     Crea .ancleto-fre.rc en el repositorio actual y configura el MCP del host
+                                     (interactivo en TTY: banner + menu)
+  ancleto-fre discovery --check           Estado del seed (READY/STALE/PARTIAL/MISSING)
+  ancleto-fre discovery [--compress] [--include G] [--ignore G] [--token-budget N]
                                    Empaca el repo con Repomix y guarda estado
-  ancleto specs check [--change <name>] [--json]
+  ancleto-fre specs check [--change <name>] [--json]
                                    Valida keywords canonicos (### Requirement:, WHEN, THEN)
                                    en aspec/specs y, con --change, en los deltas del change
-  ancleto stats [--all] [--limit N] [--since YYYY-MM-DD] [--session <id>] [--json]
+  ancleto-fre stats [--all] [--limit N] [--since YYYY-MM-DD] [--session <id>] [--json]
                                    Tokens por sesion de opencode (entrada/salida/razonamiento/cache),
                                    con rollup de subagentes y desglose por agente con --session
-  ancleto projects [list] [--json] Lista los proyectos que usan ancleto (version, tier, origen, ruta)
-  ancleto projects scan <raiz> [--dry-run] [--json]
-                                   Descubre y registra proyectos ancleto bajo una raiz
-  ancleto projects prune [--dry-run] [--json]
+  ancleto-fre projects [list] [--json] Lista los proyectos que usan ancleto-fre (version, origen, ruta)
+  ancleto-fre projects scan <raiz> [--dry-run] [--json]
+                                   Descubre y registra proyectos ancleto-fre bajo una raiz
+  ancleto-fre projects prune [--dry-run] [--json]
                                    Quita del registro los proyectos borrados o movidos
-  ancleto projects info [ruta] [--json]
+  ancleto-fre projects info [ruta] [--json]
                                    Estado de un proyecto (version, memoria, seed, changes activos)
-  ancleto projects update [--all] [--json]
+  ancleto-fre projects update [--all] [--json]
                                    Actualiza los proyectos desactualizados (selector interactivo;
-                                   --all sin preguntar); equivalente a "cd <ruta> && ancleto update"
-  ancleto list --projects [--json]  Alias de "ancleto projects list"
-  ancleto memory context [--scope X] [--out file]
+                                   --all sin preguntar); equivalente a "cd <ruta> && ancleto-fre update"
+  ancleto-fre list --projects [--json]  Alias de "ancleto-fre projects list"
+  ancleto-fre memory context [--scope X] [--out file]
                                    Imprime/escribe el bloque <ProjectMemoryRules> (reglas activas)
-  ancleto memory list [--type X] [--scope X] [--all] [--json]
+  ancleto-fre memory list [--type X] [--scope X] [--all] [--json]
                                     Lista los nodos de memoria (read-only, no toca la DB)
-ancleto memory doctor [--rebuild] Diagnostica .ancleto/memory.db (integridad, FTS5, unicidad)
+ancleto-fre memory doctor [--rebuild] Diagnostica .ancleto-fre/memory.db (integridad, FTS5, unicidad)
                                      y reconstruye el indice FTS5 con --rebuild
-  ancleto memory export [--out <archivo>]  Exporta nodos activos a JSON (stdout o archivo)
-  ancleto memory import <archivo>          Importa nodos desde JSON (upsert por memory_key, idempotente)
-  ancleto memory gc [--dry-run] [--days N] Purga superseded con antiguedad > N dias (default 30)
-  ancleto mcp                           Servidor MCP de memoria propia (stdio) para tu IDE
+  ancleto-fre memory export [--out <archivo>]  Exporta nodos activos a JSON (stdout o archivo)
+  ancleto-fre memory import <archivo>          Importa nodos desde JSON (upsert por memory_key, idempotente)
+  ancleto-fre memory gc [--dry-run] [--days N] Purga superseded con antiguedad > N dias (default 30)
+  ancleto-fre mcp                           Servidor MCP de memoria propia (stdio) para tu IDE
                                         expone searchMemory, recordRule y recordDecision
-  ancleto check                         Verifica integridad de archivos instalados vs manifiesto
-  ancleto export [--tar <file>]         Empaqueta lo portable del proyecto (bundle + manifest.json sin rutas)
-  ancleto import <bundle> [--repair]    Restaura el bundle regenerando el MCP local; --repair solo arregla entradas rotas
-  ancleto import --repair               Repara in place el opencode.json con command inexistente
-  ancleto doctor                        Diagnostica el entorno (Node, node:sqlite, opencode.json)
-  ancleto --help                      Esta ayuda
-  ancleto --version                   Version del paquete
+  ancleto-fre check                         Verifica integridad de archivos instalados vs manifiesto
+  ancleto-fre export [--tar <file>]         Empaqueta lo portable del proyecto (bundle + manifest.json sin rutas)
+  ancleto-fre import <bundle> [--repair]    Restaura el bundle regenerando el MCP local; --repair solo arregla entradas rotas
+  ancleto-fre import --repair               Repara in place el opencode.json con command inexistente
+  ancleto-fre doctor                        Diagnostica el entorno (Node, node:sqlite, opencode.json)
+  ancleto-fre --help                      Esta ayuda
+  ancleto-fre --version                   Version del paquete
 `
 
 async function exists(p) {
@@ -103,7 +98,7 @@ async function packageVersion() {
 }
 
 async function readAncletorc(projectDir) {
-  const rc = join(projectDir, '.ancletorc')
+  const rc = join(projectDir, '.ancleto-fre.rc')
   if (!(await exists(rc))) return null
   try {
     return JSON.parse((await readFile(rc, 'utf8')).replace(/^\uFEFF/, ''))
@@ -123,7 +118,7 @@ async function writeManifest(projectDir, extra = {}) {
     installedPaths: rest.installedPaths || { templates: [], agents: [], commands: [], skills: [] },
     ...extra
   }
-  await writeFile(join(projectDir, '.ancletorc'), JSON.stringify(manifest, null, 2) + '\n')
+  await writeFile(join(projectDir, '.ancleto-fre.rc'), JSON.stringify(manifest, null, 2) + '\n')
   return manifest
 }
 
@@ -133,10 +128,10 @@ function globalConfigDir() {
     : join(homedir(), '.config', 'opencode')
 }
 
-// Registro global de proyectos que usan ancleto (no depende de opencode).
+// Registro global de proyectos que usan ancleto-fre (no depende de opencode).
 function projectsRegistryPath() {
-  if (process.env.ANCLETO_PROJECTS_FILE) return process.env.ANCLETO_PROJECTS_FILE
-  const base = process.env.XDG_CONFIG_HOME ? join(process.env.XDG_CONFIG_HOME, 'ancleto') : join(homedir(), '.config', 'ancleto')
+  if (process.env.ANCLETO_FRE_PROJECTS_FILE) return process.env.ANCLETO_FRE_PROJECTS_FILE
+  const base = process.env.XDG_CONFIG_HOME ? join(process.env.XDG_CONFIG_HOME, 'ancleto-fre') : join(homedir(), '.config', 'ancleto-fre')
   return join(base, 'projects.json')
 }
 
@@ -151,7 +146,7 @@ async function readProjectsRegistry() {
     const data = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
     return { schemaVersion: 1, projects: data.projects || {} }
   } catch (err) {
-    console.warn(`ancleto: registro de proyectos ilegible (${file}): ${err.message}`)
+    console.warn(`ancleto-fre: registro de proyectos ilegible (${file}): ${err.message}`)
     return { schemaVersion: 1, projects: {} }
   }
 }
@@ -179,17 +174,14 @@ async function hasLocalAgents(baseDir, rc, agent) {
   return false
 }
 
-async function registerProject(projectDir, { agent, tier } = {}) {
+async function registerProject(projectDir, { agent } = {}) {
   const abs = resolve(projectDir)
   const rc = await readAncletorc(abs)
-  const tierFile = join(abs, '.opencode', '.ancleto-tier')
-  const localTier = (await exists(tierFile)) ? (await readFile(tierFile, 'utf8')).trim() : null
   const hasScopedAgents = await hasLocalAgents(abs, rc, agent)
   const entry = {
     path: abs.replace(/\\/g, '/'),
     version: await packageVersion(),
     agent: agent || rc?.agent || 'opencode',
-    tier: tier || localTier || null,
     scoped: hasScopedAgents,
     registeredAt: new Date().toISOString()
   }
@@ -220,7 +212,7 @@ function padVisible(s, width) {
   return s + ' '.repeat(Math.max(0, width - len))
 }
 
-// Descubre proyectos ancleto bajo una raiz (busca .ancletorc, con profundidad acotada).
+// Descubre proyectos ancleto-fre bajo una raiz (busca .ancleto-fre.rc, con profundidad acotada).
 async function discoverProjectsUnder(root, maxDepth = 3) {
   const found = []
   const skip = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'vendor'])
@@ -231,7 +223,7 @@ async function discoverProjectsUnder(root, maxDepth = 3) {
     } catch {
       return
     }
-    if (entries.some((e) => e.isFile() && (e.name === '.ancletorc' || e.name === '.ancletorc'))) found.push(dir)
+    if (entries.some((e) => e.isFile() && (e.name === '.ancleto-fre.rc' || e.name === '.ancleto-fre.rc'))) found.push(dir)
     if (depth >= maxDepth) return
     for (const e of entries) {
       if (!e.isDirectory() || skip.has(e.name) || e.name.startsWith('.')) continue
@@ -247,9 +239,7 @@ async function projectStatus(entry) {
   const abs = entry.path
   if (!(await exists(abs))) return { ...entry, exists: false }
   const rc = await readAncletorc(abs)
-  if (!rc) return { ...entry, exists: false, reason: 'sin .ancletorc' }
-  const tierFile = join(abs, '.opencode', '.ancleto-tier')
-  const tier = (await exists(tierFile)) ? (await readFile(tierFile, 'utf8')).trim() : null
+  if (!rc) return { ...entry, exists: false, reason: 'sin .ancleto-fre.rc' }
   const scoped = await hasLocalAgents(abs, rc, entry.agent)
   return {
     ...entry,
@@ -257,7 +247,6 @@ async function projectStatus(entry) {
     path: abs.replace(/\\/g, '/'),
     version: rc.version || entry.version || null,
     agent: rc.agent || entry.agent || null,
-    tier,
     scoped
   }
 }
@@ -270,26 +259,26 @@ async function projectsList(reg, { asJson, currentVersion }) {
     return rows
   }
   if (rows.length === 0) {
-    console.log('ancleto: no hay proyectos registrados todavia')
-    console.log(c.dim('  registra uno con: ancleto install --project <ruta>  ·  o descubre con: ancleto projects scan <raiz>'))
+    console.log('ancleto-fre: no hay proyectos registrados todavia')
+    console.log(c.dim('  registra uno con: ancleto-fre install --project <ruta>  ·  o descubre con: ancleto-fre projects scan <raiz>'))
     return rows
   }
   const live = rows.filter((r) => r.exists)
-  console.log(`${c.bold('ancleto: proyectos')} ${c.dim(`(${live.length} activos de ${rows.length} registrados · CLI v${currentVersion})`)}`)
+  console.log(`${c.bold('ancleto-fre: proyectos')} ${c.dim(`(${live.length} activos de ${rows.length} registrados · CLI v${currentVersion})`)}`)
   console.log('')
-  const header = ['', padVisible('PROYECTO', 22), padVisible('VERSIÓN', 10), padVisible('ORIGEN', 10), padVisible('TIER', 9), padVisible('AGENTE', 10), 'RUTA']
+  const header = ['', padVisible('PROYECTO', 22), padVisible('VERSIÓN', 10), padVisible('ORIGEN', 10), padVisible('AGENTE', 10), 'RUTA']
   console.log(c.dim(`  ${header.join(' ')}`))
   for (const r of rows) {
     const name = r.path.split('/').filter(Boolean).pop() || r.path
     if (!r.exists) {
-      console.log(`  ${c.red('✖')} ${padVisible(c.red(name.slice(0, 21)), 22)} ${padVisible(c.dim('—'), 10)} ${padVisible(c.red('muerto'), 10)} ${padVisible('—', 9)} ${padVisible('—', 10)} ${c.dim(r.path)}`)
+      console.log(`  ${c.red('✖')} ${padVisible(c.red(name.slice(0, 21)), 22)} ${padVisible(c.dim('—'), 10)} ${padVisible(c.red('muerto'), 10)} ${padVisible('—', 10)} ${c.dim(r.path)}`)
       continue
     }
     const outdated = r.version && currentVersion && r.version !== currentVersion
     const marker = r.scoped ? c.green('●') : c.yellow('○')
     const ver = outdated ? c.red(r.version) : c.green(r.version || '—')
     const origin = r.scoped ? c.green('scoped') : c.yellow('global')
-    console.log(`  ${marker} ${padVisible(c.bold(name.slice(0, 21)), 22)} ${padVisible(ver, 10)} ${padVisible(origin, 10)} ${padVisible(r.tier || c.dim('—'), 9)} ${padVisible(r.agent || '—', 10)} ${r.path}`)
+    console.log(`  ${marker} ${padVisible(c.bold(name.slice(0, 21)), 22)} ${padVisible(ver, 10)} ${padVisible(origin, 10)} ${padVisible(r.agent || '—', 10)} ${r.path}`)
   }
   console.log('')
   console.log(c.dim('  ● instalación por proyecto   ○ usa agentes globales   versión en rojo = desactualizada'))
@@ -298,11 +287,11 @@ async function projectsList(reg, { asJson, currentVersion }) {
 
 async function projectsScan(root, { asJson, dryRun }) {
   if (!root) {
-    console.error('ancleto: uso: ancleto projects scan <raiz> [--dry-run] [--json]')
+    console.error('ancleto-fre: uso: ancleto-fre projects scan <raiz> [--dry-run] [--json]')
     process.exit(1)
   }
   if (!(await exists(root))) {
-    console.error(`ancleto: no existe la raiz "${root}"`)
+    console.error(`ancleto-fre: no existe la raiz "${root}"`)
     process.exit(1)
   }
   const found = await discoverProjectsUnder(root)
@@ -322,8 +311,8 @@ async function projectsScan(root, { asJson, dryRun }) {
     console.log(JSON.stringify({ ok: true, root: resolve(root), found: found.length, added: added.map((p) => p.replace(/\\/g, '/')), known: known.map((p) => p.replace(/\\/g, '/')), dryRun: !!dryRun }, null, 2))
     return
   }
-  console.log(`${c.bold('ancleto: scan')} ${c.dim(resolve(root).replace(/\\/g, '/'))}`)
-  console.log(`  ${c.dim('encontrados:')} ${found.length} proyectos con .ancletorc`)
+  console.log(`${c.bold('ancleto-fre: scan')} ${c.dim(resolve(root).replace(/\\/g, '/'))}`)
+  console.log(`  ${c.dim('encontrados:')} ${found.length} proyectos con .ancleto-fre.rc`)
   for (const p of added) console.log(`  ${dryRun ? c.yellow('·') : c.green('+')} ${p.replace(/\\/g, '/')}`)
   for (const p of known) console.log(`  ${c.dim('=')} ${c.dim(p.replace(/\\/g, '/'))}`)
   if (dryRun) console.log(c.dim('\n  --dry-run: no se registro nada'))
@@ -346,10 +335,10 @@ async function projectsPrune({ asJson, dryRun }) {
     return
   }
   if (removed.length === 0) {
-    console.log(c.dim('ancleto: no hay entradas muertas en el registro'))
+    console.log(c.dim('ancleto-fre: no hay entradas muertas en el registro'))
     return
   }
-  console.log(`${c.bold('ancleto: prune')}${dryRun ? ` ${c.dim('(dry-run)')}` : ''}`)
+  console.log(`${c.bold('ancleto-fre: prune')}${dryRun ? ` ${c.dim('(dry-run)')}` : ''}`)
   for (const r of removed) console.log(`  ${dryRun ? c.yellow('·') : c.red('−')} ${r.path} ${c.dim(`(${r.reason})`)}`)
   console.log(dryRun ? c.dim(`\n  --dry-run: se quitarian ${removed.length}`) : c.dim(`\n  removidos: ${removed.length}`))
 }
@@ -358,13 +347,13 @@ async function projectsInfo(target, { asJson, currentVersion }) {
   const abs = resolve(target || process.cwd())
   const rc = await readAncletorc(abs)
   if (!rc) {
-    console.error(`ancleto: "${abs}" no parece un proyecto ancleto (sin .ancletorc)`)
+    console.error(`ancleto-fre: "${abs}" no parece un proyecto ancleto-fre (sin .ancleto-fre.rc)`)
     process.exit(1)
   }
   const st = await projectStatus({ path: abs, ...rc })
-  const hasMemory = await exists(join(abs, '.ancleto', 'memory.db'))
+  const hasMemory = await exists(join(abs, '.ancleto-fre', 'memory.db'))
   const hasSeedIndex = await exists(join(abs, rc.discovery?.outputDir || 'docs/technical-discovery', 'index.md'))
-  const hasWorkingContext = await exists(join(abs, '.ancleto', 'working-context.md'))
+  const hasWorkingContext = await exists(join(abs, '.ancleto-fre', 'working-context.md'))
   const activeChangesDir = join(abs, CHANGES_ROOT, 'changes')
   let activeChanges = 0
   if (await exists(activeChangesDir)) {
@@ -376,9 +365,7 @@ async function projectsInfo(target, { asJson, currentVersion }) {
     version: st.version,
     outdated: st.version && currentVersion ? st.version !== currentVersion : false,
     agent: st.agent,
-    tier: st.tier,
     scoped: st.scoped,
-    azureEnabled: !!rc.azure?.enabled,
     memoryDb: hasMemory,
     technicalSeed: hasSeedIndex,
     workingContext: hasWorkingContext,
@@ -392,15 +379,14 @@ async function projectsInfo(target, { asJson, currentVersion }) {
   console.log('')
   console.log(`  versión      ${info.outdated ? c.red(`${info.version} → ${currentVersion} disponible`) : c.green(info.version || '—')}`)
   console.log(`  instalación  ${info.scoped ? c.green('por proyecto (scoped)') : c.yellow('agentes globales')}`)
-  console.log(`  tier / agente ${info.tier || c.dim('—')} / ${info.agent || '—'}`)
-  console.log(`  Azure DevOps ${info.azureEnabled ? c.green('habilitado') : c.dim('deshabilitado')}`)
-  console.log(`  memoria      ${info.memoryDb ? c.green('sí (.ancleto/memory.db)') : c.dim('no')}`)
+  console.log(`  agente       ${info.agent || '—'}`)
+  console.log(`  memoria      ${info.memoryDb ? c.green('sí (.ancleto-fre/memory.db)') : c.dim('no')}`)
   console.log(`  seed técnico ${info.technicalSeed ? c.green('generado') : c.dim('sin generar')}`)
   console.log(`  changes      ${info.activeChanges > 0 ? c.cyan(`${info.activeChanges} activo(s)`) : c.dim('ninguno')}`)
-  if (info.outdated) console.log(c.dim(`\n  actualizá con: cd "${info.path}" && ancleto update`))
+  if (info.outdated) console.log(c.dim(`\n  actualizá con: cd "${info.path}" && ancleto-fre update`))
 }
 
-// Actualiza proyectos desde el registro. Spawnea `ancleto update` por proyecto
+// Actualiza proyectos desde el registro. Spawnea `ancleto-fre update` por proyecto
 // (proceso aislado: un fallo no contamina a los demas y la salida queda por proyecto).
 async function projectsUpdate(reg, { asJson, all }) {
   const currentVersion = await packageVersion()
@@ -408,13 +394,13 @@ async function projectsUpdate(reg, { asJson, all }) {
   const dead = rows.filter((r) => !r.exists)
   const outdated = rows.filter((r) => r.exists && r.version && r.version !== currentVersion)
   const hintDead = () => {
-    if (dead.length) console.log(c.dim(`  (${dead.length} entrada(s) muerta(s) en el registro: corre \`ancleto projects prune\`)`))
+    if (dead.length) console.log(c.dim(`  (${dead.length} entrada(s) muerta(s) en el registro: corre \`ancleto-fre projects prune\`)`))
   }
 
   if (outdated.length === 0) {
     if (asJson) console.log(JSON.stringify({ ok: true, cliVersion: currentVersion, updated: [], dead: dead.map((r) => r.path), reason: 'nada desactualizado' }, null, 2))
     else {
-      console.log(c.green('ancleto: todos los proyectos activos estan al dia'))
+      console.log(c.green('ancleto-fre: todos los proyectos activos estan al dia'))
       hintDead()
     }
     return
@@ -426,20 +412,20 @@ async function projectsUpdate(reg, { asJson, all }) {
   } else if (!process.stdout.isTTY) {
     if (asJson) console.log(JSON.stringify({ ok: true, cliVersion: currentVersion, outdated: outdated.map((r) => ({ path: r.path, version: r.version })), dead: dead.map((r) => r.path), action: 'usa --all para actualizar sin interaccion' }, null, 2))
     else {
-      console.log(`${c.bold('ancleto: proyectos desactualizados')} ${c.dim(`(${outdated.length})`)}`)
+      console.log(`${c.bold('ancleto-fre: proyectos desactualizados')} ${c.dim(`(${outdated.length})`)}`)
       for (const r of outdated) console.log(`  ${c.red(r.version)} → ${c.green(currentVersion)}  ${r.path}`)
-      console.log(c.dim('\n  sin TTY no puedo preguntar: corre `ancleto projects update --all` para actualizarlos todos'))
+      console.log(c.dim('\n  sin TTY no puedo preguntar: corre `ancleto-fre projects update --all` para actualizarlos todos'))
       hintDead()
     }
     return
   } else {
     if (dead.length) {
-      console.log(c.dim(`ancleto: ${dead.length} entrada(s) muerta(s) en el registro (ignoradas; limpialas con \`ancleto projects prune\`)`))
+      console.log(c.dim(`ancleto-fre: ${dead.length} entrada(s) muerta(s) en el registro (ignoradas; limpialas con \`ancleto-fre projects prune\`)`))
     }
     const labels = outdated.map((r) => `${padVisible(r.path.split('/').filter(Boolean).pop() || r.path, 22)} ${c.red(r.version)} → ${c.green(currentVersion)}  ${c.dim(r.path)}`)
     const { cancelled, indices } = await selectMultiple(`Proyectos a actualizar (${outdated.length} desactualizados)`, labels, outdated.map((_, i) => i))
     if (cancelled || indices.length === 0) {
-      console.log(c.dim('ancleto: nada seleccionado, no se actualizo ningun proyecto'))
+      console.log(c.dim('ancleto-fre: nada seleccionado, no se actualizo ningun proyecto'))
       return
     }
     targets = indices.map((i) => outdated[i])
@@ -459,7 +445,7 @@ async function projectsUpdate(reg, { asJson, all }) {
   }
   const okCount = results.filter((x) => x.ok).length
   console.log('')
-  console.log(`ancleto: ${okCount}/${results.length} proyectos actualizados a v${currentVersion}`)
+  console.log(`ancleto-fre: ${okCount}/${results.length} proyectos actualizados a v${currentVersion}`)
   if (asJson) console.log(JSON.stringify({ ok: okCount === results.length, cliVersion: currentVersion, updated: results }, null, 2))
 }
 
@@ -498,8 +484,8 @@ async function projectsCommand(args) {
       break
     }
     default:
-      console.error(`ancleto: subcomando desconocido: projects ${sub}`)
-      console.error('ancleto: uso: ancleto projects [list|scan <raiz>|prune|info <ruta>|update] [--update] [--all] [--json] [--dry-run]')
+      console.error(`ancleto-fre: subcomando desconocido: projects ${sub}`)
+      console.error('ancleto-fre: uso: ancleto-fre projects [list|scan <raiz>|prune|info <ruta>|update] [--update] [--all] [--json] [--dry-run]')
       process.exit(1)
   }
 }
@@ -531,8 +517,8 @@ function resolveSelfCommand() {
 function buildDefaultMcp({ withEngram = false } = {}) {
   const mcp = {}
 
-  // Memoria propia del framework: SQLite (.ancleto/memory.db) expuesta como tools MCP
-  mcp['ancleto-memory'] = { type: 'local', enabled: true, command: resolveSelfCommand() }
+  // Memoria propia del framework: SQLite (.ancleto-fre/memory.db) expuesta como tools MCP
+  mcp['ancleto-fre-memory'] = { type: 'local', enabled: true, command: resolveSelfCommand() }
 
   if (withEngram) {
     const engramFallbacks = [
@@ -543,7 +529,7 @@ function buildDefaultMcp({ withEngram = false } = {}) {
     if (engramBin) {
       mcp.engram = { type: 'local', enabled: true, command: [engramBin, 'mcp', '--tools=agent'] }
     } else {
-      console.warn('ancleto: no se encontro engram en PATH; se omitio su MCP')
+      console.warn('ancleto-fre: no se encontro engram en PATH; se omitio su MCP')
     }
   }
 
@@ -554,58 +540,28 @@ function buildDefaultMcp({ withEngram = false } = {}) {
   if (cavemanBin) {
     mcp.caveman = { type: 'local', enabled: true, command: [cavemanBin] }
   } else {
-    console.warn('ancleto: no se encontro caveman-mcp (compresion) en PATH; se omitio su MCP')
+    console.warn('ancleto-fre: no se encontro caveman-mcp (compresion) en PATH; se omitio su MCP')
   }
 
   return mcp
 }
 
-const TIERS = {
-  normal: {
-    orchestrator: 'opencode-go/qwen3.7-plus',
-    coder: 'opencode-go/minimax-m3',
-    tester: 'opencode-go/deepseek-v4.1-flash',
-    'spec-writer': 'opencode-go/qwen3.7-plus',
-    reviewer: 'opencode-go/qwen3.6-plus',
-    'technical-discovery': 'opencode-go/deepseek-v4.1-flash',
-    'technical-seed-writer': 'opencode-go/minimax-m3',
-    'memory-keeper': 'opencode-go/deepseek-v4.1-flash',
-    'context-resolver': 'opencode-go/deepseek-v4.1-flash',
-    documenter: 'opencode-go/deepseek-v4.1-flash'
-  },
-  minimo: {
-    orchestrator: 'opencode-go/deepseek-v4.1-flash',
-    coder: 'opencode-go/deepseek-v4.1-flash',
-    tester: 'opencode-go/deepseek-v4.1-flash',
-    'spec-writer': 'opencode-go/deepseek-v4.1-flash',
-    reviewer: 'opencode-go/deepseek-v4.1-flash',
-    'technical-discovery': 'opencode-go/deepseek-v4.1-flash',
-    'technical-seed-writer': 'opencode-go/deepseek-v4.1-flash',
-    'memory-keeper': 'opencode-go/deepseek-v4.1-flash',
-    'context-resolver': 'opencode-go/deepseek-v4.1-flash',
-    documenter: 'opencode-go/deepseek-v4.1-flash'
-  },
-  gratis: {
-    orchestrator: 'opencode/big-pickle',
-    coder: 'opencode/big-pickle',
-    tester: 'opencode/big-pickle',
-    'spec-writer': 'opencode/big-pickle',
-    reviewer: 'opencode/big-pickle',
-    'technical-discovery': 'opencode/big-pickle',
-    'technical-seed-writer': 'opencode/big-pickle',
-    'memory-keeper': 'opencode/big-pickle',
-    'context-resolver': 'opencode/big-pickle',
-    documenter: 'opencode/big-pickle'
-  }
+// Modelo fijo por agente (paridad de LLMs). Ya no hay tiers: se usa este mapa por defecto.
+const AGENT_MODELS = {
+  orchestrator: 'opencode-go/qwen3.7-plus',
+  coder: 'opencode-go/minimax-m3',
+  tester: 'opencode-go/deepseek-v4.1-flash',
+  'spec-writer': 'opencode-go/qwen3.7-plus',
+  reviewer: 'opencode-go/qwen3.6-plus',
+  'technical-discovery': 'opencode-go/deepseek-v4.1-flash',
+  'technical-seed-writer': 'opencode-go/minimax-m3',
+  'memory-keeper': 'opencode-go/deepseek-v4.1-flash',
+  'context-resolver': 'opencode-go/deepseek-v4.1-flash',
+  documenter: 'opencode-go/deepseek-v4.1-flash'
 }
 
-function tierStatePath(targetDir) {
-  return join(targetDir, '.ancleto-tier')
-}
-
-async function applyTier(agentsDir, tier, models = null) {
-  const map = models || TIERS[tier]
-  for (const [name, model] of Object.entries(map)) {
+async function applyModels(agentsDir) {
+  for (const [name, model] of Object.entries(AGENT_MODELS)) {
     const p = join(agentsDir, name + '.md')
     if (!(await exists(p))) continue
     const c = await readFile(p, 'utf8')
@@ -632,20 +588,10 @@ function scanAgentFlag(args) {
   const name = flagValue(args, '--agent')
   if (!name) return null
   if (!SUPPORTED_AGENTS.includes(name)) {
-    console.error(`ancleto: agente invalido: ${name} (${SUPPORTED_AGENTS.join('/')})`)
+    console.error(`ancleto-fre: agente invalido: ${name} (${SUPPORTED_AGENTS.join('/')})`)
     process.exit(1)
   }
   return name
-}
-
-function scanTierFlag(args) {
-  const t = flagValue(args, '--tier')
-  if (!t) return null
-  if (!TIERS[t]) {
-    console.error(`ancleto: tier invalido: ${t} (normal|minimo|gratis)`)
-    process.exit(1)
-  }
-  return t
 }
 
 const SUPPORTED_LANGS = ['auto', 'es', 'en', 'pt']
@@ -654,7 +600,7 @@ function scanLangFlag(args) {
   const l = flagValue(args, '--lang')
   if (!l) return null
   if (!SUPPORTED_LANGS.includes(l)) {
-    console.error(`ancleto: idioma invalido: ${l} (${SUPPORTED_LANGS.join('|')})`)
+    console.error(`ancleto-fre: idioma invalido: ${l} (${SUPPORTED_LANGS.join('|')})`)
     process.exit(1)
   }
   return l
@@ -672,7 +618,7 @@ function scanProfileFlag(args) {
   if (!p) return null
   const norm = p.toLowerCase() === 'test:playwright' ? 'test' : p.toLowerCase()
   if (!SUPPORTED_PROFILES.includes(norm)) {
-    console.error(`ancleto: perfil invalido: ${p} (general|test)`)
+    console.error(`ancleto-fre: perfil invalido: ${p} (general|test)`)
     process.exit(1)
   }
   return norm
@@ -748,7 +694,7 @@ async function resolveAgent(args, existing, allowAsk = Boolean(process.stdin.isT
   if (existing && SUPPORTED_AGENTS.includes(existing)) return existing
   if (allowAsk) return askAgent()
   if (existing && !SUPPORTED_AGENTS.includes(existing)) {
-    console.error(`ancleto: advertencia: agente '${existing}' no soportado, usando '${DEFAULT_AGENT}'`)
+    console.error(`ancleto-fre: advertencia: agente '${existing}' no soportado, usando '${DEFAULT_AGENT}'`)
   }
   return DEFAULT_AGENT
 }
@@ -771,7 +717,7 @@ async function mergeMcp(configDir, mcpMap) {
       try {
         cfg = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
       } catch {
-        console.warn(`ancleto: no se pudo leer ${basename(file)} como JSON; MCP no se agrego ahi`)
+        console.warn(`ancleto-fre: no se pudo leer ${basename(file)} como JSON; MCP no se agrego ahi`)
         continue
       }
     }
@@ -800,7 +746,7 @@ async function mergeAntigravityMcp(projectDir, mcpMap) {
     try {
       cfg = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
     } catch {
-      console.warn(`ancleto: no se pudo leer ${basename(file)} como JSON; MCP de Antigravity no se modifico`)
+      console.warn(`ancleto-fre: no se pudo leer ${basename(file)} como JSON; MCP de Antigravity no se modifico`)
       return { file, added: [] }
     }
   }
@@ -842,7 +788,7 @@ async function mergeCopilotMcp(projectDir, mcpMap) {
     try {
       cfg = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
     } catch {
-      console.warn('ancleto: no se pudo leer copilot-mcp.json como JSON; MCP no se agrego ahi')
+      console.warn('ancleto-fre: no se pudo leer copilot-mcp.json como JSON; MCP no se agrego ahi')
       return { file, added: [] }
     }
   }
@@ -877,7 +823,7 @@ async function mergeCommandCodeMcp(projectDir, mcpMap) {
     try {
       cfg = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
     } catch {
-      console.warn('ancleto: no se pudo leer .mcp.json como JSON; MCP de Command Code no se modifico')
+      console.warn('ancleto-fre: no se pudo leer .mcp.json como JSON; MCP de Command Code no se modifico')
       return { file, added: [] }
     }
   }
@@ -1006,7 +952,7 @@ const AGENT_TARGETS = {
   cursor: { skills: { dir: '.cursor/skills' }, agents: null, commands: null },
   roo: { skills: { dir: '.roo/skills' }, agents: null, commands: null },
   // Copilot: host de prompts. Agents y commands comparten .github/prompts con
-  // ext .prompt.md (sin colision: agents/*.md vs cleto-*.md). Sin skills (D12).
+  // ext .prompt.md (sin colision: agents/*.md vs fre-*.md). Sin skills (D12).
   copilot: {
     skills: null,
     agents: { dir: '.github/prompts', ext: '.prompt.md' },
@@ -1024,29 +970,25 @@ const AGENT_TARGETS = {
   }
 }
 
-const ANCLETO_SKILLS = ['ancleto-new', 'ancleto-propose', 'ancleto-apply', 'ancleto-verify', 'ancleto-archive', 'ancleto-bulk-archive', 'ancleto-continue', 'ancleto-explore', 'ancleto-ff', 'ancleto-onboard', 'ancleto-workflow']
+const ANCLETO_FRE_SKILLS = ['fre-new', 'fre-propose', 'fre-apply', 'fre-verify', 'fre-archive', 'fre-bulk-archive', 'fre-continue', 'fre-explore', 'fre-ff', 'fre-onboard', 'fre-workflow']
 
-// Solo Copilot: los tiers no cambian modelos (el usuario elige en el picker);
+// Solo Copilot: el modelo no se fija por agente (el usuario elige en el picker);
 // el orchestrator lo recuerda al empezar.
 const COPILOT_MODEL_NOTE = `
 ## Nota de modelo (solo Copilot)
 
-Elegí el modelo en el picker de Copilot antes de empezar: los tiers de ancleto
-(normal|minimo|gratis) no cambian modelos acá, solo el nivel de esfuerzo:
-normal = flujo completo, minimo = pasos agrupados y económicos, gratis = modelo
-gratis disponible en tu cuenta.
+Elegí el modelo en el picker de Copilot antes de empezar: ancleto-fre no fija un
+modelo por agente en este host.
 `
 
-// Solo Command Code: los tiers tampoco cambian modelos (el agent no fija `model`,
-// hereda el de la sesión); la nota lo recuerda al empezar.
+// Solo Command Code: el agent no fija `model` (hereda el de la sesión); la nota
+// lo recuerda al empezar.
 const COMMANDCODE_MODEL_NOTE = `
 ## Nota de modelo (solo Command Code)
 
-Elegí el modelo con \`/model\` antes de empezar: los tiers de ancleto
-(normal|minimo|gratis) no cambian modelos en Command Code, solo el nivel de
-esfuerzo (normal = flujo completo, minimo = pasos agrupados y económicos,
-gratis = modelo gratis disponible en tu cuenta). Los subagentes heredan el
-modelo de la sesión porque su frontmatter no fija \`model\`.
+Elegí el modelo con \`/model\` antes de empezar: ancleto-fre no fija un modelo por
+agente en Command Code. Los subagentes heredan el modelo de la sesión porque su
+frontmatter no fija \`model\`.
 `
 
 // D12: asset no soportado -> no se escribe y se avisa a stderr (no bloqueante).
@@ -1087,8 +1029,8 @@ async function installAssetFiles(cat, projectDir, spec, host, srcDir = null) {
   }
 }
 
-// D4: un command de ancleto convertido en skill (`name` + `description` del origen,
-// body verbatim). Antigravity no tiene dir de commands: sus `/cleto-*` viven como
+// D4: un command de ancleto-fre convertido en skill (`name` + `description` del origen,
+// body verbatim). Antigravity no tiene dir de commands: sus `/fre-*` viven como
 // command-skills dentro de `.agents/skills`.
 function commandToSkill(content, name) {
   const parsed = parseFrontmatter(content)
@@ -1185,7 +1127,7 @@ function installedHostsFromPaths(ip) {
 const CHANGES_ROOT = 'aspec'
 
 const DEFAULT_ASPEC_CONFIG = `# aspec project configuration
-# Generado por @ancleto/spec (G5) - editalo libremente, no se sobrescribe en reinstalaciones.
+# Generado por @ancleto/spec-fre (G5) - editalo libremente, no se sobrescribe en reinstalaciones.
 schema: spec-driven-development
 `
 
@@ -1228,12 +1170,12 @@ async function migrateLegacyOpenspec(projectDir) {
   const marker = join(aspecDir, MIGRATION_MARKER)
   if (await exists(marker)) return // ya migrada: no-op silencioso
   if (await hasRealContent(aspecDir)) {
-    console.warn('ancleto: aspec/ ya tiene contenido real — no se migro openspec/ (revisar manualmente; openspec/ se conserva)')
+    console.warn('ancleto-fre: aspec/ ya tiene contenido real — no se migro openspec/ (revisar manualmente; openspec/ se conserva)')
     return
   }
   await cp(legacyDir, aspecDir, { recursive: true, force: false })
-  await writeFile(marker, '# Generado por ancleto: esta aspec/ ya fue migrada desde openspec/\n')
-  console.log('ancleto: contenido migrado de openspec/ a aspec/ (openspec/ se conserva como backup)')
+  await writeFile(marker, '# Generado por ancleto-fre: esta aspec/ ya fue migrada desde openspec/\n')
+  console.log('ancleto-fre: contenido migrado de openspec/ a aspec/ (openspec/ se conserva como backup)')
 }
 
 // Clasifica openspec/ pre-existente: 'none' (ausente o carpeta vacia),
@@ -1269,10 +1211,10 @@ async function askOpenspecImport() {
     const rl = createInterface({ input: process.stdin, output: process.stdout })
     rl.question(q, (a) => { rl.close(); resolve(a.trim().toLowerCase()) })
   })
-  let answer = await ask('ancleto: Detecté un proyecto OpenSpec. ¿Importar a aspec/? [s/N/ver] (default: No): ')
+  let answer = await ask('ancleto-fre: Detecté un proyecto OpenSpec. ¿Importar a aspec/? [s/N/ver] (default: No): ')
   if (answer === 'ver') {
-    console.log('ancleto: se copiaran openspec/specs y openspec/changes a aspec/ (copia no destructiva; openspec/ se conserva como backup)')
-    answer = await ask('ancleto: ¿Importar a aspec/? [s/N] (default: No): ')
+    console.log('ancleto-fre: se copiaran openspec/specs y openspec/changes a aspec/ (copia no destructiva; openspec/ se conserva como backup)')
+    answer = await ask('ancleto-fre: ¿Importar a aspec/? [s/N] (default: No): ')
   }
   return ['s', 'si', 'sí', 'y', 'yes'].includes(answer)
 }
@@ -1285,7 +1227,7 @@ async function importExternalOpenspec(projectDir) {
   const marker = join(aspecDir, MIGRATION_MARKER)
   if (await exists(marker)) return // ya importada: no-op silencioso
   if (await hasRealContent(aspecDir)) {
-    console.warn('ancleto: aspec/ ya tiene contenido real — no se importo openspec/ (revisar manualmente; openspec/ se conserva)')
+    console.warn('ancleto-fre: aspec/ ya tiene contenido real — no se importo openspec/ (revisar manualmente; openspec/ se conserva)')
     return
   }
   await cp(join(projectDir, LEGACY_OPENSPEC_DIR), aspecDir, { recursive: true, force: false })
@@ -1294,21 +1236,21 @@ async function importExternalOpenspec(projectDir) {
     const target = join(projectDir, 'AGENTS.md')
     if (!(await exists(target))) {
       await cp(bundledAgents, target)
-      console.log('ancleto: AGENTS.md de OpenSpec adoptado como base (revisarlo)')
+      console.log('ancleto-fre: AGENTS.md de OpenSpec adoptado como base (revisarlo)')
     } else {
-      console.warn('ancleto: se conserva el AGENTS.md local; el de OpenSpec queda en openspec/ como backup')
+      console.warn('ancleto-fre: se conserva el AGENTS.md local; el de OpenSpec queda en openspec/ como backup')
     }
   } else {
     try {
       if (/openspec/i.test(await readFile(join(projectDir, 'AGENTS.md'), 'utf8'))) {
-        console.log('ancleto: se respeta el AGENTS.md de OpenSpec local (bloques ancleto fusionados por LOCKED)')
+        console.log('ancleto-fre: se respeta el AGENTS.md de OpenSpec local (bloques ancleto-fre fusionados por LOCKED)')
       }
     } catch {
       // sin AGENTS.md local: nada que respetar
     }
   }
-  await writeFile(marker, '# Generado por ancleto: esta aspec/ ya fue importada desde openspec/\n')
-  console.log('ancleto: contenido importado de openspec/ a aspec/ (openspec/ se conserva como backup)')
+  await writeFile(marker, '# Generado por ancleto-fre: esta aspec/ ya fue importada desde openspec/\n')
+  console.log('ancleto-fre: contenido importado de openspec/ a aspec/ (openspec/ se conserva como backup)')
 }
 
 // Punto unico de deteccion/migracion: lo invocan init, install --project y
@@ -1323,7 +1265,7 @@ async function maybeImportOpenspec(projectDir, args = []) {
   if (args.includes('--yes') || await askOpenspecImport()) {
     await importExternalOpenspec(projectDir)
   } else {
-    console.log('ancleto: importacion de openspec/ omitida (openspec/ se conserva)')
+    console.log('ancleto-fre: importacion de openspec/ omitida (openspec/ se conserva)')
   }
 }
 
@@ -1356,13 +1298,13 @@ function mergeLocked(source, local, filename) {
     // esta mal formado: se avisa y NO se toca, para no duplicar contenido.
     const nameSeen = new RegExp(`<!--\\s*LOCKED:\\s*${escapeRe(name)}\\s*-->`).test(result)
     if (nameSeen) {
-      console.warn(`ancleto: no se pudo actualizar el bloque LOCKED "${name}" en ${filename} (tags ausentes o mal formados)`)
+      console.warn(`ancleto-fre: no se pudo actualizar el bloque LOCKED "${name}" en ${filename} (tags ausentes o mal formados)`)
       continue
     }
     // El bloque es nuevo (feature agregada al template): se inserta sin tocar el resto.
     const anchor = findInsertAnchor(result, source, name)
     if (anchor === null) {
-      console.warn(`ancleto: no se pudo insertar el bloque LOCKED "${name}" en ${filename}`)
+      console.warn(`ancleto-fre: no se pudo insertar el bloque LOCKED "${name}" en ${filename}`)
     } else {
       result = result.slice(0, anchor) + sourceBlock + '\n\n' + result.slice(anchor)
     }
@@ -1408,18 +1350,17 @@ async function install(args) {
   let mcpMap = withMcp ? buildDefaultMcp({ withEngram: args.includes('--with-engram') }) : {}
 
   const agentFlag = scanAgentFlag(args)
-  let tier = scanTierFlag(args)
 
   let projectDir
   if (explicitProject) {
     projectDir = resolve(explicitProject)
     if (!(await exists(projectDir))) {
-      console.error(`ancleto: el directorio no existe: ${projectDir}`)
+      console.error(`ancleto-fre: el directorio no existe: ${projectDir}`)
       process.exit(1)
     }
-  } else if (!args.includes('--global') && (await exists(join(process.cwd(), '.ancletorc')))) {
-    // Estar parado en un proyecto ancleto implica operar sobre ese proyecto.
-    // `--global` fuerza el alcance global cuando el repo tambien tiene .ancletorc.
+  } else if (!args.includes('--global') && (await exists(join(process.cwd(), '.ancleto-fre.rc')))) {
+    // Estar parado en un proyecto ancleto-fre implica operar sobre ese proyecto.
+    // `--global` fuerza el alcance global cuando el repo tambien tiene .ancleto-fre.rc.
     projectDir = process.cwd()
   } else {
     projectDir = null
@@ -1427,9 +1368,6 @@ async function install(args) {
 
   const target = projectDir ? join(projectDir, '.opencode') : globalConfigDir()
   const existingRc = projectDir ? await readAncletorc(projectDir) : null
-  const storedTier = (await exists(tierStatePath(target)))
-    ? (await readFile(tierStatePath(target), 'utf8')).trim()
-    : null
 
   let agent = agentFlag || (existingRc?.agent && SUPPORTED_AGENTS.includes(existingRc.agent) ? existingRc.agent : null)
   let language = scanLangFlag(args) || (existingRc?.language && SUPPORTED_LANGS.includes(existingRc.language) ? existingRc.language : null)
@@ -1438,17 +1376,11 @@ async function install(args) {
   const existingDiscovery = existingRc?.discovery || { outputDir: 'docs/technical-discovery', exclude: [] }
   let excludeChoice = excludeFlag
 
-  let bannerShown = false
-  const isInteractive = Boolean(process.stdout.isTTY) && ((projectDir && !agent) || !tier || !language || (projectDir && excludeChoice === null && (existingDiscovery.exclude || []).length === 0))
+  const isInteractive = Boolean(process.stdout.isTTY) && ((projectDir && !agent) || !language || (projectDir && excludeChoice === null && (existingDiscovery.exclude || []).length === 0))
   if (isInteractive) {
     await showBanner()
-    bannerShown = true
     if (projectDir && !agent) {
       agent = await selectOption('Agente/IDE', SUPPORTED_AGENTS, Math.max(0, SUPPORTED_AGENTS.indexOf(DEFAULT_AGENT)))
-    }
-    if (!tier) {
-      const current = TIERS[storedTier] ? storedTier : ''
-      tier = await selectOption('Tier de costo', Object.keys(TIERS), Math.max(0, Object.keys(TIERS).indexOf(current)))
     }
     if (!language) {
       const picked = await selectOption('Idioma de los artifacts', SUPPORTED_LANGS.map(langLabel), 0)
@@ -1463,29 +1395,9 @@ async function install(args) {
 
   if (projectDir && !agent) {
     if (existingRc?.agent && !SUPPORTED_AGENTS.includes(existingRc.agent)) {
-      console.error(`ancleto: advertencia: agente '${existingRc.agent}' no soportado, usando '${DEFAULT_AGENT}'`)
+      console.error(`ancleto-fre: advertencia: agente '${existingRc.agent}' no soportado, usando '${DEFAULT_AGENT}'`)
     }
     agent = DEFAULT_AGENT
-  }
-  if (!tier) tier = TIERS[storedTier] ? storedTier : 'normal'
-
-  let gratisModelChoice = null
-  let gratisModelOrigin = null
-  if (tier === 'gratis') {
-    const env = envGratisModel()
-    const persisted = isKnownGratisModel(existingRc?.gratisModel) ? existingRc.gratisModel : null
-    if (env || persisted) {
-      gratisModelChoice = env || persisted
-      gratisModelOrigin = env ? 'variable de entorno ANCLETO_MUSE_SPARK' : 'valor guardado en .ancletorc'
-    } else if (process.stdout.isTTY) {
-      if (!bannerShown) await showBanner()
-      const answer = await selectOption('Muse Spark 1.3 Free disponible en tu cuenta?', ['No (usar big-pickle)', 'Si (Muse Spark)'], 0)
-      if (!bannerShown) stopBanner()
-      gratisModelChoice = answer.startsWith('Si') ? MUSE_SPARK_MODEL : GRATIS_FALLBACK_MODEL
-    } else {
-      gratisModelChoice = gratisModel()
-      gratisModelOrigin = 'detección automática'
-    }
   }
 
   if (projectDir) {
@@ -1501,7 +1413,6 @@ async function install(args) {
       language,
       profile,
       ...(excludeChoice !== null ? { discovery: { ...existingDiscovery, exclude: excludeChoice } } : {}),
-      ...(gratisModelChoice ? { gratisModel: gratisModelChoice } : {}),
       installedPaths: unionInstalledPaths(existingRc?.installedPaths, {
         templates: ['AGENTS.md', 'PRODUCT.md'],
         ...written
@@ -1510,43 +1421,26 @@ async function install(args) {
   } else {
     await copyAssets(target)
     if (agent === 'copilot') {
-      console.log('ancleto: los prompts de Copilot son por repo; corré install --project para generarlos')
+      console.log('ancleto-fre: los prompts de Copilot son por repo; corré install --project para generarlos')
     }
   }
 
-  const models = tierModels(tier, TIERS, gratisModelChoice)
-  await applyTier(join(target, 'agents'), tier, models)
-  // El estado de tier vive en el base de opencode; puede no existir si el host
-  // resuelto ubica sus assets en otro directorio (p. ej. cursor -> .cursor/).
-  await mkdir(target, { recursive: true })
-  await writeFile(tierStatePath(target), tier + '\n')
+  await applyModels(join(target, 'agents'))
 
-  if (projectDir) await registerProject(projectDir, { agent, tier })
-
-  let azureMcp = false
-  if (projectDir && withMcp) {
-    const rc = await readAncletorc(projectDir)
-    if (rc?.azure?.enabled) {
-      mcpMap['azure-devops'] = { type: 'local', enabled: true, command: ['npx', '-y', '@davstack/mcp-azure-devops'] }
-      azureMcp = true
-    }
-  }
+  if (projectDir) await registerProject(projectDir, { agent })
 
   const res = await setupHostMcp(target, mcpMap, { projectDir, agent })
   if (projectDir && agent === 'copilot') {
     const cres = await mergeCopilotMcp(projectDir, mcpMap)
-    if (cres.added.length) console.log(`ancleto: MCP configurados: ${cres.added.join(', ')} en ${cres.file}`)
+    if (cres.added.length) console.log(`ancleto-fre: MCP configurados: ${cres.added.join(', ')} en ${cres.file}`)
   }
   const loc = projectDir
     ? `${projectDir} (layout ${agent} + templates en la raiz)`
     : `${target} (disponible en todos tus proyectos)`
-  console.log(`ancleto: instalado en ${loc}`)
-  console.log(`ancleto: tier de costo de agents: ${tier}`)
-  if (tier === 'gratis') console.log(`ancleto: modelo gratis: ${models.orchestrator}${gratisModelOrigin ? ` (${gratisModelOrigin})` : ''}`)
+  console.log(`ancleto-fre: instalado en ${loc}`)
   if (res.added.length) {
-    console.log(`ancleto: MCP configurados: ${res.added.join(', ')} en ${res.file}`)
+    console.log(`ancleto-fre: MCP configurados: ${res.added.join(', ')} en ${res.file}`)
   }
-  if (azureMcp) console.log(AZURE_MCP_NOTICE)
 }
 
 async function upgradeCmd(args) {
@@ -1556,10 +1450,10 @@ async function upgradeCmd(args) {
     if ((await detectLegacyOpenSpec(projectDir)) !== 'none') {
       await maybeImportOpenspec(projectDir, args)
       await scaffoldAspec(projectDir)
-      console.log("ancleto: openspec/ migrado. Corré 'ancleto init' para completar la configuración.")
+      console.log("ancleto-fre: openspec/ migrado. Corré 'ancleto-fre init' para completar la configuración.")
       return
     }
-    console.error("Error: No se encontro .ancletorc. Ejecuta 'ancleto init' primero.")
+    console.error("Error: No se encontro .ancleto-fre.rc. Ejecuta 'ancleto-fre init' primero.")
     process.exit(1)
   }
   await maybeImportOpenspec(projectDir, args)
@@ -1579,7 +1473,7 @@ async function upgradeCmd(args) {
     })
   })
   const skillsDir = written.skills[0] || '.opencode/skills'
-  console.log(`ancleto: upgrade completo (v${manifest.version}, agente: ${agent})`)
+  console.log(`ancleto-fre: upgrade completo (v${manifest.version}, agente: ${agent})`)
   console.log('  ✔ templates re-aplicados (bloques LOCKED actualizados, EXTENSIBLE intacto)')
   if (agent === 'copilot') {
     const { file, fixed } = await refreshCopilotMcp(projectDir)
@@ -1589,43 +1483,36 @@ async function upgradeCmd(args) {
       : `  ✔ MCP sanos en ${file}, sin cambios`)
   } else if (agent === 'commandcode') {
     const { file, fixed } = await refreshCommandCodeMcp(projectDir)
-    console.log(`  ✔ skills actualizadas en ${skillsDir} (${ANCLETO_SKILLS.length} skills)`)
+    console.log(`  ✔ skills actualizadas en ${skillsDir} (${ANCLETO_FRE_SKILLS.length} skills)`)
     console.log(fixed.length
       ? `  ✔ MCP regenerados en ${file}: ${fixed.join(', ')}`
       : `  ✔ MCP sanos en ${file}, sin cambios`)
   } else {
-    console.log(`  ✔ skills actualizadas en ${skillsDir} (${ANCLETO_SKILLS.length} skills)`)
+    console.log(`  ✔ skills actualizadas en ${skillsDir} (${ANCLETO_FRE_SKILLS.length} skills)`)
   }
   console.log(wentContext ? '  ✔ working-context.md regenerado' : '  ✔ working-context.md sin reglas activas (vacio)')
-  console.log('  ✔ manifiesto .ancletorc actualizado')
+  console.log('  ✔ manifiesto .ancleto-fre.rc actualizado')
 }
 
 async function initProject(args) {
   const projectDir = process.cwd()
-  const withAzure = args.includes('--with-azure')
   const withMcp = !args.includes('--no-mcp')
   const agentFlag = scanAgentFlag(args)
-  const tierFlag = scanTierFlag(args)
   const langFlag = scanLangFlag(args)
   const profileFlag = scanProfileFlag(args)
   const existing = await readAncletorc(projectDir)
-  const azure = existing?.azure ?? { enabled: false }
   let discovery = existing?.discovery ?? { outputDir: 'docs/technical-discovery', exclude: [] }
-  const tierFile = join(projectDir, '.opencode', '.ancleto-tier')
   const excludeFlag = scanExcludeFlag(args)
   let excludeChoice = excludeFlag
 
-  let agent, tier, language
+  let agent, language
   language = langFlag || (existing?.language && SUPPORTED_LANGS.includes(existing.language) ? existing.language : null)
   const profile = profileFlag || validProfile(existing?.profile) || DEFAULT_PROFILE
-  const isInteractive = Boolean(process.stdout.isTTY) && (!agentFlag || !tierFlag || !language || (excludeChoice === null && (discovery.exclude || []).length === 0))
+  const isInteractive = Boolean(process.stdout.isTTY) && (!agentFlag || !language || (excludeChoice === null && (discovery.exclude || []).length === 0))
   if (isInteractive) {
     await showBanner()
     const agentIdx = Math.max(0, SUPPORTED_AGENTS.indexOf(existing?.agent))
-    const storedTier = (await exists(tierFile)) ? (await readFile(tierFile, 'utf8')).trim() : null
-    const tierIdx = Math.max(0, Object.keys(TIERS).indexOf(TIERS[storedTier] ? storedTier : ''))
     agent = agentFlag || await selectOption('Agente/IDE', SUPPORTED_AGENTS, agentIdx)
-    tier = tierFlag || await selectOption('Tier de costo', Object.keys(TIERS), tierIdx)
     if (!language) {
       const picked = await selectOption('Idioma de los artifacts', SUPPORTED_LANGS.map(langLabel), 0)
       language = SUPPORTED_LANGS[SUPPORTED_LANGS.map(langLabel).indexOf(picked)] || 'auto'
@@ -1633,64 +1520,20 @@ async function initProject(args) {
     if (excludeChoice === null && (discovery.exclude || []).length === 0) {
       excludeChoice = await askExcludePresets(discovery.exclude || [])
     }
-    if (withAzure) {
-      azure.enabled = true
-    } else {
-      azure.enabled = (await selectOption('Habilitar Azure DevOps', ['No', 'Si'], azure.enabled ? 1 : 0)) === 'Si'
-    }
     stopBanner()
   } else {
     agent = await resolveAgent(args, existing?.agent, false)
-    tier = tierFlag
-    if (!tier) {
-      // Paridad con install: sin flag se respeta el tier guardado. Sin esto un
-      // re-init pelado re-copiaba los agents de origen y perdia los modelos aplicados.
-      const stored = (await exists(tierFile)) ? (await readFile(tierFile, 'utf8')).trim() : null
-      if (stored && TIERS[stored]) tier = stored
-    }
     if (!language) language = 'auto'
-    if (withAzure) azure.enabled = true
   }
   if (excludeChoice !== null) discovery = { ...discovery, exclude: excludeChoice }
 
-  if (tier) {
-    await mkdir(join(projectDir, '.opencode'), { recursive: true })
-    await writeFile(tierFile, tier + '\n')
-  }
-
-  // Paridad con install: el tier elegido tambien reescribe los modelos de los
-  // agentes locales. Antes quedaba huerfano (tier declarado, modelos de otro tier).
-  let gratisModelChoice = null
-  let gratisModelOrigin = null
-  if (tier === 'gratis') {
-    const env = envGratisModel()
-    const persisted = isKnownGratisModel(existing?.gratisModel) ? existing.gratisModel : null
-    if (env) {
-      gratisModelChoice = env
-      gratisModelOrigin = 'variable de entorno ANCLETO_MUSE_SPARK'
-    } else if (isInteractive) {
-      // En menú interactivo siempre se pregunta: el valor guardado (o la
-      // detección) solo pre-selecciona el default, nunca se aplica en silencio.
-      const defIdx = (persisted || gratisModel()) === MUSE_SPARK_MODEL ? 1 : 0
-      const answer = await selectOption('Muse Spark 1.3 Free disponible en tu cuenta?', ['No (usar big-pickle)', 'Si (Muse Spark)'], defIdx)
-      gratisModelChoice = answer.startsWith('Si') ? MUSE_SPARK_MODEL : GRATIS_FALLBACK_MODEL
-    } else if (persisted) {
-      gratisModelChoice = persisted
-      gratisModelOrigin = 'valor guardado en .ancletorc'
-    } else {
-      gratisModelChoice = gratisModel()
-      gratisModelOrigin = 'detección automática'
-    }
-  }
   const written = await installAgentAssets(projectDir, agent)
   if (profile === 'test') await installProfileOverlay(projectDir, agent)
   const manifest = await writeManifest(projectDir, {
-    azure,
     discovery,
     agent,
     language,
     profile,
-    ...(gratisModelChoice ? { gratisModel: gratisModelChoice } : {}),
     installedPaths: unionInstalledPaths(existing?.installedPaths, {
       templates: ['AGENTS.md', 'PRODUCT.md'],
       ...written
@@ -1699,27 +1542,23 @@ async function initProject(args) {
   await maybeImportOpenspec(projectDir, args)
   await copyTemplates(projectDir, profile)
   if (profile === 'test') await scaffoldTestspec(projectDir)
-  if (tier) {
-    await applyTier(join(projectDir, '.opencode', 'agents'), tier, tierModels(tier, TIERS, gratisModelChoice))
-  }
+  await applyModels(join(projectDir, '.opencode', 'agents'))
   await scaffoldAspec(projectDir)
   await refreshWorkingContext(projectDir)
-  await registerProject(projectDir, { agent, tier: tier || null })
+  await registerProject(projectDir, { agent })
   // D7: init configura el MCP del host igual que install (mismo dueno, sin rama
   // especial por host); --no-mcp conserva el escape.
   const mcpMap = withMcp ? buildDefaultMcp({}) : {}
   const mcpRes = await setupHostMcp(join(projectDir, '.opencode'), mcpMap, { projectDir, agent })
-  if (azure.enabled) console.log(AZURE_MCP_NOTICE)
-  if (mcpRes.added.length) console.log(`ancleto: MCP configurados: ${mcpRes.added.join(', ')} en ${mcpRes.file}`)
-  console.log(`ancleto: .ancletorc actualizado en ${projectDir} (v${manifest.version})${azure.enabled ? ' (Azure habilitado)' : ' (Azure desactivado)'} (Agente: ${agent})${tier ? ` (Tier: ${tier})` : ''} (Idioma: ${language})`)
-  if (tier === 'gratis' && gratisModelChoice) console.log(`ancleto: modelo gratis: ${gratisModelChoice}${gratisModelOrigin ? ` (${gratisModelOrigin})` : ''}`)
+  if (mcpRes.added.length) console.log(`ancleto-fre: MCP configurados: ${mcpRes.added.join(', ')} en ${mcpRes.file}`)
+  console.log(`ancleto-fre: .ancleto-fre.rc actualizado en ${projectDir} (v${manifest.version}) (Agente: ${agent}) (Idioma: ${language})`)
 }
 
 const DEFAULT_IGNORES = ['node_modules', '.git', 'dist']
 const EXPECTED_DOCS = ['index.md', 'overview.md', 'setup.md', 'inventory.md', 'integrations.md', 'decisions.md', 'unknowns.md', 'units/_map.md']
 
 async function loadDiscoveryConfig() {
-  const rc = join(process.cwd(), '.ancletorc')
+  const rc = join(process.cwd(), '.ancleto-fre.rc')
   const defaults = { outputDir: 'docs/technical-discovery', exclude: [] }
   if (!(await exists(rc))) return defaults
   try {
@@ -1896,7 +1735,6 @@ function flagValue(args, flag) {
 async function checkDiscovery() {
   const config = await loadDiscoveryConfig()
   const { outputDir } = config
-  const tier = readProjectTier(process.cwd())
   const present = await presentDocs(outputDir)
   let state, action, message, missingDocs, impact = 'none', changedAreas = [], materialReasons = [], notes = [], affectedDocs = [], seedMapPresent = false
   if (present.length === 0) {
@@ -1962,27 +1800,31 @@ async function checkDiscovery() {
     seedMapPresent,
     config: {
       outputDir,
-      exclude: config.exclude,
-      tier
+      exclude: config.exclude
     }
   }, null, 2))
 }
 
 async function runRepomix(flags, tmpFile) {
   const local = await resolveBin('repomix')
-  const tier = readProjectTier(process.cwd())
   const { exclude } = await loadDiscoveryConfig()
   const args = []
   if (!local) args.push('-y', 'repomix@1.18.0')
-  args.push('--output', tmpFile, ...buildRepomixArgs(flags, tier, exclude))
+  args.push('--output', tmpFile)
+  const include = flagValue(flags, '--include')
+  if (include) args.push('--include', include)
+  const extraIgnore = flagValue(flags, '--ignore')
+  const ignore = [...exclude, ...(extraIgnore ? extraIgnore.split(',') : [])].filter(Boolean)
+  if (ignore.length) args.push('--ignore', ignore.join(','))
+  if (flags.includes('--compress')) args.push('--compress')
   const cmd = local || 'npx'
   const r = spawnSync(cmd, args, { encoding: 'utf8', cwd: process.cwd(), shell: true })
   if (r.error) {
-    console.error(`ancleto: no se pudo ejecutar repomix: ${r.error.message}`)
+    console.error(`ancleto-fre: no se pudo ejecutar repomix: ${r.error.message}`)
     process.exit(1)
   }
   if (r.status !== 0) {
-    console.error(`ancleto: repomix fallo (exit ${r.status}):`)
+    console.error(`ancleto-fre: repomix fallo (exit ${r.status}):`)
     console.error((r.stderr || r.stdout || '').trim())
     process.exit(1)
   }
@@ -1992,15 +1834,15 @@ async function runRepomix(flags, tmpFile) {
 async function packDiscovery(flags) {
   const { outputDir } = await loadDiscoveryConfig()
   try { writeDiscoveryMap(process.cwd()) } catch {}
-  const tmpFile = join(tmpdir(), `ancleto-pack-${Date.now()}.txt`)
+  const tmpFile = join(tmpdir(), `ancleto-fre-pack-${Date.now()}.txt`)
   await runRepomix(flags, tmpFile)
   let content = ''
   try { content = await readFile(tmpFile, 'utf8') } catch {}
   const tokens = Math.round(content.length / 4)
   const explicit = flagValue(flags, '--token-budget')
-  const budget = explicit ? Number(explicit) : tierTokenBudget(readProjectTier(process.cwd()))
+  const budget = explicit ? Number(explicit) : null
   if (budget && tokens > budget) {
-    console.error(`ancleto: el pack supera el token-budget (${tokens} > ${budget})`)
+    console.error(`ancleto-fre: el pack supera el token-budget (${tokens} > ${budget})`)
     process.exit(1)
   }
   const sources = await computeSources()
@@ -2014,9 +1856,9 @@ async function packDiscovery(flags) {
     hash,
     packTokens: tokens
   }, null, 2) + '\n')
-  console.log(`ancleto: pack generado (${sources.length} archivos, ~${tokens} tokens)`)
-  console.log(`ancleto: estado guardado en ${statePath(outputDir)}`)
-  console.log(`ancleto: el seed lo genera la skill ancleto-technical-discovery a partir del pack`)
+  console.log(`ancleto-fre: pack generado (${sources.length} archivos, ~${tokens} tokens)`)
+  console.log(`ancleto-fre: estado guardado en ${statePath(outputDir)}`)
+  console.log(`ancleto-fre: el seed lo genera la skill fre-technical-discovery a partir del pack`)
 }
 
 async function discovery(flags) {
@@ -2025,16 +1867,16 @@ async function discovery(flags) {
     return
   }
   if (flags.includes('--help') || flags.includes('-h')) {
-    console.log(`ancleto discovery [--compress] [--include G] [--ignore G] [--token-budget N]
+    console.log(`ancleto-fre discovery [--compress] [--include G] [--ignore G] [--token-budget N]
   Genera el pack Repomix del repo y guarda el estado del seed.
 
   --check           Estado del seed en JSON (READY/STALE/PARTIAL/MISSING) + config
   --compress        Pack comprimido (tree-sitter)
   --include <glob>  Incluir solo paths que matcheen
-  --ignore <glob>   Excluir paths (ademas de los de .ancletorc)
-  --token-budget N  Presupuesto de tokens del tier
+  --ignore <glob>   Excluir paths (ademas de los de .ancleto-fre.rc)
+  --token-budget N  Presupuesto de tokens del pack
 
-  El seed en si lo genera la skill ancleto-technical-discovery a partir del pack.`)
+  El seed en si lo genera la skill fre-technical-discovery a partir del pack.`)
     return
   }
   await packDiscovery(flags)
@@ -2056,7 +1898,7 @@ async function memoryContext(flags) {
   const out = flagValue(flags, '--out')
   const dbPath = defaultMemoryDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no hay memoria en este repo (${dbPath})`)
+    console.error(`ancleto-fre: no hay memoria en este repo (${dbPath})`)
     process.exit(0)
   }
   const engine = createMemoryEngine(dbPath)
@@ -2064,12 +1906,12 @@ async function memoryContext(flags) {
     const block = engine.buildWorkingContext(scope)
     if (block === null) {
       if (out) await writeFile(resolve(out), '')
-      console.error(`ancleto: sin reglas activas para el scope "${scope}"`)
+      console.error(`ancleto-fre: sin reglas activas para el scope "${scope}"`)
       return
     }
     if (out) {
       await writeFile(resolve(out), block + '\n')
-      console.log(`ancleto: bloque <ProjectMemoryRules> escrito en ${out}`)
+      console.log(`ancleto-fre: bloque <ProjectMemoryRules> escrito en ${out}`)
     } else {
       console.log(block)
     }
@@ -2082,11 +1924,11 @@ async function memoryDoctorCmd(flags) {
   const rebuild = flags.includes('--rebuild')
   const dbPath = defaultMemoryDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no hay memoria en este repo (${dbPath})`)
+    console.error(`ancleto-fre: no hay memoria en este repo (${dbPath})`)
     process.exit(0)
   }
   const { checks, healthy, rebuilt } = memoryDoctor(dbPath, { rebuild })
-  if (rebuilt) console.log('ancleto: indice FTS5 reconstruido')
+  if (rebuilt) console.log('ancleto-fre: indice FTS5 reconstruido')
   for (const c of checks) {
     console.log(`  ${c.ok ? '✔' : '✖'} ${c.name}: ${c.detail}`)
   }
@@ -2096,18 +1938,18 @@ async function memoryDoctorCmd(flags) {
 async function memoryListCmd(flags) {
   const dbPath = defaultMemoryDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no hay memoria en este repo (${dbPath})`)
+    console.error(`ancleto-fre: no hay memoria en este repo (${dbPath})`)
     process.exit(0)
   }
   const type = flagValue(flags, '--type')
   const scope = flagValue(flags, '--scope')
   const status = flags.includes('--all') ? null : 'active'
   if (type && type !== 'rule' && type !== 'decision') {
-    console.error(`ancleto: --type invalido: ${type} (rule|decision)`)
+    console.error(`ancleto-fre: --type invalido: ${type} (rule|decision)`)
     process.exit(1)
   }
   if (scope && !['project', 'feature', 'task'].includes(scope)) {
-    console.error(`ancleto: --scope invalido: ${scope} (project|feature|task)`)
+    console.error(`ancleto-fre: --scope invalido: ${scope} (project|feature|task)`)
     process.exit(1)
   }
 
@@ -2117,7 +1959,7 @@ async function memoryListCmd(flags) {
   try {
     nodes = engine.listNodes({ type, scope, status })
   } catch (err) {
-    console.error(`ancleto: no se pudo leer la memoria: ${err.message}`)
+    console.error(`ancleto-fre: no se pudo leer la memoria: ${err.message}`)
     process.exit(1)
   } finally {
     engine.close()
@@ -2128,21 +1970,21 @@ async function memoryListCmd(flags) {
     return
   }
   if (nodes.length === 0) {
-    console.log('ancleto: sin nodos para ese filtro')
+    console.log('ancleto-fre: sin nodos para ese filtro')
     return
   }
   for (const n of nodes) {
     console.log(`  [${n.type}/${n.scope}${n.status === 'active' ? '' : '/' + n.status}] ${n.memory_key} (${n.source})`)
     console.log(`      ${n.content}`)
   }
-  console.log(`ancleto: ${nodes.length} nodo(s)`)
+  console.log(`ancleto-fre: ${nodes.length} nodo(s)`)
 }
 
 async function memoryExport(flags) {
   const out = flagValue(flags, '--out')
   const dbPath = defaultMemoryDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no hay memoria en este repo (${dbPath})`)
+    console.error(`ancleto-fre: no hay memoria en este repo (${dbPath})`)
     process.exit(1)
   }
   const engine = createMemoryEngine(dbPath)
@@ -2151,7 +1993,7 @@ async function memoryExport(flags) {
     const json = JSON.stringify(nodes, null, 2)
     if (out) {
       await writeFile(resolve(out), json + '\n')
-      console.log(`ancleto: exportados ${nodes.length} nodo(s) a ${out}`)
+      console.log(`ancleto-fre: exportados ${nodes.length} nodo(s) a ${out}`)
     } else {
       console.log(json)
     }
@@ -2163,26 +2005,26 @@ async function memoryExport(flags) {
 async function memoryImport(flags) {
   const positional = flags.find((a) => !a.startsWith('-'))
   if (!positional) {
-    console.error('ancleto: uso: ancleto memory import <archivo>')
+    console.error('ancleto-fre: uso: ancleto-fre memory import <archivo>')
     process.exit(1)
   }
   const file = resolve(positional)
   if (!(await exists(file))) {
-    console.error(`ancleto: no existe el archivo: ${file}`)
+    console.error(`ancleto-fre: no existe el archivo: ${file}`)
     process.exit(1)
   }
   let json
   try {
     json = JSON.parse((await readFile(file, 'utf8')).replace(/^\uFEFF/, ''))
   } catch (err) {
-    console.error(`ancleto: no se pudo parsear ${file} como JSON: ${err.message}`)
+    console.error(`ancleto-fre: no se pudo parsear ${file} como JSON: ${err.message}`)
     process.exit(1)
   }
   const dbPath = defaultMemoryDbPath()
   const engine = createMemoryEngine(dbPath)
   try {
     const summary = engine.importNodes(json)
-    console.log(`ancleto: import OK -> insertados:${summary.inserted} actualizados:${summary.updated} omitidos:${summary.skipped}`)
+    console.log(`ancleto-fre: import OK -> insertados:${summary.inserted} actualizados:${summary.updated} omitidos:${summary.skipped}`)
   } finally {
     engine.close()
   }
@@ -2195,24 +2037,24 @@ async function memoryGc(flags) {
   if (daysRaw !== null) {
     days = Number(daysRaw)
     if (!Number.isFinite(days) || days <= 0 || !Number.isInteger(days)) {
-      console.error(`ancleto: --days invalido: ${daysRaw} (entero positivo)`)
+      console.error(`ancleto-fre: --days invalido: ${daysRaw} (entero positivo)`)
       process.exit(1)
     }
   }
   const dbPath = defaultMemoryDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no hay memoria en este repo (${dbPath})`)
+    console.error(`ancleto-fre: no hay memoria en este repo (${dbPath})`)
     process.exit(0)
   }
   const engine = createMemoryEngine(dbPath)
   try {
     const result = engine.gcSuperseded({ dryRun, days })
     if (result.dryRun) {
-      console.log(`ancleto: gc --dry-run (umbral ${result.days} dias) -> ${result.nodes} nodo(s), ~${result.estimated_bytes} bytes a liberar`)
+      console.log(`ancleto-fre: gc --dry-run (umbral ${result.days} dias) -> ${result.nodes} nodo(s), ~${result.estimated_bytes} bytes a liberar`)
     } else {
-      console.log(`ancleto: gc (umbral ${result.days} dias) -> ${result.removed} nodo(s) purgados + VACUUM + REINDEX`)
+      console.log(`ancleto-fre: gc (umbral ${result.days} dias) -> ${result.removed} nodo(s) purgados + VACUUM + REINDEX`)
       if (result.vacuumError) {
-        console.error(`ancleto: advertencia: VACUUM/REINDEX falló: ${result.vacuumError}`)
+        console.error(`ancleto-fre: advertencia: VACUUM/REINDEX falló: ${result.vacuumError}`)
       }
     }
   } finally {
@@ -2246,13 +2088,13 @@ async function memoryCmd(args) {
     await memoryGc(flags)
     return
   }
-  console.error(`ancleto: subcomando de memory desconocido: ${sub || '(ninguno)'}`)
-  console.error('ancleto: uso: ancleto memory context [--scope X] [--out file]')
-  console.error('ancleto: uso: ancleto memory list [--type X] [--scope X] [--all] [--json]')
-  console.error('ancleto: uso: ancleto memory doctor [--rebuild]')
-  console.error('ancleto: uso: ancleto memory export [--out <archivo>]')
-  console.error('ancleto: uso: ancleto memory import <archivo>')
-  console.error('ancleto: uso: ancleto memory gc [--dry-run] [--days <n>]')
+  console.error(`ancleto-fre: subcomando de memory desconocido: ${sub || '(ninguno)'}`)
+  console.error('ancleto-fre: uso: ancleto-fre memory context [--scope X] [--out file]')
+  console.error('ancleto-fre: uso: ancleto-fre memory list [--type X] [--scope X] [--all] [--json]')
+  console.error('ancleto-fre: uso: ancleto-fre memory doctor [--rebuild]')
+  console.error('ancleto-fre: uso: ancleto-fre memory export [--out <archivo>]')
+  console.error('ancleto-fre: uso: ancleto-fre memory import <archivo>')
+  console.error('ancleto-fre: uso: ancleto-fre memory gc [--dry-run] [--days <n>]')
   process.exit(1)
 }
 
@@ -2260,7 +2102,7 @@ async function checkCommand() {
   const cwd = process.cwd()
   const rc = await readAncletorc(cwd)
   if (!rc || !rc.installedPaths) {
-    console.error('ancleto: no hay .ancletorc con installedPaths (corre ancleto init y ancleto install --project)')
+    console.error('ancleto-fre: no hay .ancleto-fre.rc con installedPaths (corre ancleto-fre init y ancleto-fre install --project)')
     process.exit(1)
   }
   const ip = rc.installedPaths
@@ -2325,36 +2167,21 @@ async function checkCommand() {
     }
   }
 
-  const warnings = await checkTierOrphan(cwd)
-
-  console.log(`ancleto: check -> ${missing} faltantes, ${orphans} huerfanos`)
-  for (const w of warnings) console.log(`  ⚠ ${w}`)
+  console.log(`ancleto-fre: check -> ${missing} faltantes, ${orphans} huerfanos`)
   process.exit(missing > 0 ? 1 : 0)
 }
 
 // T3 (delta `frontmatter-adapters`): para cada `.md` de un directorio de agents
 // instalado, compara el contenido contra `adaptFrontmatter(source, host, 'agents', name)`.
-// Para opencode tambien aplica la sustitucion de `model:` del tier (paso del install que
+// Para opencode tambien aplica la sustitucion de `model:` con AGENT_MODELS (paso del install que
 // se ejecuta despues del adaptador). Para copilot + orchestrator suma `COPILOT_MODEL_NOTE`.
 // Reporta divergencia como warning (no bloqueante). No compara archivos huérfanos (ya
 // quedan avisados arriba) ni archivos sin origen comparable.
 async function checkAgentsFrontmatter(cwd, dirRel, actual, expected, fileExt) {
   const host = hostForDir('agents', dirRel)
   if (!host) return
-  // Mapa de modelos aplicado por install en opencode (model: <x> -> tier).
-  // Para 'gratis' usa el gratisModel persistido en .ancletorc.
-  let tierModelsMap = null
-  if (host === 'opencode') {
-    const tierFile = join(cwd, '.opencode', '.ancleto-tier')
-    if (await exists(tierFile)) {
-      const tier = (await readFile(tierFile, 'utf8')).trim()
-      if (TIERS[tier]) {
-        const rc = await readAncletorc(cwd)
-        const persisted = isKnownGratisModel(rc?.gratisModel) ? rc.gratisModel : null
-        tierModelsMap = tierModels(tier, TIERS, persisted)
-      }
-    }
-  }
+  // install aplica AGENT_MODELS a los agents locales de opencode (campo `model:`).
+  const modelsMap = host === 'opencode' ? AGENT_MODELS : null
   const nameFromFile = (f) => fileExt ? f.slice(0, -fileExt.length) : f.replace(/\.md$/, '')
   for (const f of actual) {
     if (!expected.includes(f)) continue
@@ -2362,10 +2189,8 @@ async function checkAgentsFrontmatter(cwd, dirRel, actual, expected, fileExt) {
     const srcPath = join(ROOT, 'agents', `${name}.md`)
     if (!(await exists(srcPath))) continue
     let source = await readFile(srcPath, 'utf8')
-    // Para opencode + tier aplicado, simular la sustitucion que hace applyTier
-    // sobre el campo `model:`. El resto lo gestiona el adaptador (identidad).
-    if (tierModelsMap && tierModelsMap[name]) {
-      source = source.replace(/^model: .*$/m, `model: ${tierModelsMap[name]}`)
+    if (modelsMap && modelsMap[name]) {
+      source = source.replace(/^model: .*$/m, `model: ${modelsMap[name]}`)
     }
     let expectedContent = adaptFrontmatter(source, host, 'agents', name)
     if (name === 'orchestrator') {
@@ -2377,28 +2202,6 @@ async function checkAgentsFrontmatter(cwd, dirRel, actual, expected, fileExt) {
       console.log(`  ⚠ ${dirRel}/${f} (frontmatter diverge del adaptador para host '${host}')`)
     }
   }
-}
-
-// Avisa si hay un tier del proyecto sin agentes locales donde aplicarlo:
-// el tier solo se aplica a los agentes instalados en el proyecto, no a los globales.
-async function checkTierOrphan(cwd) {
-  const warnings = []
-  const tierFile = join(cwd, '.opencode', '.ancleto-tier')
-  if (!(await exists(tierFile))) return warnings
-  const tier = (await readFile(tierFile, 'utf8')).trim()
-  if (!TIERS[tier]) return warnings
-  // D9: se cuentan los agents locales del host realmente instalados, no
-  // `.opencode/agents` fijo (un proyecto antigravity usa `.agents/agents`).
-  const rc = await readAncletorc(cwd)
-  let count = 0
-  for (const d of localAgentDirs(rc)) {
-    const p = join(cwd, d)
-    if (await exists(p)) count += (await readdir(p)).filter((f) => f.endsWith(MD_EXT)).length
-  }
-  if (count === 0) {
-    warnings.push(`tier "${tier}" sin agentes locales donde aplicarlo — este proyecto usa los agentes globales. Corre 'ancleto install --project .' para que el tier aplique, o borra .opencode/.ancleto-tier.`)
-  }
-  return warnings
 }
 
 // Un spec es canonico cuando usa los keywords literales en ingles. Detecta specs
@@ -2440,7 +2243,7 @@ async function specsCheckCommand(args) {
   if (change) {
     const changeDir = join(cwd, CHANGES_ROOT, 'changes', change)
     if (!(await exists(changeDir))) {
-      console.error(`ancleto: no existe el change "${change}" en ${CHANGES_ROOT}/changes/`)
+      console.error(`ancleto-fre: no existe el change "${change}" en ${CHANGES_ROOT}/changes/`)
       process.exit(1)
     }
     files.push(...(await collectSpecFiles(join(changeDir, 'specs'))))
@@ -2456,7 +2259,7 @@ async function specsCheckCommand(args) {
   if (asJson) {
     console.log(JSON.stringify({ ok, scanned: files.length, nonCanonical: findings }, null, 2))
   } else if (files.length === 0) {
-    console.log('ancleto: no hay specs para revisar')
+    console.log('ancleto-fre: no hay specs para revisar')
   } else {
     for (const f of files) {
       const rel = relative(cwd, f).replace(/\\/g, '/')
@@ -2467,13 +2270,13 @@ async function specsCheckCommand(args) {
         console.log(`  ✔ ${rel}`)
       }
     }
-    console.log(ok ? `ancleto: ${files.length} spec(s) canonicos` : `ancleto: ${findings.length} de ${files.length} spec(s) sin keywords canonicos`)
+    console.log(ok ? `ancleto-fre: ${files.length} spec(s) canonicos` : `ancleto-fre: ${findings.length} de ${files.length} spec(s) sin keywords canonicos`)
   }
   process.exit(ok ? 0 : 1)
 }
 
 function opencodeDbPath() {
-  return process.env.ANCLETO_OPENCODE_DB || join(homedir(), '.local', 'share', 'opencode', 'opencode.db')
+  return process.env.ANCLETO_FRE_OPENCODE_DB || join(homedir(), '.local', 'share', 'opencode', 'opencode.db')
 }
 
 function fmtTokens(n) {
@@ -2571,7 +2374,7 @@ async function statsCommand(args) {
   const li = args.indexOf('--limit')
   const limit = li >= 0 ? Number.parseInt(args[li + 1], 10) : 10
   if (li >= 0 && (!Number.isFinite(limit) || limit < 1)) {
-    console.error('ancleto: --limit requiere un entero >= 1')
+    console.error('ancleto-fre: --limit requiere un entero >= 1')
     process.exit(1)
   }
   const sinceIdx = args.indexOf('--since')
@@ -2580,7 +2383,7 @@ async function statsCommand(args) {
   if (sinceRaw) {
     const t = Date.parse(`${sinceRaw}T00:00:00`)
     if (Number.isNaN(t)) {
-      console.error('ancleto: --since requiere formato YYYY-MM-DD')
+      console.error('ancleto-fre: --since requiere formato YYYY-MM-DD')
       process.exit(1)
     }
     since = t
@@ -2588,8 +2391,8 @@ async function statsCommand(args) {
 
   const dbPath = opencodeDbPath()
   if (!(await exists(dbPath))) {
-    console.error(`ancleto: no se encontro la base de sesiones de opencode en ${dbPath}`)
-    console.error('ancleto: ancleto stats solo funciona con opencode (podes apuntar ANCLETO_OPENCODE_DB a la base)')
+    console.error(`ancleto-fre: no se encontro la base de sesiones de opencode en ${dbPath}`)
+    console.error('ancleto-fre: ancleto-fre stats solo funciona con opencode (podes apuntar ANCLETO_FRE_OPENCODE_DB a la base)')
     process.exit(1)
   }
   const db = new DatabaseSync(dbPath, { readOnly: true })
@@ -2597,7 +2400,7 @@ async function statsCommand(args) {
   try {
     allSessions = db.prepare('SELECT * FROM session').all()
   } catch (err) {
-    console.error(`ancleto: no se pudo leer la base de sesiones: ${err.message}`)
+    console.error(`ancleto-fre: no se pudo leer la base de sesiones: ${err.message}`)
     process.exit(1)
   }
   const tree = buildSessionTree(allSessions)
@@ -2606,7 +2409,7 @@ async function statsCommand(args) {
   if (sessionId) {
     const root = tree.byId.get(sessionId)
     if (!root) {
-      console.error(`ancleto: no existe la sesion "${sessionId}"`)
+      console.error(`ancleto-fre: no existe la sesion "${sessionId}"`)
       process.exit(1)
     }
     const ids = tree.subtreeIds(sessionId)
@@ -2642,7 +2445,7 @@ async function statsCommand(args) {
       console.log(JSON.stringify({ ok: true, scope: 'session', session: sessionInfo(root, totals), byAgent: agents, totals }, null, 2))
       return
     }
-    console.log(`ancleto: sesion ${root.id}`)
+    console.log(`ancleto-fre: sesion ${root.id}`)
     console.log(`  titulo: ${root.title || '(sin titulo)'}`)
     console.log(`  agente: ${root.agent || '-'} · modelo: ${sessionModel(root.model) || '-'}`)
     console.log(`  creada: ${fmtDate(root.time_created)} · ultima actividad: ${fmtDate(root.time_updated)}`)
@@ -2691,11 +2494,11 @@ async function statsCommand(args) {
     return
   }
   if (rows.length === 0) {
-    console.log(`ancleto: no hay sesiones${scope === 'directory' ? ' para este directorio' : ''}${sinceRaw ? ` desde ${sinceRaw}` : ''}`)
-    if (scope === 'directory') console.log('ancleto: proba --all para ver todas las sesiones de la maquina')
+    console.log(`ancleto-fre: no hay sesiones${scope === 'directory' ? ' para este directorio' : ''}${sinceRaw ? ` desde ${sinceRaw}` : ''}`)
+    if (scope === 'directory') console.log('ancleto-fre: proba --all para ver todas las sesiones de la maquina')
     return
   }
-  console.log(`ancleto: stats (opencode)${scope === 'directory' ? ` — ${cwd.replace(/\\/g, '/')}` : ' — todas las sesiones'}${sinceRaw ? ` — desde ${sinceRaw}` : ''}`)
+  console.log(`ancleto-fre: stats (opencode)${scope === 'directory' ? ` — ${cwd.replace(/\\/g, '/')}` : ' — todas las sesiones'}${sinceRaw ? ` — desde ${sinceRaw}` : ''}`)
   console.log('')
   console.log('  fecha              agente        entrada   salida    razon     cache     costo    titulo')
   for (const r of rows) {
@@ -2706,7 +2509,7 @@ async function statsCommand(args) {
   console.log(`  totales (${shownLabel}): entrada ${fmtTokens(totals.input)} · salida ${fmtTokens(totals.output)} · razon ${fmtTokens(totals.reasoning)} · cache ${fmtTokens(totals.cacheRead)} · costo ${fmtCost(totals.cost)}`)
 }
 
-const EXPORT_FORMAT = 'ancleto-export/1'
+const EXPORT_FORMAT = 'ancleto-fre-export/1'
 
 async function readProjectMcp(projectDir) {
   for (const c of ['opencode.json', 'opencode.jsonc']) {
@@ -2751,42 +2554,38 @@ async function exportCmd(args) {
   const projectDir = process.cwd()
   const rc = await readAncletorc(projectDir)
   if (!rc) {
-    console.error("Error: No se encontro .ancletorc. Ejecuta 'ancleto init' primero.")
+    console.error("Error: No se encontro .ancleto-fre.rc. Ejecuta 'ancleto-fre init' primero.")
     process.exit(1)
   }
   const { cfg } = await readProjectMcp(projectDir)
   const mcpIntent = Object.entries(cfg.mcp || {})
     .map(([name, def]) => ({ name, type: def?.type || 'local', enabled: def?.enabled !== false }))
-  const tierFile = join(projectDir, '.opencode', '.ancleto-tier')
-  const tier = (await exists(tierFile)) ? (await readFile(tierFile, 'utf8')).trim() : null
   const manifest = {
     format: EXPORT_FORMAT,
     ancletoVersion: await packageVersion(),
     exportedAt: new Date().toISOString(),
     agent: rc.agent || null,
-    tier,
     language: rc.language || 'auto',
     profile: rc.profile || 'general',
-    ...(rc.gratisModel ? { gratisModel: rc.gratisModel } : {}),
-    flags: { azure: Boolean(rc.azure?.enabled), engram: mcpIntent.some((m) => m.name === 'engram') },
+    flags: { engram: mcpIntent.some((m) => m.name === 'engram') },
     mcp: mcpIntent
   }
   const serialized = JSON.stringify(manifest)
   if (serialized.includes(projectDir) || /[A-Za-z]:\\/.test(serialized) || serialized.includes(homedir())) {
-    console.error('ancleto: el manifiesto contiene rutas absolutas; export abortado')
+    console.error('ancleto-fre: el manifiesto contiene rutas absolutas; export abortado')
     process.exit(1)
   }
   const tarIdx = args.indexOf('--tar')
   if (tarIdx >= 0 && !args[tarIdx + 1]) {
-    console.error('ancleto: --tar requiere un archivo destino')
+    console.error('ancleto-fre: --tar requiere un archivo destino')
     process.exit(1)
   }
   const tarFile = tarIdx >= 0 ? resolve(args[tarIdx + 1]) : null
-  const outDir = tarFile ? await mkdtemp(join(tmpdir(), 'ancleto-export-')) : join(projectDir, 'ancleto-export')
+  const outDir = tarFile ? await mkdtemp(join(tmpdir(), 'ancleto-fre-export-')) : join(projectDir, 'ancleto-fre-export')
   await mkdir(outDir, { recursive: true })
   // Allowlist portable: nunca se copian opencode.json (rutas absolutas),
-  // .ancleto-tier, memory.db, service.json ni la config global.
-  if (await exists(join(projectDir, '.ancletorc'))) await cp(join(projectDir, '.ancletorc'), join(outDir, '.ancletorc'))
+  // memory.db, service.json ni la config global.
+  if (await exists(join(projectDir, '.ancleto-fre.rc'))) await cp(join(projectDir, '.ancleto-fre.rc'), join(outDir, '.ancleto-fre.rc'))
   for (const t of TEMPLATES) {
     if (await exists(join(projectDir, t))) await cp(join(projectDir, t), join(outDir, t))
   }
@@ -2799,15 +2598,15 @@ async function exportCmd(args) {
   if (tarFile) {
     const r = spawnSync('tar', ['czf', tarFile, '-C', outDir, '.'], { encoding: 'utf8' })
     if (r.status !== 0) {
-      console.error(`ancleto: no se pudo crear el tarball (${(r.stderr || '').trim() || 'tar no disponible'})`)
+      console.error(`ancleto-fre: no se pudo crear el tarball (${(r.stderr || '').trim() || 'tar no disponible'})`)
       process.exit(1)
     }
     await rm(outDir, { recursive: true, force: true })
-    console.log(`ancleto: exportado a ${tarFile}`)
+    console.log(`ancleto-fre: exportado a ${tarFile}`)
   } else {
-    console.log(`ancleto: exportado a ${join(projectDir, 'ancleto-export')}`)
+    console.log(`ancleto-fre: exportado a ${join(projectDir, 'ancleto-fre-export')}`)
   }
-  console.log(`ancleto: manifiesto v${manifest.ancletoVersion} con ${mcpIntent.length} MCP (solo intencion, sin rutas)`)
+  console.log(`ancleto-fre: manifiesto v${manifest.ancletoVersion} con ${mcpIntent.length} MCP (solo intencion, sin rutas)`)
 }
 
 async function importCmd(args) {
@@ -2815,38 +2614,38 @@ async function importCmd(args) {
   const repairOnly = args.includes('--repair')
   const bundleArg = args.find((a) => !a.startsWith('-'))
   if (!repairOnly && !bundleArg) {
-    console.error('ancleto: uso: ancleto import <bundle> [--repair] | ancleto import --repair')
+    console.error('ancleto-fre: uso: ancleto-fre import <bundle> [--repair] | ancleto-fre import --repair')
     process.exit(1)
   }
   let manifest = null
   if (bundleArg) {
     const resolved = resolve(bundleArg)
     if (!existsSync(resolved)) {
-      console.error(`ancleto: bundle no encontrado: ${bundleArg}`)
+      console.error(`ancleto-fre: bundle no encontrado: ${bundleArg}`)
       process.exit(1)
     }
     let bundleDir = resolved
     if (/\.tgz$|\.tar\.gz$/.test(resolved)) {
-      bundleDir = await mkdtemp(join(tmpdir(), 'ancleto-import-'))
+      bundleDir = await mkdtemp(join(tmpdir(), 'ancleto-fre-import-'))
       const r = spawnSync('tar', ['xzf', resolved, '-C', bundleDir], { encoding: 'utf8' })
       if (r.status !== 0) {
-        console.error('ancleto: no se pudo extraer el bundle')
+        console.error('ancleto-fre: no se pudo extraer el bundle')
         process.exit(1)
       }
     }
     try {
       manifest = JSON.parse(await readFile(join(bundleDir, 'manifest.json'), 'utf8'))
     } catch {
-      console.error('ancleto: bundle invalido (sin manifest.json)')
+      console.error('ancleto-fre: bundle invalido (sin manifest.json)')
       process.exit(1)
     }
     if (manifest.format !== EXPORT_FORMAT) {
-      console.error(`ancleto: formato de bundle no soportado: ${manifest.format}`)
+      console.error(`ancleto-fre: formato de bundle no soportado: ${manifest.format}`)
       process.exit(1)
     }
     const localVersion = await packageVersion()
     if (manifest.ancletoVersion && manifest.ancletoVersion !== localVersion) {
-      console.warn(`ancleto: el bundle es de v${manifest.ancletoVersion} y el CLI es v${localVersion} (se continua igual)`)
+      console.warn(`ancleto-fre: el bundle es de v${manifest.ancletoVersion} y el CLI es v${localVersion} (se continua igual)`)
     }
     const bundleRc = await readAncletorc(bundleDir)
     if (bundleRc) {
@@ -2854,8 +2653,6 @@ async function importCmd(args) {
         ...(bundleRc.agent ? { agent: bundleRc.agent } : {}),
         ...(bundleRc.language ? { language: bundleRc.language } : {}),
         ...(bundleRc.profile ? { profile: bundleRc.profile } : {}),
-        ...(bundleRc.gratisModel ? { gratisModel: bundleRc.gratisModel } : {}),
-        ...(bundleRc.azure ? { azure: bundleRc.azure } : {}),
         ...(bundleRc.discovery ? { discovery: bundleRc.discovery } : {})
       })
     }
@@ -2884,24 +2681,19 @@ async function importCmd(args) {
     const importProfile = validProfile(rcNow?.profile) || DEFAULT_PROFILE
     await installAgentAssets(projectDir, agent)
     if (importProfile === 'test') await installProfileOverlay(projectDir, agent)
-    if (manifest.tier && TIERS[manifest.tier]) {
-      await applyTier(join(projectDir, '.opencode', 'agents'), manifest.tier, tierModels(manifest.tier, TIERS, manifest.gratisModel))
-    }
+    await applyModels(join(projectDir, '.opencode', 'agents'))
     await scaffoldAspec(projectDir)
-    console.log(`ancleto: bundle aplicado (agente: ${agent}${manifest.tier ? `, tier: ${manifest.tier}` : ''})`)
+    console.log(`ancleto-fre: bundle aplicado (agente: ${agent})`)
   }
   const withEngram = manifest
     ? manifest.flags?.engram === true
     : Boolean((await readProjectMcp(projectDir)).cfg.mcp?.engram)
   const fresh = buildDefaultMcp({ withEngram })
-  if (manifest?.flags?.azure) {
-    fresh['azure-devops'] = { type: 'local', enabled: true, command: ['npx', '-y', '@davstack/mcp-azure-devops'] }
-  }
   const intended = manifest ? manifest.mcp.map((m) => m.name) : null
   const { file, fixed } = await repairProjectMcp(projectDir, fresh, intended)
   console.log(fixed.length
-    ? `ancleto: MCP regenerados en ${file}: ${fixed.join(', ')}`
-    : `ancleto: MCP sanos en ${file}, sin cambios`)
+    ? `ancleto-fre: MCP regenerados en ${file}: ${fixed.join(', ')}`
+    : `ancleto-fre: MCP sanos en ${file}, sin cambios`)
   await doctorCommand()
 }
 
@@ -2980,10 +2772,10 @@ switch (cmd) {
     await projectsCommand(rest)
     break
   case 'list':
-    // Alias conveniente: `ancleto list --projects`
+    // Alias conveniente: `ancleto-fre list --projects`
     if (rest.includes('--projects')) await projectsCommand(rest.filter((a) => a !== '--projects'))
     else {
-      console.error('ancleto: uso: ancleto list --projects [--json]  (o ancleto projects)')
+      console.error('ancleto-fre: uso: ancleto-fre list --projects [--json]  (o ancleto-fre projects)')
       process.exit(1)
     }
     break
@@ -3001,7 +2793,7 @@ switch (cmd) {
     break
   case '--version':
   case '-v':
-    console.log(`ancleto ${await packageVersion()}`)
+    console.log(`ancleto-fre ${await packageVersion()}`)
     break
   case '--help':
   case '-h':
@@ -3009,7 +2801,7 @@ switch (cmd) {
     console.log(HELP)
     break
   default:
-    console.error(`ancleto: comando desconocido: ${cmd}`)
+    console.error(`ancleto-fre: comando desconocido: ${cmd}`)
     console.log(HELP)
     process.exit(1)
 }

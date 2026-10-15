@@ -8,7 +8,7 @@ The system SHALL generar un bundle portable cuyo manifiesto no contenga paths ab
 
 #### Scenario: Export en máquina origen
 
-- **WHEN** se ejecuta `ancleto export`
+- **WHEN** se ejecuta `ancleto-fre export`
 - **THEN** se genera el bundle con `manifest.json` (versión, agente, tier, idioma, flags, MCP por nombre+tipo)
 - **AND** el manifiesto no contiene paths absolutos, credenciales ni datos de sesión
 
@@ -18,7 +18,7 @@ The system SHALL aplicar los portables y regenerar las entradas MCP con rutas de
 
 #### Scenario: Import en máquina destino
 
-- **WHEN** se ejecuta `ancleto import` con un bundle válido
+- **WHEN** se ejecuta `ancleto-fre import` con un bundle válido
 - **THEN** los activos portables quedan aplicados y el MCP apunta a rutas locales válidas
 - **AND** al final se corre `doctor` y se reporta el resultado
 
@@ -28,5 +28,5 @@ The system SHALL regenerar las entradas MCP rotas del proyecto actual sin requer
 
 #### Scenario: Import con repair
 
-- **WHEN** se ejecuta `ancleto import --repair` y una entrada MCP tiene `command` inexistente
+- **WHEN** se ejecuta `ancleto-fre import --repair` y una entrada MCP tiene `command` inexistente
 - **THEN** solo esa entrada se regenera y las entradas sanas permanecen intactas
