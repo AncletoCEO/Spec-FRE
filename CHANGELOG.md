@@ -2,6 +2,13 @@
 
 Todas las versiones notables de `@ancleto/spec-fre`.
 
+## [0.1.2] - 2026-10-15
+
+### Changed
+
+- README: badges (npm/Node/licencia/dependencias/foco), ejemplo de ingeniería inversa y
+  referencia CLI completa; mirrors en `docs/readme/README_en.md`.
+
 ## [0.1.1] - 2026-10-15
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "@ancleto/spec-fre",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Spec For Reverse Engineering — orquestador SDD para ingeniería inversa",
   "type": "module",
   "bin": {
